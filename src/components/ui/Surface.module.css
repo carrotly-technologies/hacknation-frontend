@@ -1,4 +1,4 @@
-/* Card, InfoRow, Accordion, EmptyState */
+/* Card (plain, link, button, collapsible), InfoRow, Accordion, EmptyState */
 .card {
   display: block;
   padding: var(--s-5);
@@ -112,6 +112,80 @@
 
 .chevron {
   color: var(--accent);
+}
+
+/* Collapsible card: the plain card's frame and heading; the padding moves to the toggle so its hover fills the card. */
+.collapsible {
+  padding: 0;
+}
+
+.collapsibleHeading {
+  font: inherit;
+}
+
+.collapsibleToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--s-5);
+  border: 0;
+  border-radius: calc(var(--radius-lg) - var(--border-w));
+  background: none;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration);
+}
+
+.collapsibleToggle[aria-expanded='true'] {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.collapsibleToggle:hover,
+.collapsibleToggle[data-force='hover'] {
+  background: var(--bg-hover);
+}
+
+.collapsibleToggle:focus-visible,
+.collapsibleToggle[data-force='focus'] {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.collapsibleText {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.collapsibleSubtitle {
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading);
+}
+
+.collapsibleIcon {
+  flex: none;
+  color: var(--accent);
+  transition: transform var(--duration);
+}
+
+.collapsibleToggle[aria-expanded='true'] .collapsibleIcon {
+  transform: rotate(180deg);
+}
+
+.collapsiblePanel {
+  padding: 0 var(--s-5) var(--s-5);
+}
+
+.collapsiblePanel[hidden] {
+  display: none;
 }
 
 /* InfoRow: label over value, one row per fact */

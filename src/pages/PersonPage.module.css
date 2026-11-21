@@ -28,16 +28,6 @@
   overflow-wrap: anywhere;
 }
 
-.ospHead {
-  display: grid;
-  gap: var(--s-1);
-}
-
-.ospHeadTitle {
-  font-weight: var(--weight-regular);
-  color: var(--text-muted);
-}
-
 .supervisorPosition {
   display: block;
   color: var(--text-muted);

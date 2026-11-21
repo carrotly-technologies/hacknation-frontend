@@ -329,6 +329,18 @@ export function UiPage() {
           <Card to="/wniosek-demo" title="Karta klikalna (focus)" forceState="focus">
             Widoczny pierścień fokusu
           </Card>
+          <Card collapsible title="Karta zwijana" subtitle="Podtytuł widoczny także po zwinięciu">
+            Treść widoczna po rozwinięciu. Kliknij nagłówek albo naciśnij Enter lub spację.
+          </Card>
+          <Card collapsible defaultOpen title="Karta zwijana (rozwinięta)">
+            Domyślnie rozwinięta (<code>defaultOpen</code>).
+          </Card>
+          <Card collapsible title="Karta zwijana (hover)" forceState="hover">
+            Treść
+          </Card>
+          <Card collapsible title="Karta zwijana (focus)" forceState="focus">
+            Treść
+          </Card>
         </div>
         <div className={s.block}>
           <InfoList>
