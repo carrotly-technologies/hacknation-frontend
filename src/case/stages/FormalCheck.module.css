@@ -1,0 +1,134 @@
+/* "Kontrola formalna": a summary alert, the items to fix (always open) and the met ones (collapsed). */
+.root {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-4);
+  min-width: 0;
+  margin-top: var(--s-6);
+}
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.groupTitle {
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.group {
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.list {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border-top: var(--border-w) solid var(--border);
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) var(--s-1);
+  border-bottom: var(--border-w) solid var(--border);
+}
+
+.iconErr,
+.iconOk {
+  flex: none;
+  margin-top: 2px;
+}
+
+.iconErr {
+  color: var(--danger);
+}
+
+.iconOk {
+  color: var(--ok);
+}
+
+.body {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.message {
+  color: var(--text);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+  overflow-wrap: anywhere;
+}
+
+.legal {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: var(--leading);
+  overflow-wrap: anywhere;
+}
+
+/* "Popraw": a text link at the end of the row (like "Zmień" in a summary list), 44px target. */
+.fix {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  margin-top: calc(-1 * var(--s-3));
+  margin-bottom: calc(-1 * var(--s-3));
+  padding: 0 var(--s-1);
+  color: var(--link);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.fix:hover {
+  color: var(--link-hover);
+}
+
+.fix:focus-visible {
+  outline: none;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--focus-shadow);
+}
+
+/* The met items sit in an accordion panel: no extra top rule under the summary line. */
+.passed .list {
+  border-top: 0;
+}
+
+.passed .item:last-child {
+  border-bottom: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+/* Phones: "Popraw" goes under the text instead of squeezing it. */
+@media (max-width: 767px) {
+  .item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .fix {
+    grid-column: 2;
+    justify-self: start;
+    margin: 0;
+    padding: 0;
+  }
+}

@@ -32,9 +32,10 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
           <fieldset className="cond" disabled={locked}>
             <legend className="cond__legend">Oceniany zaliczył egzamin ze służby przygotowawczej</legend>
             <div className="radio-row">
-              {EXAM.map((o) => (
+              {EXAM.map((o, i) => (
                 <label key={o.v} className={`radio-pill ${fc?.examPassed === o.v ? 'is-on' : ''}`}>
                   <input
+                    id={i === 0 ? 'exam1' : undefined}
                     type="radio"
                     name="exam"
                     checked={fc?.examPassed === o.v}
@@ -96,7 +97,7 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
           />
         </div>
         <MutationError error={patch.error} />
-        <FormalCheck detail={detail} label="Zatwierdź pierwszą ocenę i podpisz" />
+        <FormalCheck detail={detail} criteria={criteria} fields={{ justification: 'just1', iprz: 'dev1', conditions: 'exam1' }} label="Zatwierdź pierwszą ocenę i podpisz" />
       </div>
     </div>
   )

@@ -88,7 +88,7 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
           </p>
           <MutationError error={patch.error} />
 
-          <FormalCheck detail={detail} label="Zatwierdź ocenę i podpisz" />
+          <FormalCheck detail={detail} criteria={criteria} fields={{ justification: 'just', iprz: 'iprz' }} label="Zatwierdź ocenę i podpisz" />
         </div>
 
         <aside className="two-col__side material" aria-label="Materiał do uzasadnienia">
