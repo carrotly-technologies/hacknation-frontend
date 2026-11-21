@@ -5,7 +5,7 @@ import { getMe, getTeam, type CaseSummary } from '../api/cases'
 import { DeadlineText } from '../components/Deadline'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { StageDots } from '../components/StageDots'
-import { countLabel, fmtDate, fmtDaysLeft } from '../lib/format'
+import { countLabel } from '../lib/format'
 import { caseUrl, CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
 
 export function TeamPage() {
@@ -16,9 +16,7 @@ export function TeamPage() {
   if (team.isPending) return <div className="page"><LoadingState /></div>
   if (team.isError) return <div className="page"><ErrorState error={team.error} what="lista zespołu" onRetry={() => team.refetch()} /></div>
 
-  const { cases, todo } = team.data
-  const urgent = todo.filter((t) => t.deadline.state === 'SOON' || t.deadline.state === 'OVERDUE')
-  const overdue = todo.filter((t) => t.deadline.state === 'OVERDUE').length
+  const { cases } = team.data
 
   return (
     <div className="page">
@@ -28,42 +26,6 @@ export function TeamPage() {
           <p className="page-head__meta" title={me.data?.unit ?? 'Wydział'}>{me.data?.unit ?? 'Wydział'}</p>
         </div>
       </header>
-
-      <p className="lede">
-        {urgent.length === 0
-          ? 'Żadne działanie nie wymaga uwagi w ciągu najbliższych 14 dni.'
-          : `${countLabel(urgent.length, 'działanie wymaga', 'działania wymagają', 'działań wymaga')} uwagi w ciągu 14 dni`}
-        {overdue > 0 && <span className="lede__warn">, w tym {countLabel(overdue, 'po terminie', 'po terminie', 'po terminie')}</span>}
-        {urgent.length > 0 && '.'}
-      </p>
-
-      <section className="section" aria-labelledby="todo-h">
-        <div className="section__head">
-          <h2 id="todo-h" className="h-section">Do zrobienia</h2>
-          <span className="faint small">Posortowane według terminu</span>
-        </div>
-        {todo.length === 0 ? (
-          <p className="panel panel__body muted">Brak zadań z terminem.</p>
-        ) : (
-          <ol className="todo panel">
-            {todo.map((t) => (
-              <li key={`${t.caseId}-${t.stageId}`}>
-                <Link className="todo__row" to={caseUrl(t.caseId, t.stageId)}>
-                  <span className={`todo__when todo__when--${t.deadline.state.toLowerCase()}`}>
-                    <span className="todo__date num">{fmtDate(t.deadline.date)}</span>
-                    <span className="todo__rel num">{fmtDaysLeft(t.deadline.daysLeft)}</span>
-                  </span>
-                  <span className="todo__text">
-                    <span className="todo__title" title={t.text}>{todoTitle(t.text)}</span>
-                    <span className="todo__basis" title={t.deadline.legalBasis}>{t.deadline.legalBasis}</span>
-                  </span>
-                  <ChevronRight className="todo__chev" size={16} aria-hidden="true" />
-                </Link>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
 
       <section className="section" aria-labelledby="team-h">
         <div className="section__head">
@@ -143,10 +105,4 @@ function TeamRow({ c, onOpen }: { c: CaseSummary; onOpen: () => void }) {
       </td>
     </tr>
   )
-}
-
-/** Backend texts repeat date and legal basis (shown in their own columns) — keep the action part. */
-function todoTitle(text: string) {
-  const m = text.match(/^(.*?)\s+(?:do|najpóźniej do)\s+\d{2}\.\d{2}\.\d{4}/)
-  return m ? m[1] : text.split(' · ')[0]
 }

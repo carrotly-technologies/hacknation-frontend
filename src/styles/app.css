@@ -352,16 +352,6 @@
   white-space: nowrap;
 }
 
-.lede {
-  margin: var(--s-3) 0 var(--s-6);
-  color: var(--text);
-  font-size: var(--text-md);
-}
-
-.lede__warn {
-  color: var(--danger);
-}
-
 .section {
   margin-top: var(--s-8);
 }
@@ -381,92 +371,12 @@
   white-space: nowrap;
 }
 
-/* To-do list */
-.todo > li + li {
-  border-top: 1px solid var(--border);
-}
-
-.todo__row {
-  display: grid;
-  grid-template-columns: 140px minmax(0, 1fr) 20px;
-  align-items: center;
-  gap: var(--s-4);
-  min-height: 64px;
-  padding: 10px var(--s-5);
-  color: var(--text);
-  text-decoration: none;
-}
-
-.todo > li:first-child .todo__row {
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-
-.todo > li:last-child .todo__row {
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-
-.todo__row:hover {
-  background: var(--bg-hover);
-}
-
-.todo__row:hover .todo__title {
-  color: var(--accent);
-}
-
-.todo__when {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding-left: 12px;
-  border-left: 3px solid var(--border-strong);
-  line-height: 1.3;
-}
-
-.todo__date,
-.todo__rel,
-.todo__title,
-.todo__basis,
 .person > *,
 .stage-cell__name {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.todo__when--soon { border-left-color: var(--warn); }
-.todo__when--overdue { border-left-color: var(--danger); }
-.todo__when--ok { border-left-color: var(--ok); }
-
-.todo__date {
-  font-weight: var(--weight-semibold);
-}
-
-.todo__rel {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
-
-.todo__when--soon .todo__rel { color: var(--warn); }
-.todo__when--overdue .todo__rel { color: var(--danger); }
-
-.todo__text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.todo__title {
-  font-weight: var(--weight-semibold);
-}
-
-.todo__basis {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
-
-.todo__chev {
-  color: var(--text-muted);
 }
 
 /* People cells */
@@ -3260,12 +3170,6 @@
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .todo__row {
-    grid-template-columns: 96px minmax(0, 1fr) 16px;
-    gap: var(--s-3);
-    padding: 10px var(--s-4);
   }
 
   .counters {
