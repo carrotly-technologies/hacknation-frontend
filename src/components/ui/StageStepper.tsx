@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { Fragment } from 'react'
 import { Link } from 'react-router'
 import { cx } from './cx'
 import s from './StageStepper.module.css'
@@ -32,6 +33,8 @@ const STATUS_TEXT: Record<StageStepStatus, string> = {
  * tinted, future steps are outlined; the step on screen carries aria-current="step". Each step is a
  * link, so the whole stepper works with Tab / Enter. When the stepper is too narrow for its labels (container query in
  * StageStepper.module.css) it turns into numbered dots plus the name of the shown step, without horizontal scrolling.
+ * Each word of a label carries its own text in `data-label`: the CSS reserves the width of the bold word, so making
+ * a step bold (shown step) never moves a word to the next line or shifts the neighbouring steps.
  */
 export function StageStepper({ steps, activeKey, label }: Props) {
   const active = activeKey ?? steps.find((st) => st.status === 'current')?.key
@@ -46,7 +49,16 @@ export function StageStepper({ steps, activeKey, label }: Props) {
               <span className={s.marker} aria-hidden="true">
                 {st.status === 'done' ? <Check size={14} strokeWidth={3} /> : i + 1}
               </span>
-              <span className={s.label}>{st.label}</span>
+              <span className={s.label}>
+                {st.label.split(' ').map((word, w) => (
+                  <Fragment key={w}>
+                    {w > 0 && ' '}
+                    <span className={s.word} data-label={word}>
+                      {word}
+                    </span>
+                  </Fragment>
+                ))}
+              </span>
               <span className="visually-hidden">
                 {`, krok ${i + 1} z ${steps.length}, ${STATUS_TEXT[st.status]}`}
               </span>

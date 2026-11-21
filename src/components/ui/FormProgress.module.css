@@ -62,12 +62,32 @@ a.step:hover .name {
   font-weight: var(--weight-semibold);
 }
 
-/* one line; the full name is in the title attribute */
+/* one line; the full name is in the title attribute. The name is as wide as its semibold version (hidden copy in
+   ::after, height 0), so the step keeps its size when it becomes the current one; the copy is generated content
+   with visibility: hidden, so screen readers read the name once. */
 .name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.text {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.name::after {
+  content: attr(data-label);
+  content: attr(data-label) / '';
+  height: 0;
+  overflow: hidden;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
 }
 
 .current {
