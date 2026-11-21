@@ -91,6 +91,11 @@
   cursor: not-allowed;
 }
 
+/* Read-only answer: the chosen option keeps a strong ring and full-contrast label (not greyed out). */
+.input:disabled:checked {
+  border-color: var(--text-muted);
+}
+
 .input:disabled:checked::after {
   border-color: var(--text-muted);
 }
@@ -110,6 +115,11 @@
 .input:disabled + .label {
   color: var(--text-muted);
   cursor: not-allowed;
+}
+
+.input:disabled:checked + .label {
+  color: var(--text);
+  font-weight: var(--weight-semibold);
 }
 
 .hint {

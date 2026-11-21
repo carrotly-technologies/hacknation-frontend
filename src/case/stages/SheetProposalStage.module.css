@@ -1,11 +1,3 @@
-.sheetField {
-  max-width: var(--form-max);
-}
-
-.appliesTo {
-  margin-top: var(--s-2);
-}
-
 .questionsLabel {
   margin-bottom: var(--s-4);
   font-size: var(--text-lg);

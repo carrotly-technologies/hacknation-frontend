@@ -208,6 +208,18 @@ export function UiPage() {
               { value: 'nie', label: 'Nie' },
             ]}
           />
+          <RadioGroup
+            id="ui-radio-locked"
+            name="ui-radio-locked"
+            legend="Formularz oceny (tylko do odczytu)"
+            value="b"
+            onChange={() => {}}
+            options={[
+              { value: 'a', label: 'Arkusz A', hint: 'Wyłączony', disabled: true },
+              { value: 'b', label: 'Arkusz B', hint: 'Wyłączony, zaznaczony', disabled: true },
+              { value: 'c', label: 'Arkusz C', hint: 'Wyłączony', disabled: true },
+            ]}
+          />
         </div>
         <div className={s.grid2}>
           <div>

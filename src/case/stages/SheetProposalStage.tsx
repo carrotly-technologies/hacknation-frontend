@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Card, Field, InlineAlert, Select } from '../../components/ui'
+import { Button, Card, InlineAlert, RadioGroup } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { competencyName, useSheets } from '../../lib/model'
 import { allows } from '../../lib/stages'
@@ -10,10 +10,10 @@ import layout from './StageLayout.module.css'
 import s from './SheetProposalStage.module.css'
 
 /**
- * "Proponowany formularz" (design frame 2): the sheet proposed from the job description (a locked
- * dropdown) and the competencies chosen for assessment as plain, non-clickable tiles. At the end,
- * "Akceptuj formularz" moves the case on to the opening talk; "Wprowadź poprawki" opens the editor of
- * the sheet and the additional criteria.
+ * "Proponowany formularz" (design frame 2): the sheet proposed from the job description (all periodic
+ * sheets as locked radios, the proposed one checked) and the competencies chosen for assessment as plain,
+ * non-clickable tiles. At the end, "Akceptuj formularz" moves the case on to the opening talk;
+ * "Wprowadź poprawki" opens the editor of the sheet and the additional criteria.
  */
 export function SheetProposalStage({ detail, model, criteria, stage }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
@@ -27,25 +27,25 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
 
   return (
     <StageLayout info={info}>
-      <Field label="Formularz oceny" className={s.sheetField}>
-        {(control) => (
-          <>
-            <Select
-              {...control}
-              aria-describedby={criteria.sheet ? `${control.id}-applies` : undefined}
-              disabled
-              value={detail.sheetId ?? ''}
-              placeholder={detail.sheetId ? undefined : 'Nie ustalono'}
-              options={periodic.map((x) => ({ value: x.id, label: `Arkusz ${x.id}` }))}
-            />
-            {criteria.sheet && (
-              <p id={`${control.id}-applies`} className={`${layout.muted} ${s.appliesTo}`}>
-                {criteria.sheet.appliesTo}
-              </p>
-            )}
-          </>
-        )}
-      </Field>
+      {!editing && (
+        <RadioGroup
+          id="proposed-sheet"
+          name="proposed-sheet"
+          legend="Formularz oceny"
+          value={detail.sheetId ?? ''}
+          onChange={() => {}}
+          options={periodic.map((x) => ({
+            value: x.id,
+            label: `Arkusz ${x.id}`,
+            hint: (
+              <span className="one-line" title={x.appliesTo}>
+                {x.appliesTo}
+              </span>
+            ),
+            disabled: true,
+          }))}
+        />
+      )}
 
       {editing ? (
         <SheetCriteriaEditor detail={detail} model={model} onDone={() => setEditing(false)} />
