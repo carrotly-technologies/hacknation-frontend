@@ -22,17 +22,26 @@ export interface AssistantSource {
 
 export interface AssistantAnswer {
   answer: string
+  /** The answer without the disclaimer: what goes back to the API as `history`. */
+  reply: string
   sources: AssistantSource[]
   /** True when the knowledge base had no sufficient information (the assistant must say so). */
   noAnswer: boolean
   placeholder?: boolean
 }
 
+/** One earlier question and its answer in the same conversation. */
+export interface AssistantExchange {
+  question: string
+  answer: string
+}
+
 export interface AskAssistantRequest {
   mode: AssistantMode
   question: string
   context: AssistantContext
-  history: { role: 'user' | 'assistant'; text: string }[]
+  /** Earlier exchanges of the conversation, oldest first, so that follow-ups ("a do kogo?") are understood. */
+  history: AssistantExchange[]
 }
 
 interface AskResponse {
@@ -70,9 +79,11 @@ export async function askAssistant(req: AskAssistantRequest): Promise<AssistantA
     assistant: req.mode,
     ...(req.context.caseId ? { caseId: req.context.caseId } : {}),
     ...(req.context.stageId ? { stageId: req.context.stageId } : {}),
+    ...(req.history.length ? { history: req.history } : {}),
   })
   return {
     answer: res.disclaimer ? `${res.answer}\n\n${res.disclaimer}` : res.answer,
+    reply: res.answer,
     sources: res.sources.map((s) => ({
       title: s.ref,
       locator: s.title,

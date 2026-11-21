@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { askAssistant, type AssistantAnswer, type AssistantContext, type AssistantMode } from '../api/assistant'
+import { askAssistant, type AssistantAnswer, type AssistantContext, type AssistantExchange, type AssistantMode } from '../api/assistant'
 
 export interface Msg {
   id: number
@@ -18,6 +18,8 @@ export interface AssistantChat {
   threads: Threads
   /** Asks in `mode` (default: the open tab); ignored while that thread waits for an answer. */
   ask: (question: string, context: AssistantContext, mode?: AssistantMode) => void
+  /** "Nowa rozmowa": empties the open tab's conversation, so the next question has no history. */
+  reset: () => void
 }
 
 /** A question asked from a screen, e.g. "Przygotuj pytania do rozmowy" in step 5. */
@@ -48,7 +50,7 @@ const OFF: AssistantState = {
   toggle: () => {},
   context: {},
   setContext: () => {},
-  chat: { mode: 'FORMAL', setMode: () => {}, threads: { FORMAL: [], CONVERSATION: [] }, ask: () => {} },
+  chat: { mode: 'FORMAL', setMode: () => {}, threads: { FORMAL: [], CONVERSATION: [] }, ask: () => {}, reset: () => {} },
 }
 
 /** The assistant of the signed-in session (AssistantProvider); does nothing outside it. */
@@ -67,6 +69,21 @@ export function useAssistantContext(context: AssistantContext): void {
 }
 
 let seq = 0
+
+/** How many earlier exchanges go with a question (the API uses at most this many). */
+const HISTORY_EXCHANGES = 3
+
+/** The answered exchanges of a thread, oldest first: a question and the answer that came back for it. */
+export function historyOf(msgs: Msg[]): AssistantExchange[] {
+  const out: AssistantExchange[] = []
+  msgs.forEach((m, i) => {
+    const next = msgs[i + 1]
+    if (m.role === 'user' && next?.role === 'assistant' && next.answer && !next.answer.placeholder) {
+      out.push({ question: m.text, answer: next.answer.reply })
+    }
+  })
+  return out.slice(-HISTORY_EXCHANGES)
+}
 
 /** Conversation state and asking: the popup keeps one in AssistantProvider, the "Baza wiedzy" page its own. */
 export function useAssistantChat(): AssistantChat {
@@ -100,7 +117,7 @@ export function useAssistantChat(): AssistantChat {
         mode: target,
         question: q,
         context,
-        history: before.map((x) => ({ role: x.role, text: x.text })),
+        history: historyOf(before),
       }).then(
         (answer) => settle({ text: answer.answer, answer }),
         () => settle({ text: 'Nie udało się połączyć z asystentem. Spróbuj ponownie.' }),
@@ -109,5 +126,11 @@ export function useAssistantChat(): AssistantChat {
     [update],
   )
 
-  return useMemo(() => ({ mode, setMode: changeMode, threads, ask }), [mode, changeMode, threads, ask])
+  const reset = useCallback(() => {
+    const target = modeRef.current
+    if (ref.current[target].some((x) => x.pending)) return
+    update((t) => ({ ...t, [target]: [] }))
+  }, [update])
+
+  return useMemo(() => ({ mode, setMode: changeMode, threads, ask, reset }), [mode, changeMode, threads, ask, reset])
 }

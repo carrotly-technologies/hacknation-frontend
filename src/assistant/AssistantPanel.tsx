@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUp, ExternalLink, Sparkles, X } from 'lucide-react'
+import { ArrowUp, ExternalLink, MessageSquarePlus, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { getSourceDocuments, type AssistantContext, type AssistantMode } from '../api/assistant'
 import { suggestedQuestions } from './suggestions'
@@ -29,7 +29,7 @@ export function AssistantPanel({
   titleId?: string
 }) {
   const own = useAssistantChat()
-  const { mode, setMode, threads, ask: askIn } = shared ?? own
+  const { mode, setMode, threads, ask: askIn, reset } = shared ?? own
   const [input, setInput] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const msgs = threads[mode]
@@ -82,6 +82,18 @@ export function AssistantPanel({
           </span>
         ) : (
           <span className="ctx-chip"><span className="ctx-chip__k">Kontekst</span> ogólny — bez teczki</span>
+        )}
+        {msgs.length > 0 && (
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm assistant__new"
+            onClick={reset}
+            disabled={busy}
+            title="Zacznij od nowa: asystent nie będzie brał pod uwagę wcześniejszych pytań"
+          >
+            <MessageSquarePlus size={14} aria-hidden="true" />
+            Nowa rozmowa
+          </button>
         )}
       </div>
 
