@@ -2228,7 +2228,8 @@
 
 /* Knowledge page */
 .page--knowledge {
-  max-width: 1240px;
+  /* Full width of the content area; `.page` keeps the side padding */
+  max-width: none;
 }
 
 .knowledge {
@@ -2239,9 +2240,9 @@
   align-items: start;
 }
 
-/* Assistant feature flag off: only the sources list, at a readable width */
+/* Assistant feature flag off: only the sources list, across the full width */
 .knowledge--sources-only {
-  grid-template-columns: minmax(0, 720px);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .sources li {

@@ -1,7 +1,7 @@
 import { BookOpen, FileText, LayoutGrid, Palette } from 'lucide-react'
 import { Card } from '../components/ui'
 
-/** "Więcej": secondary destinations (third tab of the bottom navigation on phones). */
+/** "Więcej": secondary destinations; reachable only by its address, not linked from the navigation. */
 export function MorePage() {
   return (
     <div className="page">

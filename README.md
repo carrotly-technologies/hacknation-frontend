@@ -41,7 +41,8 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   decision, justification/IPRZ with formal check, document), docked assistant panel;
 - `/teczka/:id/arkusz` — official sheet preview (parts I/II/III); print it to get the PDF;
 - `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant;
-- `/ui` — design-system catalogue, `/wniosek-demo` — step-by-step form pattern, `/wiecej`, `/uslugi`.
+- `/ui` — design-system catalogue, `/wniosek-demo` — step-by-step form pattern, `/wiecej`, `/uslugi`
+  (helper pages: they work under their addresses but are not linked from the navigation).
 
 API contract: `notatki/api-kontrakt-v1.md` and `api-kontrakt-v2.md` (+ `availableActions` extension).
 The assistant is a stub: wire `askAssistant()` in `src/api/assistant.ts`. Data fetching uses TanStack

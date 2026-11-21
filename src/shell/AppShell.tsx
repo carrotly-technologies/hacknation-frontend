@@ -2,7 +2,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import {
   BookOpen,
   Compass,
-  Ellipsis,
   LogOut,
   type LucideIcon,
   Menu,
@@ -138,11 +137,12 @@ export function AppShell() {
   )
 }
 
-const MORE_PATHS = ['/wiecej', '/uslugi', '/ui', '/wniosek-demo']
-
 type NavItem = { to: string; label: string; Icon: LucideIcon; match: string[] }
 
-/** Main links for a role; `match` lists the paths that highlight the link (a case file belongs to "Mój zespół"). */
+/**
+ * Main links for a role; `match` lists the paths that highlight the link (a case file belongs to "Mój zespół").
+ * The helper pages (`/wiecej`, `/uslugi`, `/wniosek-demo`, `/ui`) keep their routes but are not linked here.
+ */
 function navItems(role: Role): NavItem[] {
   const byRole: Partial<Record<Role, NavItem>> = {
     SUPERVISOR: { to: '/zespol', label: 'Mój zespół', Icon: Users, match: ['/zespol', '/teczka'] },
@@ -153,7 +153,6 @@ function navItems(role: Role): NavItem[] {
   return [
     ...(own ? [own] : []),
     { to: '/baza-wiedzy', label: 'Baza wiedzy', Icon: BookOpen, match: ['/baza-wiedzy'] },
-    { to: '/wiecej', label: 'Więcej', Icon: Ellipsis, match: MORE_PATHS },
   ]
 }
 
