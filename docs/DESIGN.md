@@ -46,6 +46,9 @@ emblems or product names**.
 | `Dialog` | native `<dialog>` (focus trap, Esc); bottom sheet on phones. |
 | `Snackbar` | short confirmation with optional action, in a polite live region. |
 | `EmptyState`, `Spinner`, `Stepper`, `SearchBar` | empty lists, loading, "Krok X z Y" + progress bar, search form. |
+| `StageStepper` | horizontal process stepper (chevrons): done = dark + ✓, current = `--accent-subtle`, future = outlined; the step on screen has `aria-current="step"`; every step is a link; < 768px numbered dots + "Krok X z Y: name". |
+| `BackLink` | "‹ Powrót" above the page content (`--link`, 44px target). |
+| `UserMenu` | top-bar avatar + name + role + chevron; disclosure menu (Esc / click outside close it). |
 
 ```tsx
 import { Button, ErrorSummary, Field, TextInput } from '../components/ui'
@@ -61,7 +64,7 @@ import { Button, ErrorSummary, Field, TextInput } from '../components/ui'
 
 ## Layout
 
-`AppShell`: skip link "Przejdź do treści"; desktop: top bar + navigation rail; phones (< 768px): compact top
+`AppShell`: skip link "Przejdź do treści"; desktop: top bar ("Kompas kompetencji" + `UserMenu`) + navigation rail; phones (< 768px): compact top
 bar + bottom navigation (team / knowledge base / "Więcej"), no horizontal scrolling. Content max width ~1200px.
 
 ## UX rules
@@ -73,3 +76,12 @@ bar + bottom navigation (team / knowledge base / "Więcej"), no horizontal scrol
 5. **Plain language**; label above the field, hint under the label, never a placeholder as the label.
 6. **"Wstecz"** always keeps what was typed.
 7. **Accessibility** (WCAG 2.1 AA): contrast ≥ 4.5:1, visible focus ring on every interactive element, 44px touch targets, everything works with the keyboard, colour is never the only cue.
+
+## Case screen (design "Kompas kompetencji", frames 1–2)
+
+`src/case/CasePage.tsx`: `BackLink`, the assessed person as h1 with the position under it, then the `StageStepper`
+with the six steps of the periodic assessment (`caseSteps` in `src/lib/stages.ts` groups backend stages into them:
+"Formularz oceny" = part I + the assessment period; the first-assessment path shows its own stages). Below: a side
+column (criteria while rating, "Oceniany", "Historia") and the stage. Redrawn stages use `StageLayout`
+(`src/case/stages/StageLayout.tsx`): heading, deadline and legal basis, content, actions bottom right
+(text link first, the one primary last).

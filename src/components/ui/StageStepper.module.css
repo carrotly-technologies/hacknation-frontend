@@ -1,0 +1,250 @@
+/* Horizontal stage stepper: chevrons on desktop, numbered dots on phones. Tokens only. */
+.root {
+  --chev: 14px;
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.item + .item {
+  margin-left: calc(var(--s-1) - var(--chev));
+}
+
+.step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: var(--control-h);
+  height: 100%;
+  padding: var(--s-2) calc(var(--chev) + var(--s-3)) var(--s-2) calc(var(--chev) + var(--s-4));
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  text-align: center;
+  text-decoration: none;
+  isolation: isolate;
+  /* outer shape = border colour, ::before = fill inset by 1px */
+  background: var(--border-strong);
+  clip-path: polygon(0 0, calc(100% - var(--chev)) 0, 100% 50%, calc(100% - var(--chev)) 100%, 0 100%, var(--chev) 50%);
+}
+
+.item:first-child .step {
+  padding-left: var(--s-4);
+  border-radius: var(--radius-xs) 0 0 var(--radius-xs);
+  clip-path: polygon(0 0, calc(100% - var(--chev)) 0, 100% 50%, calc(100% - var(--chev)) 100%, 0 100%);
+}
+
+.item:last-child .step {
+  padding-right: var(--s-4);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, var(--chev) 50%);
+}
+
+.item:only-child .step {
+  clip-path: none;
+}
+
+.step::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: var(--bg-surface);
+  clip-path: inherit;
+}
+
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.marker {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: var(--border-w) solid currentColor;
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* done: dark slate fill, white text, check icon */
+.done {
+  background: var(--gray-700);
+  color: var(--bg-surface);
+}
+
+.done::before {
+  background: var(--gray-700);
+}
+
+.done .marker {
+  border-color: transparent;
+  background: var(--bg-surface);
+  color: var(--gray-700);
+}
+
+/* current: tinted accent */
+.current {
+  background: var(--accent-border);
+  color: var(--accent);
+}
+
+.current::before {
+  background: var(--accent-subtle);
+}
+
+/* the step shown on the page: bold label + bar under it (not colour alone) */
+.active .label {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+a.step:hover::before {
+  filter: brightness(0.96);
+}
+
+a.todo:hover::before {
+  background: var(--bg-hover);
+  filter: none;
+}
+
+a.step:hover .label {
+  text-decoration: underline;
+}
+
+/* clip-path cuts a box-shadow ring, so the focus ring is drawn inside */
+.step:focus-visible {
+  outline: none;
+}
+
+.step:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 7px calc(var(--chev) + 4px);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--focus-shadow);
+  pointer-events: none;
+}
+
+.caption {
+  display: none;
+  margin: var(--s-2) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.caption strong {
+  color: var(--text);
+}
+
+@media (max-width: 1100px) {
+  .step {
+    flex-direction: column;
+    gap: var(--s-1);
+    font-size: var(--text-xs);
+  }
+}
+
+/* Phones: numbered dots joined by a line, the name of the shown step under them */
+@media (max-width: 767px) {
+  .list {
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .list::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: var(--s-5);
+    left: var(--s-5);
+    height: 2px;
+    background: var(--border-strong);
+  }
+
+  .item {
+    flex: none;
+  }
+
+  .item + .item {
+    margin-left: 0;
+  }
+
+  .step,
+  .item:first-child .step,
+  .item:last-child .step {
+    width: var(--tap);
+    height: var(--tap);
+    min-height: var(--tap);
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    clip-path: none;
+  }
+
+  .step::before {
+    inset: 3px;
+    border: var(--border-w) solid var(--border-strong);
+    border-radius: 50%;
+    clip-path: none;
+  }
+
+  .done::before {
+    border-color: var(--gray-700);
+  }
+
+  .current::before {
+    border-color: var(--accent);
+  }
+
+  .active::before {
+    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--accent);
+  }
+
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .marker {
+    border: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  .done .marker {
+    background: transparent;
+    color: inherit;
+  }
+
+  .step:focus-visible::after {
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  .caption {
+    display: block;
+  }
+}

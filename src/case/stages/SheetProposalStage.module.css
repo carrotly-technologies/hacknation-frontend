@@ -1,0 +1,117 @@
+.title {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.sheetName {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.questions {
+  padding: var(--s-5);
+  border-radius: var(--radius-lg);
+  background: var(--bg-subtle);
+  border: var(--border-w) solid var(--border);
+}
+
+.questionsLabel {
+  margin-bottom: var(--s-4);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  padding: var(--s-4);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+.itemHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.num {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-subtle);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.itemName {
+  min-width: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.indicators {
+  display: grid;
+  gap: var(--s-1);
+  margin: var(--s-2) 0 0;
+  padding-left: calc(28px + var(--s-3) + var(--s-4));
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.editor {
+  display: grid;
+  gap: var(--s-6);
+  max-width: var(--form-max);
+}
+
+.checks {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.add {
+  margin-top: var(--s-4);
+}
+
+.editorActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2) var(--s-4);
+}
+
+@media (max-width: 767px) {
+  .questions {
+    padding: var(--s-3);
+  }
+
+  .indicators {
+    padding-left: var(--s-5);
+  }
+
+  .editorActions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}

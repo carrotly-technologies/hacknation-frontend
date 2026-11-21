@@ -1,7 +1,8 @@
-import { FileText, Inbox, Plus, Trash2 } from 'lucide-react'
+import { FileText, Inbox, LogOut, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useState, type ReactNode } from 'react'
 import {
   Accordion,
+  BackLink,
   Button,
   Card,
   Checkbox,
@@ -17,12 +18,15 @@ import {
   Select,
   Snackbar,
   Spinner,
+  StageStepper,
   StatusBadge,
   Stepper,
   Switch,
   TextArea,
   TextInput,
+  UserMenu,
   type ButtonVariant,
+  type StageStep,
 } from '../components/ui'
 import s from './UiPage.module.css'
 
@@ -30,6 +34,18 @@ import s from './UiPage.module.css'
    Hover and focus are forced with data-force so they can be seen without a mouse. */
 
 const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'tertiary', 'text']
+
+const STEP_LABELS = ['Analiza opisu stanowiska', 'Wstępny formularz', 'Formularz oceny', 'Rozmowa z pracownikiem', 'Weryfikacja formularza', 'Ocena końcowa']
+
+/** Demo stepper with `current` steps done before it (index of the current step; = length means all done). */
+function demoSteps(current: number): StageStep[] {
+  return STEP_LABELS.map((label, i) => ({
+    key: String(i),
+    label,
+    status: i < current ? 'done' : i === current ? 'current' : 'todo',
+    to: '#etapy',
+  }))
+}
 const SECTIONS = [
   ['przyciski', 'Przyciski'],
   ['pola', 'Pola formularza'],
@@ -37,6 +53,7 @@ const SECTIONS = [
   ['komunikaty', 'Komunikaty'],
   ['karty', 'Karty i wiersze'],
   ['nawigacja', 'Wyszukiwarka i postęp'],
+  ['etapy', 'Etapy procesu i nagłówek'],
   ['okna', 'Okna i powiadomienia'],
   ['motywy', 'Tryb jasny i ciemny'],
 ] as const
@@ -282,6 +299,42 @@ export function UiPage() {
         </div>
       </Section>
 
+      <Section
+        id="etapy"
+        title="Etapy procesu i nagłówek"
+        note="Poziomy stepper etapów: ukończone ciemne z ikoną ✓, bieżący podświetlony, przyszłe z obramowaniem; pokazywany krok ma aria-current=&quot;step&quot; i podkreślenie. Poniżej 768 px zamienia się w numerowane kropki z nazwą kroku."
+      >
+        <div className={s.block}>
+          <h3 className={s.h3}>Początek procesu</h3>
+          <StageStepper label="Etapy (przykład: początek)" steps={demoSteps(0)} />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>W toku (krok 2 z 6)</h3>
+          <StageStepper label="Etapy (przykład: w toku)" steps={demoSteps(1)} />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>Pokazywany krok inny niż bieżący</h3>
+          <StageStepper label="Etapy (przykład: podgląd ukończonego)" steps={demoSteps(3)} activeKey="1" />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>Wszystkie ukończone, bez linków</h3>
+          <StageStepper label="Etapy (przykład: zakończone)" steps={demoSteps(6).map(({ to: _to, ...st }) => st)} activeKey="5" />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>Link „Powrót” i menu użytkownika</h3>
+          <div className={s.row}>
+            <BackLink to="#etapy" />
+            <UserMenu name="Anna Kowalska" role="Starsza księgowa" note="Przełożony · dane demonstracyjne" items={[{ label: 'Wyloguj', icon: <LogOut size={18} aria-hidden="true" />, onSelect: () => {} }]} />
+          </div>
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>Menu użytkownika otwarte</h3>
+          <div className={s.menuDemo}>
+            <UserMenu defaultOpen name="Anna Kowalska" role="Starsza księgowa" note="Przełożony · dane demonstracyjne" items={[{ label: 'Wyloguj', icon: <LogOut size={18} aria-hidden="true" />, onSelect: () => {} }]} />
+          </div>
+        </div>
+      </Section>
+
       <Section id="okna" title="Okna i powiadomienia" note="Dialog to natywny <dialog> (Esc zamyka, fokus zostaje w oknie); na telefonie wysuwa się od dołu.">
         <div className={s.row}>
           <Button variant="secondary" onClick={() => setDialog('info')}>
@@ -357,6 +410,7 @@ export function UiPage() {
                   <StatusBadge tone="error">Błąd</StatusBadge>
                 </div>
                 <Card title="Karta">Tekst drugorzędny</Card>
+                <StageStepper label={`Etapy (${t === 'light' ? 'jasny' : 'ciemny'})`} steps={demoSteps(2)} />
               </div>
             </div>
           ))}

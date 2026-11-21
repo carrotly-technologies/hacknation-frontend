@@ -6,6 +6,7 @@ import type { EvaluateResponse, SheetId } from './kompas'
 export type Path = 'PERIODIC' | 'FIRST'
 export type StageId =
   | 'OSP_ANALYSIS'
+  | 'SHEET_PROPOSAL'
   | 'OPENING_TALK'
   | 'OBSERVATION'
   | 'ASSESSMENT'
@@ -145,6 +146,7 @@ export interface CasePatch {
 
 export type CaseAction =
   | 'ACCEPT_OSP_ANALYSIS'
+  | 'ACCEPT_SHEET'
   | 'CONFIRM_PART_I'
   | 'EMPLOYEE_ACK_PART_I'
   | 'START_ASSESSMENT'

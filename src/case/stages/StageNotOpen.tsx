@@ -4,6 +4,7 @@ import { caseUrl } from '../../lib/stages'
 import { StageHeader } from './common'
 
 const WHAT: Partial<Record<StageId, string>> = {
+  SHEET_PROPOSAL: 'Przejrzysz formularz zaproponowany na podstawie opisu stanowiska i zaakceptujesz go albo wprowadzisz zmiany (arkusz, kryteria dodatkowe).',
   OPENING_TALK: 'Omówisz z ocenianym obowiązki z opisu stanowiska, kryteria, oczekiwania i ewentualne cele. Zatwierdzenie części I blokuje kryteria i ustala termin oceny.',
   OBSERVATION: 'Przez cały okres oceny zapisujesz obserwacje: sytuacja, działanie, rezultat. Pojawią się one w rubryce przy właściwych wskaźnikach.',
   ASSESSMENT: 'Ocenisz wskaźniki behawioralne każdego kryterium. System zaproponuje poziom, a decyzję o ocenie cząstkowej podejmiesz Ty.',

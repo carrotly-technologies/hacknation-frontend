@@ -2,14 +2,17 @@ import { FileText, MessageSquareText, Printer } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import type { CaseDetail, StageId } from '../api/cases'
+import type { CompetencyModel } from '../api/kompas'
 import { AssistantPanel } from '../assistant/AssistantPanel'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { BackLink, StageStepper, StatusBadge } from '../components/ui'
 import { useCase } from '../lib/caseQueries'
 import { useFeatures } from '../lib/features'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
-import { canOpenStage, caseUrl, CASE_STATUS_LABEL, stageFromSlug, STAGE_SHORT } from '../lib/stages'
-import type { CompetencyModel } from '../api/kompas'
-import { StageRail } from './StageRail'
+import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, type CaseStep } from '../lib/stages'
+import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
+import s from './CasePage.module.css'
+import { CaseSidebar } from './CaseSidebar'
 import { AssessmentStage } from './stages/AssessmentStage'
 import { DocumentStage } from './stages/DocumentStage'
 import { FirstConditionsStage } from './stages/FirstConditionsStage'
@@ -18,6 +21,7 @@ import { JustificationStage } from './stages/JustificationStage'
 import { ObservationStage } from './stages/ObservationStage'
 import { OpeningTalkStage } from './stages/OpeningTalkStage'
 import { OspAnalysisStage } from './stages/OspAnalysisStage'
+import { SheetProposalStage } from './stages/SheetProposalStage'
 import { StageNotOpen } from './stages/StageNotOpen'
 
 export interface StageProps {
@@ -37,8 +41,16 @@ function readAssistantPref(): boolean {
   return window.innerWidth >= 1500
 }
 
+const STATUS_TONE = {
+  W_TOKU: 'info',
+  DO_ZAPOZNANIA: 'warning',
+  OKRES_SPRZECIWU: 'warning',
+  ZAKONCZONA: 'success',
+} as const
+
 export function CasePage() {
   const { id = '', stage: slug } = useParams()
+  const me = useMe()
   const q = useCase(id)
   const model = useModel()
   const sheets = useSheets()
@@ -67,53 +79,58 @@ export function CasePage() {
 
   const detail = q.data
   const stage = stageFromSlug(slug)
-  if (!stage || !detail.stages.some((s) => s.id === stage)) return <Navigate to={caseUrl(detail.id, detail.currentStage)} replace />
+  if (!stage || !detail.stages.some((st) => st.id === stage)) return <Navigate to={caseUrl(detail.id, detail.currentStage)} replace />
 
   const criteria = caseCriteria(detail, sheets.data)
   const props: StageProps = { detail, model: model.data, criteria, stage }
   const name = `${detail.person.firstName} ${detail.person.lastName}`
   const sheetLabel = detail.path === 'FIRST' ? 'Arkusz pierwszej oceny' : detail.sheetId ? `Arkusz ${detail.sheetId}` : 'Arkusz nieustalony'
-  const metaText = `${detail.person.position} · ${detail.path === 'FIRST' ? 'Pierwsza ocena w służbie cywilnej' : detail.cycleLabel} · ${sheetLabel}`
-  const statusTone = detail.status === 'OKRES_SPRZECIWU' || detail.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : detail.status === 'ZAKONCZONA' ? 'tag--ok' : ''
+  const steps = caseSteps(detail)
+  const activeStep = steps.find((st) => st.stages.some((x) => x.id === stage))
 
   return (
-    <div className={`case ${assistantOpen ? 'case--assistant' : ''}`}>
-      <header className="case-head">
-        <div className="case-head__id">
-          <nav className="crumbs" aria-label="Ścieżka">
-            <Link to="/zespol">Mój zespół</Link>
-            <span aria-hidden="true">/</span>
-            <span>Teczka oceny</span>
-          </nav>
-          <div className="case-head__title">
-            <h1 className="h-page">{name}</h1>
-            <span className="case-head__meta" title={metaText}>
-              {metaText}
-            </span>
-            <span className={`tag ${statusTone}`}>{CASE_STATUS_LABEL[detail.status]}</span>
+    <div className={`${s.root} ${assistantOpen ? s.withAssistant : ''}`}>
+      <header className={s.head}>
+        <div className={s.headTop}>
+          <BackLink to={HOME_BY_ROLE[me.role]} />
+          <div className={s.actions}>
+            <Link className="btn" to={`/teczka/${detail.id}/arkusz`}>
+              <FileText size={15} strokeWidth={1.75} aria-hidden="true" />
+              Podgląd arkusza
+            </Link>
+            <Link className="btn" to={`/teczka/${detail.id}/arkusz?druk=1`}>
+              <Printer size={15} strokeWidth={1.75} aria-hidden="true" />
+              Pobierz PDF
+            </Link>
+            {features.assistant && (
+              <button type="button" className={`btn ${assistantOpen ? 'btn--pressed' : ''}`} aria-pressed={assistantOpen} onClick={toggleAssistant}>
+                <MessageSquareText size={15} strokeWidth={1.75} aria-hidden="true" />
+                Asystent
+              </button>
+            )}
           </div>
         </div>
-        <div className="case-head__actions">
-          <Link className="btn" to={`/teczka/${detail.id}/arkusz`}>
-            <FileText size={15} strokeWidth={1.75} aria-hidden="true" />
-            Podgląd arkusza
-          </Link>
-          <Link className="btn" to={`/teczka/${detail.id}/arkusz?druk=1`}>
-            <Printer size={15} strokeWidth={1.75} aria-hidden="true" />
-            Pobierz PDF
-          </Link>
-          {features.assistant && (
-            <button type="button" className={`btn ${assistantOpen ? 'btn--pressed' : ''}`} aria-pressed={assistantOpen} onClick={toggleAssistant}>
-              <MessageSquareText size={15} strokeWidth={1.75} aria-hidden="true" />
-              Asystent
-            </button>
-          )}
+        <div className={s.person}>
+          <h1 className={s.name}>{name}</h1>
+          <StatusBadge tone={STATUS_TONE[detail.status]}>{CASE_STATUS_LABEL[detail.status]}</StatusBadge>
+        </div>
+        <p className={s.position}>
+          {detail.person.position}
+          <span className={s.cycle}> · {detail.path === 'FIRST' ? 'Pierwsza ocena w służbie cywilnej' : detail.cycleLabel} · {sheetLabel}</span>
+        </p>
+        <div className={s.stepper}>
+          <StageStepper
+            label={detail.path === 'FIRST' ? 'Etapy pierwszej oceny' : 'Etapy oceny okresowej'}
+            activeKey={activeStep?.key}
+            steps={steps.map((st) => ({ key: st.key, label: st.label, status: st.status, to: caseUrl(detail.id, stepTarget(st)) }))}
+          />
+          {activeStep && activeStep.stages.length > 1 && <SubSteps detail={detail} step={activeStep} active={stage} />}
         </div>
       </header>
 
-      <div className="case-body">
-        <StageRail detail={detail} active={stage} model={model.data} criteria={criteria} />
-        <section ref={workRef} className="case-work" aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
+      <div className={s.body}>
+        <CaseSidebar detail={detail} active={stage} model={model.data} criteria={criteria} />
+        <section ref={workRef} className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
           {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
         </section>
         {assistantOpen && (
@@ -131,10 +148,34 @@ export function CasePage() {
   )
 }
 
+/** The backend stages inside one stepper step ("Formularz oceny" = part I + the assessment period). */
+function SubSteps({ detail, step, active }: { detail: CaseDetail; step: CaseStep; active: StageId }) {
+  return (
+    <nav className={s.sub} aria-label={`Części etapu: ${step.label}`}>
+      <ul className={s.subList}>
+        {step.stages.map((st) => (
+          <li key={st.id}>
+            <Link
+              to={caseUrl(detail.id, st.id)}
+              className={`${s.subLink} ${st.id === active ? s.subActive : ''}`}
+              aria-current={st.id === active ? 'page' : undefined}
+            >
+              {STAGE_SHORT[st.id]}
+              <span className={s.subState}>{st.status === 'DONE' ? 'zakończono' : st.status === 'CURRENT' ? 'w toku' : 'nierozpoczęty'}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
 function StageWorkspace(p: StageProps) {
   switch (p.stage) {
     case 'OSP_ANALYSIS':
       return <OspAnalysisStage {...p} />
+    case 'SHEET_PROPOSAL':
+      return <SheetProposalStage {...p} />
     case 'OPENING_TALK':
       return <OpeningTalkStage {...p} />
     case 'OBSERVATION':

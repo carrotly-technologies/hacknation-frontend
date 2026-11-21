@@ -156,3 +156,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.menuDemo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-height: 260px;
+}

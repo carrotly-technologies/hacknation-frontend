@@ -3,6 +3,7 @@ import { BookOpen, Compass, Ellipsis, LogOut, RotateCcw, TableProperties, UserCo
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { resetDemo } from '../api/cases'
 import { ApiStatus } from '../components/ApiStatus'
+import { UserMenu } from '../components/ui'
 import { ROLE_LABEL, useAuth, useMe } from '../lib/useAuth'
 
 export function AppShell() {
@@ -21,7 +22,7 @@ export function AppShell() {
     }
   }
 
-  const userRole = `${ROLE_LABEL[me.role]} · ${me.position}`
+  const userRole = me.position || ROLE_LABEL[me.role]
 
   return (
     <div className="shell">
@@ -31,19 +32,15 @@ export function AppShell() {
       <header className="topbar">
         <div className="topbar__brand">
           <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
-          <span className="topbar__product">Kompas Kompetencji</span>
-          <span className="topbar__sep" aria-hidden="true" />
-          <span className="topbar__office" title={officeLabel(me.officeName)}>{officeLabel(me.officeName)}</span>
+          <span className="topbar__product">Kompas kompetencji</span>
         </div>
         <div className="topbar__right">
-          <div className="topbar__user">
-            <span className="topbar__user-name" title={me.name}>{me.name}</span>
-            <span className="topbar__user-role" title={userRole}>{userRole}</span>
-          </div>
-          <button type="button" className="topbar__logout" onClick={() => void signOut()}>
-            <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
-            <span>Wyloguj</span>
-          </button>
+          <UserMenu
+            name={me.name}
+            role={userRole}
+            note={`${ROLE_LABEL[me.role]} · ${officeLabel(me.officeName)}`}
+            items={[{ label: 'Wyloguj', icon: <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />, onSelect: () => void signOut() }]}
+          />
         </div>
       </header>
 
