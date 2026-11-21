@@ -47,6 +47,8 @@ interface AskResponse {
 export interface SourceDocument {
   id: string
   title: string
+  /** One line under the title: what the document covers. */
+  description: string
   /** Absolute link to the file or the official text, or null when there is no source file. */
   url: string | null
   /** Whether the assistant answers from this document. */

@@ -2716,6 +2716,20 @@
   font-size: var(--text-xs);
 }
 
+.sources__link {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.sources__link:hover {
+  text-decoration: underline;
+}
+
+.sources__link svg {
+  margin-left: 4px;
+  vertical-align: -1px;
+}
+
 /* =========================================================
    HR
    ========================================================= */
