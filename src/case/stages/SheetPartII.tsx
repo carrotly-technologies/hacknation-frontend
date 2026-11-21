@@ -72,17 +72,9 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       <PartHeading roman="II">Ocena okresowa</PartHeading>
       <ErrorSummary errors={errors} />
 
-      {!editable && (
-        <InlineAlert tone="info" title={signed ? 'Ocena jest zatwierdzona' : 'Część II wypełnisz w rozmowie oceniającej'}>
-          {signed ? (
-            <>Oceniający zatwierdził ocenę {fmtDate(signed)}, więc pola są tylko do odczytu.</>
-          ) : (
-            <>
-              Pola będą dostępne po rozpoczęciu rozmowy oceniającej (krok „Formularz oceny kompetencji”), na koniec okresu oceny
-              {detail.partI.assessmentDue ? `, przed terminem sporządzenia oceny ${fmtDate(detail.partI.assessmentDue)}` : ''}. Do tego czasu
-              możesz przejrzeć, co będzie oceniane.
-            </>
-          )}
+      {signed && (
+        <InlineAlert tone="info" title="Ocena jest zatwierdzona">
+          Oceniający zatwierdził ocenę {fmtDate(signed)}, więc pola są tylko do odczytu.
         </InlineAlert>
       )}
 
