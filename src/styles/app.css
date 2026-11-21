@@ -1310,9 +1310,22 @@
 }
 
 .assistant__ctx {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-subtle);
+}
+
+.assistant__ctx .ctx-chip {
+  flex: 1;
+  min-width: 0;
+}
+
+.assistant__new {
+  flex-shrink: 0;
+  gap: 4px;
 }
 
 .ctx-chip {
