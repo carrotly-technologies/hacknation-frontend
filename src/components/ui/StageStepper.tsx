@@ -30,8 +30,8 @@ const STATUS_TEXT: Record<StageStepStatus, string> = {
 /**
  * Horizontal process stepper (chevrons). Done steps are light green with a check icon, the current step is
  * tinted, future steps are outlined; the step on screen carries aria-current="step". Each step is a
- * link, so the whole stepper works with Tab / Enter. Below 768px it turns into numbered dots plus the
- * name of the shown step, without horizontal scrolling.
+ * link, so the whole stepper works with Tab / Enter. When the stepper is too narrow for its labels (container query in
+ * StageStepper.module.css) it turns into numbered dots plus the name of the shown step, without horizontal scrolling.
  */
 export function StageStepper({ steps, activeKey, label }: Props) {
   const active = activeKey ?? steps.find((st) => st.status === 'current')?.key
