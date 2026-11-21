@@ -15,6 +15,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import { resetDemo, type Role } from '../api/cases'
+import { BrandLogo } from '../branding/BrandLogo'
 import { ApiStatus } from '../components/ApiStatus'
 import { UserMenu } from '../components/ui'
 import { ROLE_LABEL, useAuth, useMe } from '../lib/useAuth'
@@ -69,8 +70,18 @@ export function AppShell() {
       </a>
       <header className="topbar">
         <div className="topbar__brand">
-          <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
-          <span className="topbar__product">Kompas kompetencji</span>
+          {/* The logo accepted on /logo; today's compass icon until one is accepted */}
+          <BrandLogo
+            name="Kompas kompetencji"
+            layout="inline"
+            nameClassName="topbar__product"
+            fallback={
+              <>
+                <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
+                <span className="topbar__product">Kompas kompetencji</span>
+              </>
+            }
+          />
         </div>
 
         <button
