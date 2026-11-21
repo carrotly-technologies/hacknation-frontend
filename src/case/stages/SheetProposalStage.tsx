@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Button, Field, InlineAlert, Select } from '../../components/ui'
+import { Button, Card, Field, InlineAlert, Select } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
-import { findCompetency, competencyName, useSheets } from '../../lib/model'
+import { competencyName, useSheets } from '../../lib/model'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetCriteriaEditor } from './SheetCriteriaEditor'
@@ -11,8 +11,9 @@ import s from './SheetProposalStage.module.css'
 
 /**
  * "Proponowany formularz" (design frame 2): the sheet proposed from the job description (a locked
- * dropdown) and its competency questions, read only. At the end, "Akceptuj formularz" moves the case on
- * to the opening talk; "Wprowadź poprawki" opens the editor of the sheet and the additional criteria.
+ * dropdown) and the competencies chosen for assessment as plain, non-clickable tiles. At the end,
+ * "Akceptuj formularz" moves the case on to the opening talk; "Wprowadź poprawki" opens the editor of
+ * the sheet and the additional criteria.
  */
 export function SheetProposalStage({ detail, model, criteria, stage }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
@@ -49,31 +50,23 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
       {editing ? (
         <SheetCriteriaEditor detail={detail} model={model} onDone={() => setEditing(false)} />
       ) : (
-        <section className={s.questions} aria-labelledby="questions-h">
+        <section aria-labelledby="questions-h">
           <h3 id="questions-h" className={s.questionsLabel}>Pytania kompetencyjne wybrane na podstawie analizy opisu stanowiska</h3>
           {criteria.all.length === 0 ? (
             <p className={layout.muted}>Wybierz arkusz, aby zobaczyć pytania.</p>
           ) : (
-            <ol className={s.list}>
-              {criteria.all.map((id, i) => {
-                const indicators = findCompetency(model, id)?.indicators ?? []
+            <ul className={s.tiles}>
+              {criteria.all.map((id) => {
+                const name = competencyName(model, id)
                 return (
-                  <li key={id} className={s.item}>
-                    <p className={s.itemHead}>
-                      <span className={s.num} aria-hidden="true">{i + 1}</span>
-                      <span className={s.itemName}>{competencyName(model, id)}</span>
-                    </p>
-                    {indicators.length > 0 && (
-                      <ul className={s.indicators}>
-                        {indicators.map((ind) => (
-                          <li key={ind.id}>{ind.name}</li>
-                        ))}
-                      </ul>
-                    )}
+                  <li key={id} className={s.tileItem}>
+                    <Card className={s.tile}>
+                      <span className="one-line" title={name}>{name}</span>
+                    </Card>
                   </li>
                 )
               })}
-            </ol>
+            </ul>
           )}
         </section>
       )}
