@@ -488,13 +488,12 @@
   background: var(--accent-faint);
   color: var(--accent);
 }
-/* Workspace */
+/* Workspace: in the normal flow, it scrolls with the page (AppShell .main), never on its own */
 .case-work {
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow-y: auto;
   background: var(--bg-surface);
 }
 
@@ -1179,8 +1178,8 @@
   box-shadow: var(--focus-shadow);
 }
 
-/* Room at the end of every page, so the button does not cover "Dalej" / "Wstecz" at the bottom. The case file
-   scrolls inside its workspace on wide screens, so there the room is at the end of the workspace. */
+/* Room at the end of every page, so the button does not cover "Dalej" / "Wstecz" at the bottom. In the case file
+   the room is at the end of the workspace, so it takes the workspace background. */
 .shell .main:not(:has(.case-work, [data-page-fill]))::after,
 .shell .case-work::after {
   content: '';
@@ -1968,12 +1967,6 @@
   .obs-form__sdr {
     grid-template-columns: minmax(0, 1fr);
   }
-  /* Case file: workspace scrolls with the page */
-
-  .case-work {
-    overflow: visible;
-  }
-
   .stage-head {
     flex-direction: column;
     align-items: stretch;

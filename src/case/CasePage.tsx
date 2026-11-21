@@ -1,5 +1,5 @@
 import { FileDown, FileText, Printer } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import type { AssistantContext } from '../api/assistant'
 import type { CaseDetail, StageId } from '../api/cases'
@@ -10,6 +10,7 @@ import { BackLink, PageLayout, Snackbar, Spinner, StageStepper, StatusBadge } fr
 import { useCase, useSheetDownload } from '../lib/caseQueries'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
 import { personUrl } from '../lib/people'
+import { scrollPageToTop } from '../lib/scrollPage'
 import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, viewStage } from '../lib/stages'
 import s from './CasePage.module.css'
 import { AssessmentStage } from './stages/AssessmentStage'
@@ -48,9 +49,9 @@ export function CasePage() {
   const assistant = useAssistant()
   // The assistant (popup in AppShell) knows the case and the stage on screen; only caseId and stageId go to the API.
   useAssistantContext(assistantContext(q.data, stageFromSlug(slug)))
-  const workRef = useRef<HTMLElement>(null)
+  // The case file scrolls with the page (header and stepper included); a new step starts at the top.
   useEffect(() => {
-    workRef.current?.scrollTo({ top: 0 })
+    scrollPageToTop()
   }, [slug])
 
   if (q.isPending || model.isPending || sheets.isPending) return <PageLayout><LoadingState /></PageLayout>
@@ -105,7 +106,7 @@ export function CasePage() {
       </header>
 
       <div className={s.body}>
-        <section ref={workRef} className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
+        <section className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
           <div className={`${s.inner} ${s.workInner}`}>
             {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
           </div>
