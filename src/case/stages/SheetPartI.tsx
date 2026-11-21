@@ -220,6 +220,7 @@ export function SheetPartI({ detail, model, criteria, onNext, notice }: StagePro
                 hint={confirmed ? `Potwierdzono ${fmtDate(detail.partI.confirmedByEvaluatorOn)}` : undefined}
                 checked={confirmed || !!ticked[i]}
                 disabled={confirmed || !canConfirm}
+                required={canConfirm}
                 invalid={!!errorFor(confirmId(i))}
                 onChange={(e) => tick(i, e.target.checked)}
               />
@@ -238,6 +239,7 @@ export function SheetPartI({ detail, model, criteria, onNext, notice }: StagePro
             hint={acked ? `Potwierdzono ${fmtDate(detail.partI.acknowledgedByEmployeeOn)}` : undefined}
             checked={acked || ackTicked}
             disabled={!canAck}
+            required={canConfirm}
             invalid={!!errorFor(ACK_ID)}
             onChange={(e) => {
               setAckTicked(e.target.checked)

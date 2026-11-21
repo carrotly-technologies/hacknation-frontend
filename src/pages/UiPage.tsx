@@ -273,6 +273,7 @@ export function UiPage() {
             <Checkbox label="Zgadzam się na kontakt e-mailowy" checked={checked} onChange={(e) => setChecked(e.target.checked)} />
             <Checkbox label="Niezaznaczony" hint="Z podpowiedzią" />
             <Checkbox label="Focus" forceState="focus" />
+            <Checkbox label="Potwierdzam zapoznanie z kryteriami" hint="Bez zaznaczenia nie przejdziesz dalej" required />
             <Checkbox label="Błąd: musisz potwierdzić" invalid />
             <Checkbox label="Wyłączony" disabled />
             <Checkbox label="Wyłączony, zaznaczony" disabled defaultChecked />
