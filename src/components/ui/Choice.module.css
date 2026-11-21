@@ -1,5 +1,8 @@
 /* Checkbox and radio: native inputs, 24px boxes, whole label clickable (44px target).
-   Box and switch sizes are in rem so they grow with the text size chosen in /ustawienia. */
+   Box and switch sizes are in rem so they grow with the text size chosen in /ustawienia.
+   The box sits on the first line of the label: the item is a grid aligned to the top, and the box gets
+   a top margin of half the difference between the label's line height and the box size, so its centre
+   is on the centre of the first line however many lines the label or the hint below it has. */
 .list {
   display: flex;
   flex-direction: column;
@@ -13,8 +16,9 @@
 }
 
 .item {
+  --choice-box: 1.5rem;
   display: grid;
-  grid-template-columns: 1.5rem minmax(0, 1fr);
+  grid-template-columns: var(--choice-box) minmax(0, 1fr);
   column-gap: var(--s-3);
   align-items: start;
   min-height: var(--tap);
@@ -23,9 +27,14 @@
 
 .input {
   position: relative;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--choice-box);
+  height: var(--choice-box);
   margin: 0;
+  /* Same font metrics as .label, so 1lh here is the label's line height. */
+  font-size: var(--text-body);
+  line-height: var(--leading);
+  margin-top: calc((var(--text-body) * var(--leading) - var(--choice-box)) / 2); /* browsers without lh */
+  margin-top: calc((1lh - var(--choice-box)) / 2);
   border: var(--border-w-strong) solid var(--border-input);
   border-radius: var(--radius-xs);
   background: var(--bg-surface);
@@ -105,7 +114,6 @@
 }
 
 .label {
-  padding-top: var(--s-0);
   color: var(--text);
   font-size: var(--text-body);
   line-height: var(--leading);
