@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { PreviousAssessment, PromotionAttached } from '../../api/cases'
-import { ErrorSummary, Field, InfoList, InfoRow, InlineAlert, RadioGroup, Select, TextArea, TextInput, type FormError } from '../../components/ui'
+import { Checkbox, ErrorSummary, Field, InfoList, InfoRow, InlineAlert, RadioGroup, Select, TextArea, TextInput, type FormError } from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate } from '../../lib/format'
 import { competencyName } from '../../lib/model'
@@ -243,22 +243,32 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
           <InfoRow label="Nazwisko" value={evaluator.lastName} />
           <InfoRow label="Komórka organizacyjna" value={evaluator.unit} />
           <InfoRow label="Stanowisko pracy" value={evaluator.position} />
-          <InfoRow label="Data i podpis oceniającego" value={signed ? `${fmtDate(signed)}, podpisano elektronicznie` : 'Po zatwierdzeniu oceny (krok „Dokument”)'} />
         </InfoList>
+        {/* Read only: the evaluator signs when approving the assessment (step "Dokument"). */}
+        <Checkbox
+          id="evaluator-signature"
+          label="Data i podpis oceniającego"
+          hint={signed ? `Podpisano elektronicznie ${fmtDate(signed)}` : 'Jeszcze nie: po zatwierdzeniu oceny (krok „Dokument”)'}
+          checked={!!signed}
+          disabled
+          readOnly
+        />
       </PartSection>
 
       <PartSection title="Zapoznanie ocenianego z oceną">
-        {template && (
-          <blockquote className={s.quote}>
-            <p><i>{template.employeeAcknowledgement}</i></p>
-          </blockquote>
-        )}
-        <InfoList>
-          <InfoRow
-            label="Oceniany potwierdził"
-            value={detail.acknowledgedOn ? `${fmtDate(detail.acknowledgedOn)}, ${detail.person.firstName} ${detail.person.lastName}` : 'Jeszcze nie: po zatwierdzeniu oceny'}
-          />
-        </InfoList>
+        {/* Read only: the assessed person confirms in the step "Dokument"; the box mirrors that action and its date. */}
+        <Checkbox
+          id="employee-acknowledgement"
+          label={template?.employeeAcknowledgement ?? 'Oceniany zapoznał się z oceną okresową'}
+          hint={
+            detail.acknowledgedOn
+              ? `Potwierdzono ${fmtDate(detail.acknowledgedOn)}, ${detail.person.firstName} ${detail.person.lastName}`
+              : 'Jeszcze nie: po zatwierdzeniu oceny'
+          }
+          checked={!!detail.acknowledgedOn}
+          disabled
+          readOnly
+        />
       </PartSection>
 
       {template && (

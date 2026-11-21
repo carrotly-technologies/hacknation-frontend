@@ -177,7 +177,7 @@
   }
 }
 
-/* wording quoted from the sheet template (Potwierdzamy, the assessed person's statement, part III) */
+/* wording quoted from the sheet template (part III) */
 .quote {
   display: grid;
   gap: var(--s-2);
@@ -188,14 +188,6 @@
   background: var(--bg-subtle);
   font-size: var(--text-md);
   line-height: var(--leading);
-}
-
-.dashList {
-  display: grid;
-  gap: var(--s-1);
-  margin: 0;
-  padding-left: var(--s-5);
-  list-style: '– ';
 }
 
 .sentence {
