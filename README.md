@@ -48,12 +48,6 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
 - `/ustawienia` — appearance settings for every role (gear icon in the top bar; on phones in "Menu"): theme
   system/light/dark, text size 100/125/150%, high contrast. Kept only in this browser (`localStorage`
   `kompas.prefs`, `src/lib/preferences.ts`) and applied before the first paint by a small script in `index.html`;
-- `/logo` — every role: the 15 logo proposals (light, dark, mark at 32 px) and "Zatwierdź logo"
-  (`PUT /api/branding/logo`, stored by the backend). The accepted logo replaces today's compass in the top bar, on
-  `/logowanie` and `/zapoznanie/:token` (public `GET /api/branding/logo`) and as the favicon, in the variant of the
-  active theme; with none accepted, or when the request fails, today's logo stays. SVGs and the list of proposals
-  live in `src/branding/` and are inlined into the DOM (Vite `?raw`), so their text is set in the app's Open Sans.
-  Reachable by its address only, not linked from the navigation;
 - `/ui` — design-system catalogue, `/wniosek-demo` — step-by-step form pattern, `/wiecej`, `/uslugi`
   (helper pages: they work under their addresses but are not linked from the navigation).
 

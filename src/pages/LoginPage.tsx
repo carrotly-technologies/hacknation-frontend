@@ -1,11 +1,11 @@
-import { Compass, LogIn } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ApiError, errorMessage } from '../api/client'
 import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
 import { DEMO_ACCOUNTS, DEMO_ACCOUNTS_ENABLED, DEMO_PASSWORD } from '../lib/demoAccounts'
 import { HOME_BY_ROLE, LOGIN_PATH, ROLE_LABEL, useAuth } from '../lib/useAuth'
-import { BrandLogo } from '../branding/BrandLogo'
+import { BrandMark } from '../components/BrandMark'
 import s from './LoginPage.module.css'
 
 /**
@@ -74,16 +74,8 @@ export function LoginPage() {
     <main className={s.root} id="main">
       <div className={s.card}>
         <div className={s.brand}>
-          <BrandLogo
-            name="Kompas Kompetencji"
-            layout="stacked"
-            fallback={
-              <>
-                <Compass size={24} strokeWidth={1.75} aria-hidden="true" />
-                <span>Kompas Kompetencji</span>
-              </>
-            }
-          />
+          <BrandMark />
+          <span>Kompas Kompetencji</span>
         </div>
         <h1 className={s.h1}>Zaloguj się</h1>
         <p className={s.lead}>Użyj loginu i hasła swojego konta. Uprawnienia wynikają z roli przypisanej do konta.</p>

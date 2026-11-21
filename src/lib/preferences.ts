@@ -1,5 +1,4 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { useMediaQuery } from '../components/ui/useMediaQuery'
 
 /**
  * Appearance settings (/ustawienia): theme, text size and high contrast.
@@ -102,11 +101,4 @@ export function usePreferences(): [Preferences, (patch: Partial<Preferences>) =>
 /** Re-applies the stored settings at app start (the inline script in index.html already did it once). */
 export function initPreferences(): void {
   applyPreferences(snapshot())
-}
-
-/** true when the app is dark right now: "Ciemny" chosen, or "Systemowy" on a device in dark mode. */
-export function useIsDarkTheme(): boolean {
-  const [prefs] = usePreferences()
-  const systemDark = useMediaQuery('(prefers-color-scheme: dark)')
-  return prefs.theme === 'dark' || (prefs.theme === 'system' && systemDark)
 }
