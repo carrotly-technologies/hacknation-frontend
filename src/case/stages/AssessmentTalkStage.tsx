@@ -115,7 +115,7 @@ export function AssessmentTalkStage({ detail, model, criteria, stage, askAssista
           <Button
             variant="secondary"
             icon={<MessageSquareText size={18} aria-hidden="true" />}
-            onClick={() => askAssistant({ mode: 'CONVERSATION', question: 'Przygotuj pytania do rozmowy oceniającej.' })}
+            onClick={() => askAssistant({ question: 'Przygotuj pytania do rozmowy oceniającej.' })}
           >
             Przygotuj pytania do rozmowy
           </Button>

@@ -1,9 +1,9 @@
-import type { AssistantMode } from '../api/assistant'
 import type { StageId } from '../api/cases'
 
 type Bank = Partial<Record<StageId | 'GENERAL', string[]>>
 
-const FORMAL: Bank = {
+/** Questions about the procedure, deadlines and rules, per stage. */
+const RULES: Bank = {
   GENERAL: [
     'Kiedy przeprowadza się rozmowę rozpoczynającą?',
     'Czym różni się pierwsza ocena od oceny okresowej?',
@@ -62,7 +62,8 @@ const FORMAL: Bank = {
   ],
 }
 
-const CONVERSATION: Bank = {
+/** Questions about preparing a talk with the employee, per stage. */
+const TALK: Bank = {
   GENERAL: [
     'Jak przygotować się do rozmowy oceniającej?',
     'Jak przekazać trudną informację zwrotną?',
@@ -96,7 +97,25 @@ const CONVERSATION: Bank = {
   FIRST_ASSESSMENT: ['Jak omówić pierwszą ocenę z nowym pracownikiem?'],
 }
 
-export function suggestedQuestions(mode: AssistantMode, stage: StageId | undefined): string[] {
-  const bank = mode === 'FORMAL' ? FORMAL : CONVERSATION
-  return (stage && bank[stage]) || bank.GENERAL || []
+/** Longest list the panel shows. */
+const MAX = 6
+
+/**
+ * One list per stage for the single assistant: rule and talk questions, without duplicates; in the assessment talk
+ * step ("Rozmowa oceniająca") the talk questions come first. Outside the case file: the general ones.
+ */
+export function suggestedQuestions(stage: StageId | undefined): string[] {
+  const rules = (stage && RULES[stage]) || []
+  const talk = (stage && TALK[stage]) || []
+  const own = stage === 'ASSESSMENT_TALK' ? [...talk, ...rules] : [...rules, ...talk]
+  const list = own.length ? own : [...(RULES.GENERAL ?? []), ...(TALK.GENERAL ?? [])]
+  const seen = new Set<string>()
+  return list
+    .filter((q) => {
+      const key = q.toLowerCase().replace(/[?.!\s]+$/, '')
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .slice(0, MAX)
 }

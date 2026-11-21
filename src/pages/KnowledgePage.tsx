@@ -13,7 +13,7 @@ import s from './KnowledgePage.module.css'
  */
 export function KnowledgePage() {
   return (
-    <PageLayout title="Baza wiedzy" meta="Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki" fill>
+    <PageLayout title="Baza wiedzy" meta="Asystent AI — procedura, przepisy i przygotowanie do rozmowy" fill>
       <div className={s.grid}>
         <AssistantPanel context={{}} variant="page" />
         <Card title="Źródła asystenta" as="h2" className={s.sources} bodyClassName={s.sourcesBody}>
