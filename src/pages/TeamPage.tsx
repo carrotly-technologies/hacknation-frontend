@@ -7,7 +7,8 @@ import { ErrorState, LoadingState } from '../components/QueryState'
 import { StageDots } from '../components/StageDots'
 import { useMe } from '../lib/useAuth'
 import { countLabel } from '../lib/format'
-import { caseUrl, CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
+import { personUrl } from '../lib/people'
+import { CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
 
 export function TeamPage() {
   const navigate = useNavigate()
@@ -47,7 +48,7 @@ export function TeamPage() {
             </thead>
             <tbody>
               {cases.map((c) => (
-                <TeamRow key={c.id} c={c} onOpen={() => navigate(caseUrl(c.id))} />
+                <TeamRow key={c.id} c={c} onOpen={() => navigate(personUrl(c.person.id))} />
               ))}
             </tbody>
           </table>
@@ -100,7 +101,7 @@ function TeamRow({ c, onOpen }: { c: CaseSummary; onOpen: () => void }) {
         <span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span>
       </td>
       <td className="cell-action">
-        <Link to={caseUrl(c.id)} className="btn btn--sm" aria-label={`Otwórz teczkę: ${c.person.firstName} ${c.person.lastName}`} onClick={(e) => e.stopPropagation()}>
+        <Link to={personUrl(c.person.id)} className="btn btn--sm" aria-label={`Otwórz profil: ${c.person.firstName} ${c.person.lastName}`} onClick={(e) => e.stopPropagation()}>
           Otwórz <ChevronRight size={14} aria-hidden="true" />
         </Link>
       </td>

@@ -9,6 +9,7 @@ import { KnowledgePage } from './pages/KnowledgePage'
 import { LoginPage } from './pages/LoginPage'
 import { MorePage } from './pages/MorePage'
 import { NotFoundPage } from './pages/NotFoundPage'
+import { PersonPage } from './pages/PersonPage'
 import { ServicesPage } from './pages/ServicesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { TeamPage } from './pages/TeamPage'
@@ -38,6 +39,7 @@ export default function App() {
           <Route index element={<HomeRedirect />} />
           <Route element={<RequireRole roles={['SUPERVISOR']} />}>
             <Route path="/zespol" element={<TeamPage />} />
+            <Route path="/pracownik/:personId" element={<PersonPage />} />
             <Route path="/teczka/:id/:stage?" element={<CasePage />} />
           </Route>
           <Route element={<RequireRole roles={['HR']} />}>

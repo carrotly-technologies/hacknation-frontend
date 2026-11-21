@@ -35,7 +35,11 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   route for another role redirects to your start page (`src/lib/useAuth.ts`, `src/shell/RequireAuth.tsx`);
 - `/admin/uzytkownicy` — admin only: accounts and their roles;
 
-- `/zespol` — my team: deadline-driven to-do list and team table;
+- `/zespol` — my team: deadline-driven to-do list and team table; a row opens the employee profile;
+- `/pracownik/:personId` — employee profile (`GET /api/people/:personId`, `src/api/people.ts`): name and position,
+  the last completed assessment (signed / acknowledged dates), employee data, supervisor, assessment history with
+  links to the sheets, and one button: „Kontynuuj ocenę okresową” / „Kontynuuj pierwszą ocenę” to the case at its
+  current step, or „Rozpocznij…” (inactive for now) when there is no open case; the case file's „Powrót” leads here;
 - `/teczka/:id/:stage` — the case file: stage rail (periodic and first-assessment paths), stage workspaces
   (OSP analysis, the "Formularz oceny" sheet wizard filled part by part — parts I, II, III, current part in `?czesc=`, also opened for the assessment period (no sub-step tiles; the old `/obserwacje` link redirects there, and the assessment talk starts in step 4), rubric assessment with system suggestion and supervisor
   decision, justification/IPRZ with formal check, "Ocena końcowa": process status, the link for the assessed person,

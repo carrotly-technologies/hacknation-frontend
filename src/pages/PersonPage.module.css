@@ -1,0 +1,126 @@
+/* Employee profile: header with the main action, status, two data cards, history table. */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-top: var(--s-2);
+}
+
+.title {
+  min-width: 0;
+}
+
+.title h1 {
+  overflow-wrap: anywhere;
+}
+
+.position {
+  margin-top: var(--s-1);
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-1);
+  max-width: 100%;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.status {
+  margin-top: var(--s-5);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin-top: var(--s-5);
+}
+
+.grid dd {
+  overflow-wrap: anywhere;
+}
+
+.history {
+  margin-top: var(--s-4);
+}
+
+.tableWrap {
+  margin-top: var(--s-3);
+  overflow-x: auto;
+}
+
+.table th[scope='row'] {
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.table tbody tr:last-child th {
+  border-bottom: 0;
+}
+
+.kind {
+  vertical-align: middle;
+}
+
+.kind > span {
+  display: block;
+}
+
+.meta {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  white-space: normal;
+}
+
+.kind > .narrow {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action {
+    align-items: stretch;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Below 600px only type, result and the link stay as columns; the rest goes under the type. */
+@media (max-width: 599px) {
+  .wide {
+    display: none;
+  }
+
+  .kind > .narrow {
+    display: block;
+    margin-top: var(--s-1);
+  }
+
+  .table th[scope='row'] {
+    white-space: normal;
+  }
+}
