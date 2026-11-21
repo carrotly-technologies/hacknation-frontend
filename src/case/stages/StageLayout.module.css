@@ -44,13 +44,23 @@
   line-height: var(--leading);
 }
 
+/* Bulleted lists (job tasks, competencies, criteria). base.css resets ul/ol to
+   list-style: none, so the markers are restored explicitly here. Markers sit
+   outside the text, which gives a hanging indent for items that wrap. */
 .bullets {
-  display: grid;
-  gap: var(--s-1);
   max-width: 820px;
   margin: 0;
   padding-left: var(--s-6);
+  list-style: disc outside;
   line-height: var(--leading);
+}
+
+.bullets > li + li {
+  margin-top: var(--s-2);
+}
+
+.bullets > li::marker {
+  color: var(--accent);
 }
 
 /* Body of a card holding several paragraphs */

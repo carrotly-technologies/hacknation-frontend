@@ -1530,12 +1530,17 @@
 }
 
 .bullets {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   padding-left: 18px;
-  list-style: disc;
+  list-style: disc outside;
   font-size: var(--text-sm);
+}
+
+.bullets > li + li {
+  margin-top: var(--s-2);
+}
+
+.bullets > li::marker {
+  color: var(--accent);
 }
 /* =========================================================
    OSP analysis
