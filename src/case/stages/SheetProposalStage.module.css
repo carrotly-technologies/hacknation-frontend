@@ -5,29 +5,41 @@
   line-height: var(--leading-tight);
 }
 
-.tiles {
+.list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.tileItem {
-  min-width: 0;
-}
-
-/* Two classes so the tile wins over the shared .card rule regardless of stylesheet order. */
-.tileItem > .tile {
-  padding: var(--s-3) var(--s-4);
+/* Two classes so these win over the shared .card rules regardless of stylesheet order. */
+.list .competency {
+  padding: var(--s-4);
   box-shadow: none;
 }
 
-.tileItem > .tile > * {
-  color: var(--text);
+.list .competency > h4 {
   font-size: var(--text-body);
-  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+/* Like .bullets (#37): accent-coloured dots, hanging indent, long names wrap. */
+.indicators {
+  margin: var(--s-2) 0 0;
+  padding-left: var(--s-5);
+  list-style: disc outside;
+  line-height: var(--leading);
+  overflow-wrap: anywhere;
+}
+
+.indicators > li + li {
+  margin-top: var(--s-1);
+}
+
+.indicators > li::marker {
+  color: var(--accent);
 }
 
 .editor {

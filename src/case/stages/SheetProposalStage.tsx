@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Card, InlineAlert, RadioGroup } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
-import { competencyName, useSheets } from '../../lib/model'
+import { competencyName, findCompetency, useSheets } from '../../lib/model'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetCriteriaEditor } from './SheetCriteriaEditor'
@@ -11,8 +11,8 @@ import s from './SheetProposalStage.module.css'
 
 /**
  * "Proponowany formularz" (design frame 2): the sheet proposed from the job description (all periodic
- * sheets as locked radios, the proposed one checked) and the competencies chosen for assessment as plain,
- * non-clickable tiles. At the end, "Akceptuj formularz" moves the case on to the opening talk;
+ * sheets as locked radios, the proposed one checked) and the competencies chosen for assessment, one
+ * below the other, each as a non-clickable full-width card listing its indicators. At the end, "Akceptuj formularz" moves the case on to the opening talk;
  * "Wprowadź poprawki" opens the editor of the sheet and the additional criteria.
  */
 export function SheetProposalStage({ detail, model, criteria, stage }: StageProps) {
@@ -64,13 +64,19 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
           {criteria.all.length === 0 ? (
             <p className={layout.muted}>Wybierz arkusz, aby zobaczyć pytania.</p>
           ) : (
-            <ul className={s.tiles}>
+            <ul className={s.list}>
               {criteria.all.map((id) => {
-                const name = competencyName(model, id)
+                const indicators = findCompetency(model, id)?.indicators ?? []
                 return (
-                  <li key={id} className={s.tileItem}>
-                    <Card className={s.tile}>
-                      <span className="one-line" title={name}>{name}</span>
+                  <li key={id}>
+                    <Card as="h4" title={competencyName(model, id)} className={s.competency}>
+                      {indicators.length > 0 && (
+                        <ul className={s.indicators}>
+                          {indicators.map((ind) => (
+                            <li key={ind.id}>{ind.name}</li>
+                          ))}
+                        </ul>
+                      )}
                     </Card>
                   </li>
                 )
