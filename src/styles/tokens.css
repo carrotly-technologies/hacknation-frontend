@@ -430,6 +430,10 @@
   --duration: 0.15s;
   --content-max: 1200px;
   --form-max: 640px;
+  /* Wider form column (step 4 "Formularz oceny kompetencji"): wider tiles, text inside kept at --measure */
+  --form-wide-max: 60rem;
+  /* Readable line length of text blocks (50–75 characters; WCAG 1.4.8: ≤ 80) */
+  --measure: 75ch;
   --z-sticky: 10;
   --z-overlay: 100;
   --z-toast: 200;

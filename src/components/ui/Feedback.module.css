@@ -70,6 +70,11 @@
   font-weight: var(--weight-semibold);
 }
 
+.alertBody {
+  min-width: 0;
+  max-width: var(--field-measure, none);
+}
+
 .alertBody > * + * {
   margin-top: var(--s-1);
 }

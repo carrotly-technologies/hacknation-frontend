@@ -399,7 +399,7 @@ function Decision({
       )}
 
       {deviates && (
-        <Field label="Dlaczego decyzja różni się od sugestii?" optional>
+        <Field className={s.note} label="Dlaczego decyzja różni się od sugestii?" optional>
           {(control) => (
             <TextArea
               {...control}

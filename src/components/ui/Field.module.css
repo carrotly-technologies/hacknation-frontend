@@ -3,7 +3,8 @@
   flex-direction: column;
   gap: var(--s-1);
   min-width: 0;
-  max-width: var(--form-max);
+  /* A wider form can lift the cap (--field-max) and keep the text at a readable length (--field-measure) */
+  max-width: var(--field-max, var(--form-max));
   border: 0;
   margin: 0;
   padding: 0;
@@ -15,6 +16,7 @@
 }
 
 .label {
+  max-width: var(--field-measure, none);
   color: var(--text);
   font-size: var(--text-body);
   font-weight: var(--weight-semibold);
@@ -40,6 +42,7 @@
 }
 
 .hint {
+  max-width: var(--field-measure, none);
   color: var(--text-secondary);
   font-size: var(--text-md);
   line-height: var(--leading);
