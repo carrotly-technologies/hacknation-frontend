@@ -61,6 +61,7 @@ may scroll sideways (WCAG 1.4.4, 1.4.10); on phones buttons wrap their label.
 | `StageStepper` | horizontal process stepper (chevrons): done = dark + ✓, current = `--accent-subtle`, future = outlined; the step on screen has `aria-current="step"`; every step is a link; < 768px numbered dots + "Krok X z Y: name". |
 | `FormProgress` | progress of a multi-part form ("Formularz oceny", "Formularz oceny kompetencji"): full-width `Stepper` bar with the "{unit} X z N: name" counter for screen readers only, then the parts always in one row (`repeat(var(--n), minmax(0, 1fr))`, `--n` = number of parts) with numbered circles, ✓ for done, the current one marked (`aria-current="step"`); a step with `to` is a link; names on one line with "…" and `title`; a column < 6rem (container query) shows only the circle, the name stays in `title` and for screen readers. |
 | `BackLink` | "‹ Powrót" above the page content (`--link`, 44px target). |
+| `PageLayout` | frame of every main page: the `--content-max` (1200px) container centred with `--page-pad-x` side padding (16px below 768px), then `back` (e.g. `BackLink`), the h1 (`title`), one `meta` line ("…" + `title`), `actions` on the right (under the title below 768px), and the content with a fixed `--s-6` gap between the header and each section. `fill`: from 1024px the page is exactly the window height and the content scrolls inside (`/baza-wiedzy`). |
 | `UserMenu` | top-bar avatar + name + role + chevron; disclosure menu (Esc / click outside close it). |
 
 ```tsx
@@ -79,7 +80,14 @@ import { Button, ErrorSummary, Field, TextInput } from '../components/ui'
 
 `AppShell`: skip link "Przejdź do treści"; top bar with the product name, the main links, the settings gear
 (`/ustawienia`) and `UserMenu`; below 1024px the links go under a "Menu" button, and below 768px the gear moves
-into that menu as "Ustawienia". No horizontal scrolling. Content max width ~1200px.
+into that menu as "Ustawienia". No horizontal scrolling.
+
+Every main page ("Mój zespół", "Baza wiedzy", HR, the employee profile, settings, admin…) is a `PageLayout`, so the
+left edge of the h1 and of the content stays in the same place when switching tabs (WCAG 3.2.3 / 3.2.4); the case
+file header and workspace use the same container. Width follows the content: tables and lists may use the whole
+1200px, running text stays at `--measure` (≤ 75 characters, WCAG 1.4.8). A list of people with one or two pieces of
+information is a list of rows (name, "Otwórz ›"), not a table. "Baza wiedzy": chat 2fr | sources 1fr from 1024px,
+the source list and the messages scroll inside (keyboard-focusable regions), no floating assistant button there.
 
 ## UX rules
 

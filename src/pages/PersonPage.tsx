@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import { getPerson, type HistoryItem, type PersonOsp, type PersonProfile } from '../api/people'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { BackLink, Button, ButtonLink, Card, EmptyState, InfoList, InfoRow, InlineAlert, StatusBadge } from '../components/ui'
+import { BackLink, Button, ButtonLink, Card, EmptyState, InfoList, InfoRow, InlineAlert, PageLayout, StatusBadge } from '../components/ui'
 import { fmtDate } from '../lib/format'
 import { assessmentAction, EMPLOYMENT_LABEL, lastCompleted, RESULT_LABEL } from '../lib/people'
 import { caseUrl } from '../lib/stages'
@@ -18,38 +18,31 @@ export function PersonPage() {
   const q = useQuery({ queryKey: ['person', personId], queryFn: ({ signal }) => getPerson(personId, signal) })
   const back = <BackLink to={HOME_BY_ROLE[me.role]}>Mój zespół</BackLink>
 
-  if (q.isPending) return <div className="page"><LoadingState /></div>
+  if (q.isPending) return <PageLayout back={back}><LoadingState /></PageLayout>
   if (q.isError) {
     if (q.error instanceof ApiError && q.error.status === 404) {
       return (
-        <div className="page">
-          {back}
+        <PageLayout back={back}>
           <EmptyState as="h1" title="Nie znaleziono pracownika">
             Tego pracownika nie ma w Twoim zespole albo adres jest nieaktualny. Wróć do listy zespołu i wybierz osobę jeszcze raz.
           </EmptyState>
-        </div>
+        </PageLayout>
       )
     }
-    return <div className="page"><ErrorState error={q.error} what="profil pracownika" onRetry={() => q.refetch()} /></div>
+    return <PageLayout back={back}><ErrorState error={q.error} what="profil pracownika" onRetry={() => q.refetch()} /></PageLayout>
   }
 
   const profile = q.data
   const { person, supervisor } = profile
 
   return (
-    <div className="page">
-      {back}
-      <header className={s.head}>
-        <div className={s.title}>
-          <h1 className="h-page">{person.firstName} {person.lastName}</h1>
-          <p className={s.position} title={person.position}>{person.position}</p>
-        </div>
-        <AssessmentButton profile={profile} />
-      </header>
-
-      <div className={s.status}>
-        <LastAssessment history={profile.history} />
-      </div>
+    <PageLayout
+      back={back}
+      title={`${person.firstName} ${person.lastName}`}
+      meta={person.position}
+      actions={<AssessmentButton profile={profile} />}
+    >
+      <LastAssessment history={profile.history} />
 
       <div className={s.sections}>
         <Card title="Dane pracownika" as="h2">
@@ -78,7 +71,7 @@ export function PersonPage() {
           <HistoryTable history={profile.history} name={`${person.firstName} ${person.lastName}`} />
         </Card>
       </div>
-    </div>
+    </PageLayout>
   )
 }
 

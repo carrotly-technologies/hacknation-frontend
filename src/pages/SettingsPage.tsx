@@ -1,5 +1,5 @@
 import { RotateCcw } from 'lucide-react'
-import { Button, RadioGroup, Switch } from '../components/ui'
+import { Button, PageLayout, RadioGroup, Switch } from '../components/ui'
 import { DEFAULT_PREFS, type TextSize, type Theme, usePreferences } from '../lib/preferences'
 import s from './SettingsPage.module.css'
 
@@ -24,13 +24,7 @@ export function SettingsPage() {
     prefs.highContrast === DEFAULT_PREFS.highContrast
 
   return (
-    <div className="page">
-      <header className="page-head">
-        <div>
-          <h1 className="h-page">Ustawienia</h1>
-          <p className={s.lead}>Wygląd aplikacji. Zmiany działają od razu na wszystkich ekranach.</p>
-        </div>
-      </header>
+    <PageLayout title="Ustawienia" meta="Wygląd aplikacji · zmiany działają od razu">
 
       <div className={s.groups}>
         <section className={s.group}>
@@ -85,6 +79,6 @@ export function SettingsPage() {
           </Button>
         )}
       </div>
-    </div>
+    </PageLayout>
   )
 }

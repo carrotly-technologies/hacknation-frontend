@@ -1,16 +1,9 @@
 /* /ustawienia: one white card per setting, like a settings list in a public e-service app */
-.lead {
-  margin-top: var(--s-1);
-  color: var(--text-secondary);
-  font-size: var(--text-md);
-}
-
 .groups {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
   max-width: var(--form-max);
-  margin-top: var(--s-4);
 }
 
 .group {
@@ -46,7 +39,6 @@
   justify-content: space-between;
   gap: var(--s-3);
   max-width: var(--form-max);
-  margin-top: var(--s-5);
 }
 
 .note {

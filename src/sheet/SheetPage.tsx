@@ -2,6 +2,7 @@ import { ArrowLeft, Printer } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { PageLayout } from '../components/ui'
 import { useCase } from '../lib/caseQueries'
 import { caseCriteria, useModel, useSheets } from '../lib/model'
 import { caseUrl } from '../lib/stages'
@@ -35,8 +36,8 @@ export function SheetPage() {
     }
   }, [ready, autoPrint, q.data])
 
-  if (q.isError) return <div className="page"><ErrorState error={q.error} what="arkusz" /></div>
-  if (!ready) return <div className="page"><LoadingState /></div>
+  if (q.isError) return <PageLayout><ErrorState error={q.error} what="arkusz" /></PageLayout>
+  if (!ready) return <PageLayout><LoadingState /></PageLayout>
 
   const detail = q.data
   const name = `${detail.person.firstName} ${detail.person.lastName}`

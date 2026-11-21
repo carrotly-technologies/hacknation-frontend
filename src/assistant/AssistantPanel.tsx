@@ -87,7 +87,8 @@ export function AssistantPanel({
 
       <SourceDocuments />
 
-      <div className="assistant__list" ref={listRef} role="log" aria-live="polite">
+      {/* Focusable, so the conversation can be scrolled with the keyboard */}
+      <div className="assistant__list" ref={listRef} role="log" aria-live="polite" aria-label="Rozmowa z asystentem" tabIndex={0}>
         {msgs.length === 0 && (
           <div className="assistant__intro">
             <p className="assistant__blurb">{tab.blurb}</p>

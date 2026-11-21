@@ -1,110 +1,60 @@
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
-import { Link, useNavigate } from 'react-router'
-import { getTeam, type CaseSummary } from '../api/cases'
-import { DeadlineText } from '../components/Deadline'
+import { Link } from 'react-router'
+import { getTeam, type Person } from '../api/cases'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { StageDots } from '../components/StageDots'
+import { Card, EmptyState, PageLayout } from '../components/ui'
 import { useMe } from '../lib/useAuth'
 import { countLabel } from '../lib/format'
 import { personUrl } from '../lib/people'
-import { CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
+import s from './TeamPage.module.css'
 
+/** "Mój zespół": the supervisor's people as a list of rows (name, "Otwórz ›"); each row opens the employee profile. */
 export function TeamPage() {
-  const navigate = useNavigate()
   const team = useQuery({ queryKey: ['team'], queryFn: ({ signal }) => getTeam(signal) })
   const me = useMe()
 
-  if (team.isPending) return <div className="page"><LoadingState /></div>
-  if (team.isError) return <div className="page"><ErrorState error={team.error} what="lista zespołu" onRetry={() => team.refetch()} /></div>
+  if (team.isPending) return <PageLayout><LoadingState /></PageLayout>
+  if (team.isError) return <PageLayout><ErrorState error={team.error} what="lista zespołu" onRetry={() => team.refetch()} /></PageLayout>
 
-  const { cases } = team.data
+  // One row per person, even if the API sends more than one case for them.
+  const people = [...new Map(team.data.cases.map((c) => [c.person.id, c.person])).values()]
 
   return (
-    <div className="page">
-      <header className="page-head">
-        <div>
-          <h1 className="h-page">Mój zespół</h1>
-          <p className="page-head__meta" title={me.unit}>{me.unit}</p>
-        </div>
-      </header>
-
-      <section className="section" aria-labelledby="team-h">
+    <PageLayout title="Mój zespół" meta={me.unit}>
+      <section aria-labelledby="team-h">
         <div className="section__head">
           <h2 id="team-h" className="h-section">Pracownicy</h2>
-          <span className="faint small">{countLabel(cases.length, 'osoba', 'osoby', 'osób')}</span>
+          <span className="faint small">{countLabel(people.length, 'osoba', 'osoby', 'osób')}</span>
         </div>
-        <div className="panel">
-          <table className="table team-table">
-            <thead>
-              <tr>
-                <th>Pracownik</th>
-                <th>Rodzaj oceny</th>
-                <th>Etap</th>
-                <th>Najbliższy termin</th>
-                <th>Status</th>
-                <th aria-label="Akcje" />
-              </tr>
-            </thead>
-            <tbody>
-              {cases.map((c) => (
-                <TeamRow key={c.id} c={c} onOpen={() => navigate(personUrl(c.person.id))} />
+        <Card className={s.card}>
+          {people.length === 0 ? (
+            <EmptyState as="h3" title="Brak pracowników w zespole">
+              Gdy w systemie pojawią się osoby, które oceniasz, zobaczysz je tutaj.
+            </EmptyState>
+          ) : (
+            <ul className={s.list}>
+              {people.map((p) => (
+                <PersonRow key={p.id} person={p} />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </ul>
+          )}
+        </Card>
       </section>
-    </div>
+    </PageLayout>
   )
 }
 
-function TeamRow({ c, onOpen }: { c: CaseSummary; onOpen: () => void }) {
-  const current = c.stages.find((s) => s.id === c.currentStage)
-  const idx = c.stages.findIndex((s) => s.id === c.currentStage)
-  const sheet = c.path === 'FIRST' ? 'arkusz pierwszej oceny' : c.sheetId ? `arkusz ${c.sheetId}` : 'arkusz do ustalenia'
-  const stageName = current ? STAGE_SHORT[current.id] : '—'
+function PersonRow({ person }: { person: Person }) {
+  const name = `${person.firstName} ${person.lastName}`
   return (
-    <tr className="is-link" onClick={onOpen}>
-      <td>
-        <div className="person">
-          <span className="person__name" title={`${c.person.firstName} ${c.person.lastName}`}>
-            {c.person.firstName} {c.person.lastName}
-          </span>
-          <span className="person__meta" title={c.person.position}>{c.person.position}</span>
-        </div>
-      </td>
-      <td>
-        <div className="person">
-          <span>{c.path === 'FIRST' ? 'Pierwsza ocena' : 'Ocena okresowa'}</span>
-          <span className="person__meta">{sheet}</span>
-        </div>
-      </td>
-      <td>
-        <div className="stage-cell">
-          <StageDots stages={c.stages} />
-          <span className="stage-cell__name" title={`${idx + 1}/${c.stages.length} ${stageName}`}>
-            <span className="faint num">{idx + 1}/{c.stages.length}</span> {stageName}
-          </span>
-        </div>
-      </td>
-      <td>
-        {c.nextDeadline ? (
-          <div className="person">
-            <DeadlineText deadline={c.nextDeadline} />
-            <span className="person__meta" title={c.nextDeadline.label}>{c.nextDeadline.label.replace(/ do$/, '')}</span>
-          </div>
-        ) : (
-          <span className="faint">—</span>
-        )}
-      </td>
-      <td>
-        <span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span>
-      </td>
-      <td className="cell-action">
-        <Link to={personUrl(c.person.id)} className="btn btn--sm" aria-label={`Otwórz profil: ${c.person.firstName} ${c.person.lastName}`} onClick={(e) => e.stopPropagation()}>
-          Otwórz <ChevronRight size={14} aria-hidden="true" />
-        </Link>
-      </td>
-    </tr>
+    <li>
+      <Link to={personUrl(person.id)} className={s.row} aria-label={`Otwórz profil: ${name}`}>
+        <span className={s.name} title={name}>{name}</span>
+        <span className={s.open} aria-hidden="true">
+          Otwórz <ChevronRight size={18} />
+        </span>
+      </Link>
+    </li>
   )
 }

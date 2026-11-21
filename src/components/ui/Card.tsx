@@ -21,9 +21,11 @@ type Props = {
   disabled?: boolean
   forceState?: 'hover' | 'focus'
   className?: string
+  /** Plain card only: extra class on the body (e.g. a flex column with a scrolling list). */
+  bodyClassName?: string
 }
 
-export function Card({ title, as: H = 'h3', icon, children, to, onClick, loading, disabled, forceState, className }: Props) {
+export function Card({ title, as: H = 'h3', icon, children, to, onClick, loading, disabled, forceState, className, bodyClassName }: Props) {
   if (to) {
     return (
       <Link to={to} className={cx(s.card, s.clickable, className)} data-force={forceState}>
@@ -58,7 +60,7 @@ export function Card({ title, as: H = 'h3', icon, children, to, onClick, loading
   return (
     <section className={cx(s.card, className)}>
       {title && <H className={s.cardTitle}>{title}</H>}
-      {children && <div className={s.cardBody}>{children}</div>}
+      {children && <div className={cx(s.cardBody, bodyClassName)}>{children}</div>}
     </section>
   )
 }
