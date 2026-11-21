@@ -42,10 +42,10 @@ export function AppShell() {
     <div className="shell">
       <header className="topbar">
         <div className="topbar__brand">
-          <Compass size={18} strokeWidth={1.75} aria-hidden="true" />
+          <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
           <span className="topbar__product">Kompas Kompetencji</span>
           <span className="topbar__sep" aria-hidden="true" />
-          <span className="topbar__office">{officeLabel(me.data?.officeName)}</span>
+          <span className="topbar__office" title={officeLabel(me.data?.officeName)}>{officeLabel(me.data?.officeName)}</span>
         </div>
         <div className="topbar__right">
           <div className="role-switch" role="radiogroup" aria-label="Rola w systemie">
@@ -68,8 +68,8 @@ export function AppShell() {
             ))}
           </div>
           <div className="topbar__user">
-            <span className="topbar__user-name">{userName}</span>
-            <span className="topbar__user-role">{userRole}</span>
+            <span className="topbar__user-name" title={userName}>{userName}</span>
+            <span className="topbar__user-role" title={userRole}>{userRole}</span>
           </div>
         </div>
       </header>
@@ -79,22 +79,22 @@ export function AppShell() {
           {role === 'SUPERVISOR' ? (
             <li>
               <NavLink to="/zespol" className={({ isActive }) => navCls(isActive || location.pathname.startsWith('/teczka'))}>
-                <Users size={18} strokeWidth={1.75} aria-hidden="true" />
-                <span>Mój zespół</span>
+                <Users size={20} strokeWidth={1.75} aria-hidden="true" />
+                <span title="Mój zespół">Mój zespół</span>
               </NavLink>
             </li>
           ) : (
             <li>
               <NavLink to="/hr" className={({ isActive }) => navCls(isActive)}>
-                <TableProperties size={18} strokeWidth={1.75} aria-hidden="true" />
-                <span>Monitoring</span>
+                <TableProperties size={20} strokeWidth={1.75} aria-hidden="true" />
+                <span title="Monitoring">Monitoring</span>
               </NavLink>
             </li>
           )}
           <li>
             <NavLink to="/baza-wiedzy" className={({ isActive }) => navCls(isActive)}>
-              <BookOpen size={18} strokeWidth={1.75} aria-hidden="true" />
-              <span>Baza wiedzy</span>
+              <BookOpen size={20} strokeWidth={1.75} aria-hidden="true" />
+              <span title="Baza wiedzy">Baza wiedzy</span>
             </NavLink>
           </li>
         </ul>

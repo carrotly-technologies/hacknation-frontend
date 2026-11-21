@@ -20,7 +20,7 @@ export function ApiStatus() {
       aria-live="polite"
     >
       <span className="api-status__dot" aria-hidden="true" />
-      <span className="api-status__label">API</span>
+      <span className="api-status__label one-line">API</span>
       <span className="visually-hidden">{label}</span>
     </button>
   )

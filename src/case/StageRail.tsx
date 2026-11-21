@@ -21,6 +21,7 @@ export function StageRail({ detail, active, model, criteria }: Props) {
   const p = detail.person
   const periodFrom = detail.partI.acknowledgedByEmployeeOn
   const periodTo = detail.partI.assessmentDue
+  const evaluator = `${detail.evaluator.firstName} ${detail.evaluator.lastName}, ${detail.evaluator.position}`
 
   return (
     <aside className="rail" aria-label="Etapy procesu">
@@ -40,9 +41,9 @@ export function StageRail({ detail, active, model, criteria }: Props) {
         <h2 className="h-sub rail__heading">Oceniany</h2>
         <dl className="rail__dl">
           <dt>Stanowisko</dt>
-          <dd>{p.position}</dd>
+          <dd title={p.position}>{p.position}</dd>
           <dt>Komórka</dt>
-          <dd>{p.unit}</dd>
+          <dd title={p.unit}>{p.unit}</dd>
           <dt>Status</dt>
           <dd>{p.employment === 'URZEDNIK' ? 'urzędnik służby cywilnej' : 'pracownik służby cywilnej'}</dd>
           {detail.path === 'FIRST' ? (
@@ -53,13 +54,13 @@ export function StageRail({ detail, active, model, criteria }: Props) {
           ) : (
             <>
               <dt>Okres oceny</dt>
-              <dd className="num">{periodFrom ? `${fmtDate(periodFrom)} – ${fmtDate(periodTo)}` : 'rozpocznie się po cz. I'}</dd>
+              <dd className="num" title={periodFrom ? `${fmtDate(periodFrom)} – ${fmtDate(periodTo)}` : 'rozpocznie się po cz. I'}>
+                {periodFrom ? `${fmtDate(periodFrom)} – ${fmtDate(periodTo)}` : 'rozpocznie się po cz. I'}
+              </dd>
             </>
           )}
           <dt>Oceniający</dt>
-          <dd>
-            {detail.evaluator.firstName} {detail.evaluator.lastName}, {detail.evaluator.position}
-          </dd>
+          <dd title={evaluator}>{evaluator}</dd>
         </dl>
       </div>
 
@@ -72,9 +73,9 @@ export function StageRail({ detail, active, model, criteria }: Props) {
           {showHistory && (
             <ol className="rail__history">
               {[...detail.history].reverse().map((h, i) => (
-                <li key={i}>
+                <li key={i} title={`${fmtDate(h.date)} ${h.text}`}>
                   <span className="num faint">{fmtDate(h.date)}</span>
-                  <span>{h.text}</span>
+                  <span className="rail__history-text">{h.text}</span>
                 </li>
               ))}
             </ol>
@@ -93,20 +94,23 @@ function RailItem({ s, index, detail, active }: { s: StageInfo; index: number; d
         {s.status === 'DONE' ? <Check size={11} strokeWidth={3} /> : s.status === 'LOCKED' ? <Lock size={10} strokeWidth={2.25} /> : index + 1}
       </span>
       <span className="rail-item__body">
-        <span className="rail-item__name">{s.name}</span>
+        <span className="rail-item__name" title={s.name}>{s.name}</span>
         <span className="rail-item__meta">
           {s.status === 'DONE' ? (
-            <span className="num">Zakończono {fmtDate(s.completedOn)}</span>
+            <span className="num" title={`Zakończono ${fmtDate(s.completedOn)}`}>Zakończono {fmtDate(s.completedOn)}</span>
           ) : s.deadline?.date ? (
-            <span className={`num deadline__rel--${s.status === 'CURRENT' ? tone(s.deadline.state) : 'none'}`}>
+            <span
+              className={`num deadline__rel--${s.status === 'CURRENT' ? tone(s.deadline.state) : 'none'}`}
+              title={`do ${fmtDate(s.deadline.date)}${s.status === 'CURRENT' ? ` · ${fmtDaysLeft(s.deadline.daysLeft)}` : ''}`}
+            >
               do {fmtDate(s.deadline.date)}
               {s.status === 'CURRENT' && ` · ${fmtDaysLeft(s.deadline.daysLeft)}`}
             </span>
           ) : s.deadline ? (
-            <span>{s.deadline.label}</span>
+            <span title={s.deadline.label}>{s.deadline.label}</span>
           ) : null}
         </span>
-        {active && <span className="rail-item__legal">{s.legalBasis}</span>}
+        {active && <span className="rail-item__legal" title={s.legalBasis}>{s.legalBasis}</span>}
       </span>
     </Link>
   )
@@ -132,8 +136,8 @@ function CriteriaNav({ detail, model, criteria }: { detail: CaseDetail; model: C
               aria-current={id === selected ? 'true' : undefined}
               onClick={() => setParams((p) => { p.set('k', id); return p }, { replace: true })}
             >
-              <span className="crit-nav__name">
-                {competencyName(model, id)}
+              <span className="crit-nav__name" title={competencyName(model, id)}>
+                <span className="crit-nav__label">{competencyName(model, id)}</span>
                 {criteria.additional.includes(id) && <span className="crit-nav__extra">dodatkowe</span>}
               </span>
               {state === 'decided' ? (

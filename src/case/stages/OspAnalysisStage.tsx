@@ -156,7 +156,7 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
                 return (
                   <li key={c.criterionId} className={`cand cand--${(v ?? 'pending').toLowerCase()}`} onMouseEnter={() => setHover(c.criterionId)} onMouseLeave={() => setHover(null)}>
                     <div className="cand__main">
-                      <span className="cand__name">{competencyName(model, c.criterionId)}</span>
+                      <span className="cand__name" title={competencyName(model, c.criterionId)}>{competencyName(model, c.criterionId)}</span>
                       <span className="cand__reason">{c.reason}</span>
                       <span className="cand__quote">„{c.ospQuote}”</span>
                     </div>
@@ -174,7 +174,7 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
               {extra.filter((c) => !mandatory.includes(c)).map((c) => (
                 <li key={c} className="cand cand--accepted">
                   <div className="cand__main">
-                    <span className="cand__name">{competencyName(model, c)}</span>
+                    <span className="cand__name" title={competencyName(model, c)}>{competencyName(model, c)}</span>
                     <span className="cand__reason">Dodane przez oceniającego spoza propozycji.</span>
                   </div>
                   {!done && (

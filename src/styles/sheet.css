@@ -1,5 +1,5 @@
 /* Official sheet (arkusz) — mirrors the Dz.U. 2016 poz. 470 / 2015 poz. 1144 templates.
-   Serif, thin black rules, A4 pages. Printing this page produces the PDF. */
+   Open Sans, thin black rules, A4 pages. Printing this page produces the PDF. */
 .doc {
   --doc-ink: #111;
   --doc-rule: #222;
@@ -7,7 +7,7 @@
   width: 210mm;
   margin: 0 auto;
   color: var(--doc-ink);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 10.5pt;
   line-height: 1.35;
 }
@@ -141,7 +141,7 @@
 }
 
 .doc-val {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
 }
 
 .doc-blank {

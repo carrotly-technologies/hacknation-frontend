@@ -104,12 +104,12 @@ export function OpeningTalkStage({ detail, model, criteria, stage }: StageProps)
           <ol className="steps">
             <li className={`steps__item ${confirmed ? 'is-done' : ''}`}>
               <span className="steps__num num">{confirmed ? <Check size={12} strokeWidth={3} /> : 1}</span>
-              <span className="steps__label">Oceniający potwierdza rozmowę i ustalenia (podpis w cz. I)</span>
+              <span className="steps__label" title="Oceniający potwierdza rozmowę i ustalenia (podpis w cz. I)">Oceniający potwierdza rozmowę i ustalenia (podpis w cz. I)</span>
               <span className="steps__date num">{fmtDate(detail.partI.confirmedByEvaluatorOn)}</span>
             </li>
             <li className={`steps__item ${acked ? 'is-done' : ''}`}>
               <span className="steps__num num">{acked ? <Check size={12} strokeWidth={3} /> : 2}</span>
-              <span className="steps__label">Oceniany potwierdza zapoznanie z kryteriami i terminem — od tej daty biegnie okres oceny</span>
+              <span className="steps__label" title="Oceniany potwierdza zapoznanie z kryteriami i terminem — od tej daty biegnie okres oceny">Oceniany potwierdza zapoznanie z kryteriami i terminem — od tej daty biegnie okres oceny</span>
               <span className="steps__date num">{fmtDate(detail.partI.acknowledgedByEmployeeOn)}</span>
             </li>
           </ol>

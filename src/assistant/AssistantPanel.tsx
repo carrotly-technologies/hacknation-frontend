@@ -76,7 +76,7 @@ export function AssistantPanel({ context, onClose, variant = 'dock' }: { context
 
       <div className="assistant__ctx">
         {context.label ? (
-          <span className="ctx-chip" title="Asystent zna kontekst bieżącego etapu teczki">
+          <span className="ctx-chip" title={`Asystent zna kontekst bieżącego etapu teczki: ${context.label}`}>
             <span className="ctx-chip__k">Kontekst</span> {context.label}
           </span>
         ) : (

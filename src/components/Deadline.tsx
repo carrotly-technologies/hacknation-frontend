@@ -7,8 +7,15 @@ const TONE = { OK: 'ok', SOON: 'warn', OVERDUE: 'danger', NONE: 'none' } as cons
 export function DeadlineText({ deadline, showLabel = false, showLegal = false }: { deadline: Deadline | null; showLabel?: boolean; showLegal?: boolean }) {
   if (!deadline) return <span className="faint">—</span>
   const tone = TONE[deadline.state]
+  const full = [
+    showLabel ? deadline.label : '',
+    deadline.date ? `${fmtDate(deadline.date)} · ${fmtDaysLeft(deadline.daysLeft)}` : showLabel ? '' : deadline.label,
+    showLegal ? deadline.legalBasis : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
   return (
-    <span className="deadline">
+    <span className="deadline" title={full}>
       {showLabel && <span className="deadline__label">{deadline.label} </span>}
       {deadline.date ? (
         <>
@@ -17,7 +24,7 @@ export function DeadlineText({ deadline, showLabel = false, showLegal = false }:
         </>
       ) : (
         !showLabel && (
-          <span className="faint" title={deadline.label}>
+          <span className="faint">
             {/niezwłocznie/i.test(deadline.label) ? 'niezwłocznie' : deadline.label}
           </span>
         )

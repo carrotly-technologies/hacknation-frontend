@@ -11,14 +11,19 @@ html {
 
 body {
   margin: 0;
-  min-width: 1120px;
   background: var(--bg-app);
   color: var(--text);
   font-family: var(--font-sans);
   font-size: var(--text-base);
   line-height: var(--leading);
   -webkit-font-smoothing: antialiased;
+  font-weight: var(--weight-regular);
   font-feature-settings: 'kern';
+}
+
+b,
+strong {
+  font-weight: var(--weight-semibold);
 }
 
 h1,
@@ -51,7 +56,7 @@ textarea {
 a {
   color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: rgb(29 58 110 / 0.35);
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
   text-underline-offset: 2px;
 }
 
@@ -69,6 +74,17 @@ a:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* "One line of information": data rows never wrap; overflow ends with "…" and the
+   full text sits in the element's title attribute. */
+.one-line {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .visually-hidden {
   position: absolute !important;
   width: 1px;
@@ -80,7 +96,7 @@ a:hover {
 
 /* ---------- Typography helpers ---------- */
 .h-page {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   letter-spacing: -0.01em;
@@ -93,11 +109,9 @@ a:hover {
 }
 
 .h-sub {
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .muted {
@@ -128,14 +142,14 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  height: 36px;
+  padding: 0 16px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   background: var(--bg-surface);
-  color: var(--text);
+  color: var(--accent);
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
@@ -144,8 +158,8 @@ a:hover {
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--gray-400);
+  background: var(--accent-faint);
+  border-color: var(--accent);
 }
 
 .btn:disabled {
@@ -177,8 +191,8 @@ a:hover {
 }
 
 .btn--sm {
-  height: 26px;
-  padding: 0 8px;
+  height: 28px;
+  padding: 0 10px;
   font-size: var(--text-xs);
 }
 
@@ -188,9 +202,9 @@ a:hover {
   border: 0;
   background: none;
   color: var(--accent);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
   text-decoration: underline;
-  text-decoration-color: rgb(29 58 110 / 0.35);
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
   text-underline-offset: 2px;
 }
 
@@ -219,7 +233,7 @@ a:hover {
 
 .field__label {
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
 }
 
 .field__hint {
@@ -231,7 +245,7 @@ a:hover {
 .select,
 .textarea {
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   background: var(--bg-surface);
@@ -241,7 +255,7 @@ a:hover {
 
 .input,
 .select {
-  height: 32px;
+  height: 36px;
 }
 
 .select {
@@ -264,7 +278,7 @@ a:hover {
 .textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgb(47 111 219 / 0.25);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .input:disabled,
@@ -287,10 +301,10 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 20px;
-  padding: 0 6px;
+  height: 22px;
+  padding: 0 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   background: var(--bg-subtle);
   color: var(--text-secondary);
   font-size: var(--text-xs);
@@ -318,7 +332,7 @@ a:hover {
 }
 
 .tag--accent {
-  border-color: #c6d2e7;
+  border-color: var(--accent-border);
   background: var(--accent-faint);
   color: var(--accent);
 }
@@ -340,6 +354,12 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+/* Wide data tables scroll sideways inside their card on narrow screens instead of wrapping. */
+.panel:has(> .table) {
+  overflow-x: auto;
 }
 
 .panel__head {
@@ -347,13 +367,13 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
-  min-height: 44px;
-  padding: var(--s-2) var(--s-4);
+  min-height: 52px;
+  padding: var(--s-2) var(--s-5);
   border-bottom: 1px solid var(--border);
 }
 
 .panel__body {
-  padding: var(--s-4);
+  padding: var(--s-4) var(--s-5);
 }
 
 .table {
@@ -363,21 +383,23 @@ a:hover {
 }
 
 .table th {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-subtle);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
-  letter-spacing: 0.03em;
   text-align: left;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .table td {
-  padding: 10px 12px;
+  max-width: 280px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   vertical-align: middle;
 }
 
@@ -399,7 +421,7 @@ a:hover {
   gap: var(--s-2);
   padding: var(--s-2) var(--s-3);
   border: 1px solid var(--border);
-  border-left-width: 3px;
+  border-left-width: 4px;
   border-radius: var(--radius);
   background: var(--bg-subtle);
   font-size: var(--text-sm);
@@ -412,7 +434,7 @@ a:hover {
 }
 
 .notice--info {
-  border-color: #c6d2e7;
+  border-color: var(--accent-border);
   border-left-color: var(--accent);
   background: var(--accent-faint);
 }
@@ -443,12 +465,16 @@ a:hover {
   font-size: var(--text-sm);
 }
 
-.dl dt {
-  color: var(--text-muted);
-}
-
+.dl dt,
 .dl dd {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl dt {
+  color: var(--text-muted);
 }
 
 /* ---------- Loading / errors ---------- */

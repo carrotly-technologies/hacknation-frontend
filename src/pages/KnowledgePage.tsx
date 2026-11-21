@@ -1,3 +1,4 @@
+import { FileText } from 'lucide-react'
 import { AssistantPanel } from '../assistant/AssistantPanel'
 
 const SOURCES = [
@@ -15,7 +16,7 @@ export function KnowledgePage() {
       <header className="page-head">
         <div>
           <h1 className="h-page">Baza wiedzy</h1>
-          <p className="page-head__meta">Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki</p>
+          <p className="page-head__meta" title="Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki">Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki</p>
         </div>
       </header>
       <div className="knowledge">
@@ -26,9 +27,12 @@ export function KnowledgePage() {
           </div>
           <ul className="sources">
             {SOURCES.map(([t, d]) => (
-              <li key={t}>
-                <span className="sources__t">{t}</span>
-                <span className="sources__d">{d}</span>
+              <li key={t} className="sources__row">
+                <FileText className="sources__icon" size={18} strokeWidth={1.75} aria-hidden="true" />
+                <span className="sources__text">
+                  <span className="sources__t" title={t}>{t}</span>
+                  <span className="sources__d" title={d}>{d}</span>
+                </span>
               </li>
             ))}
           </ul>

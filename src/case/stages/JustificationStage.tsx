@@ -102,7 +102,7 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
             <tbody>
               {criteria.all.map((c) => (
                 <tr key={c}>
-                  <td>{competencyName(model, c)}</td>
+                  <td className="mini-table__name" title={competencyName(model, c)}>{competencyName(model, c)}</td>
                   <td className="mini-table__pts">
                     <ScoreChip points={detail.decisions[c]} size="sm" />
                   </td>

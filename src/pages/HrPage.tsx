@@ -68,7 +68,7 @@ export function HrPage() {
       <header className="page-head">
         <div>
           <h1 className="h-page">Monitoring ocen</h1>
-          <p className="page-head__meta">Wszystkie procesy ocen w urzędzie · stan na {fmtDate(DEMO_TODAY)}</p>
+          <p className="page-head__meta" title={`Wszystkie procesy ocen w urzędzie · stan na ${fmtDate(DEMO_TODAY)}`}>Wszystkie procesy ocen w urzędzie · stan na {fmtDate(DEMO_TODAY)}</p>
         </div>
         <button type="button" className="btn btn--primary" disabled={soonIds.length === 0 || remind.isPending} onClick={() => remind.mutate(soonIds)}>
           <Bell size={15} aria-hidden="true" /> Przypomnij wszystkim z terminem ≤ 14 dni ({soonIds.length})
@@ -85,7 +85,7 @@ export function HrPage() {
             onClick={() => setCounter(counter === c.key ? 'all' : c.key)}
           >
             <span className="counter__n num">{counters[c.key as keyof HrOverview['counters']]}</span>
-            <span className="counter__l">{c.label}</span>
+            <span className="counter__l" title={c.label}>{c.label}</span>
           </button>
         ))}
       </div>
@@ -133,21 +133,21 @@ export function HrPage() {
                 <tr key={c.id}>
                   <td>
                     <div className="person">
-                      <span className="person__name">{c.person.firstName} {c.person.lastName}</span>
-                      <span className="person__meta">{c.person.position}</span>
+                      <span className="person__name" title={`${c.person.firstName} ${c.person.lastName}`}>{c.person.firstName} {c.person.lastName}</span>
+                      <span className="person__meta" title={c.person.position}>{c.person.position}</span>
                     </div>
                   </td>
                   <td className="cell-unit" title={c.person.unit}>{deptOf(c.person.unit)}</td>
-                  <td>{c.evaluatorName}</td>
+                  <td title={c.evaluatorName}>{c.evaluatorName}</td>
                   <td>{c.path === 'FIRST' ? 'Pierwsza' : `Okresowa · ${c.sheetId ?? '—'}`}</td>
                   <td>
                     <div className="stage-cell">
                       <StageDots stages={c.stages} />
-                      <span className="stage-cell__name">{STAGE_SHORT[c.currentStage]}</span>
+                      <span className="stage-cell__name" title={STAGE_SHORT[c.currentStage]}>{STAGE_SHORT[c.currentStage]}</span>
                     </div>
                   </td>
                   <td>{c.nextDeadline ? <DeadlineText deadline={c.nextDeadline} /> : <span className="faint">—</span>}</td>
-                  <td><span className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span></td>
+                  <td><span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span></td>
                   <td className="cell-action">
                     <button type="button" className="btn btn--sm" disabled={sentToday || remind.isPending} onClick={() => remind.mutate([c.id])}>
                       {sentToday ? 'Wysłano dziś' : 'Wyślij przypomnienie'}
@@ -166,11 +166,15 @@ export function HrPage() {
         <section className="section" aria-labelledby="log-h">
           <div className="section__head">
             <h2 id="log-h" className="h-section">Wysłane przypomnienia</h2>
-            <span className="faint small">Symulacja — docelowo e-mail lub zadanie w EZD</span>
+            <span className="faint small" title="Symulacja — docelowo e-mail lub zadanie w EZD">Symulacja — docelowo e-mail lub zadanie w EZD</span>
           </div>
           <ul className="log panel">
             {log.map((l, i) => (
-              <li key={i}><span className="num faint">{fmtDate(l.date)}</span> {l.text}</li>
+              <li key={i} title={`${fmtDate(l.date)} ${l.text}`}>
+                <Bell className="log__icon" size={16} aria-hidden="true" />
+                <span className="num faint">{fmtDate(l.date)}</span>
+                <span className="log__text">{l.text}</span>
+              </li>
             ))}
           </ul>
         </section>

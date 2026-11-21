@@ -1,45 +1,49 @@
 /* Design tokens — Kompas Kompetencji.
-   One institutional accent (navy), neutral greys, semantic colours only for status,
-   and a single diverging palette for the 1–3–5–7–9 scale used everywhere. */
+   Clean public-service look: white cards on a light grey canvas, one blue accent,
+   red only for errors/alerts, and a single diverging palette for the 1–3–5–7–9 scale.
+   Inspired by the readability of public e-service apps; no official branding. */
 :root {
-  /* Neutrals */
+  /* Neutrals: white surfaces on a light grey canvas */
   --gray-0: #ffffff;
-  --gray-25: #fafbfc;
-  --gray-50: #f4f5f7;
-  --gray-100: #eceef1;
-  --gray-200: #dfe2e7;
-  --gray-300: #c9ced6;
-  --gray-400: #9aa1ac;
-  --gray-500: #6c7480;
-  --gray-600: #525a66;
-  --gray-700: #3a414b;
-  --gray-900: #1a1e24;
+  --gray-25: #f8f9fb;
+  --gray-50: #f2f4f7;
+  --gray-100: #e9ecf1;
+  --gray-200: #dde1e8;
+  --gray-300: #c5cbd5;
+  --gray-400: #949cab;
+  --gray-500: #5d6675;
+  --gray-600: #4a5260;
+  --gray-700: #343b47;
+  --gray-900: #1b1f26;
 
-  /* Accent: institutional navy */
-  --navy-900: #13284d;
-  --navy-800: #1d3a6e;
-  --navy-700: #284b87;
-  --navy-100: #e4eaf4;
-  --navy-50: #f1f4f9;
+  /* Accent: one blue (public-service style, not any official brand) */
+  --blue-900: #083a78;
+  --blue-800: #0b4ea2;
+  --blue-700: #1d63bd;
+  --blue-200: #bcd0ee;
+  --blue-100: #e1ebf8;
+  --blue-50: #f0f5fc;
 
   /* Semantic roles */
   --bg-app: var(--gray-50);
   --bg-surface: var(--gray-0);
   --bg-subtle: var(--gray-25);
   --bg-muted: var(--gray-100);
-  --bg-hover: #f0f2f5;
+  --bg-hover: #f0f4fa;
   --border: var(--gray-200);
   --border-strong: var(--gray-300);
   --text: var(--gray-900);
   --text-secondary: var(--gray-600);
   --text-muted: var(--gray-500);
   --text-faint: var(--gray-400);
-  --accent: var(--navy-800);
-  --accent-hover: var(--navy-900);
-  --accent-subtle: var(--navy-100);
-  --accent-faint: var(--navy-50);
+  --accent: var(--blue-800);
+  --accent-hover: var(--blue-900);
+  --accent-subtle: var(--blue-100);
+  --accent-border: var(--blue-200);
+  --accent-faint: var(--blue-50);
   --on-accent: #ffffff;
-  --focus: #2f6fdb;
+  --focus: #1d63bd;
+  --focus-ring: rgb(29 99 189 / 0.25);
 
   /* Status (only for deadlines / results) */
   --ok: #1e6b43;
@@ -48,38 +52,37 @@
   --warn: #8a5300;
   --warn-bg: #fcf1dc;
   --warn-border: #efd29a;
-  --danger: #a8231a;
-  --danger-bg: #fbeae8;
-  --danger-border: #f0c0bb;
+  --danger: #c0161d;
+  --danger-bg: #fdecec;
+  --danger-border: #f3c2c3;
 
-  /* Score scale 1–3–5–7–9 (diverging: red → neutral → navy) */
-  --score-1: #a8231a;
-  --score-1-bg: #fbe8e6;
-  --score-3: #b5621b;
+  /* Score scale 1–3–5–7–9 (diverging: red → neutral → blue) */
+  --score-1: #c0161d;
+  --score-1-bg: #fdecec;
+  --score-3: #a85a17;
   --score-3-bg: #fbeedf;
   --score-5: #4f5866;
   --score-5-bg: #eceef2;
-  --score-7: #2f5c99;
-  --score-7-bg: #e3ebf6;
-  --score-9: #1d3a6e;
-  --score-9-bg: #d6e0f0;
+  --score-7: #2a66b8;
+  --score-7-bg: #e4edf9;
+  --score-9: #0b4ea2;
+  --score-9-bg: #d6e4f6;
 
   /* Typography */
-  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-serif: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --text-xs: 11.5px;
-  --text-sm: 12.5px;
+  --text-xs: 12px;
+  --text-sm: 13px;
   --text-base: 14px;
   --text-md: 15px;
-  --text-lg: 17px;
-  --text-xl: 20px;
-  --text-2xl: 24px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 26px;
   --leading-tight: 1.25;
-  --leading: 1.45;
+  --leading: 1.5;
   --leading-loose: 1.6;
   --weight-regular: 400;
-  --weight-medium: 500;
+  --weight-medium: 400; /* Open Sans ships 400 + 600 only; emphasis is 600 */
   --weight-semibold: 600;
 
   /* Spacing (4px grid) */
@@ -94,14 +97,16 @@
   --s-12: 48px;
 
   /* Shape */
-  --radius-sm: 3px;
-  --radius: 4px;
-  --radius-lg: 6px;
-  --shadow-pop: 0 4px 16px rgb(19 40 77 / 0.12), 0 0 0 1px rgb(19 40 77 / 0.06);
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-pop: 0 6px 20px rgb(16 24 40 / 0.12), 0 0 0 1px rgb(16 24 40 / 0.05);
 
   /* Layout */
-  --topbar-h: 44px;
-  --nav-w: 72px;
+  --topbar-h: 56px;
+  --nav-w: 92px;
   --rail-w: 248px;
   --assistant-w: 360px;
 }

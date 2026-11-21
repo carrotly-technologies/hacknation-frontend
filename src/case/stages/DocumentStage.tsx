@@ -38,7 +38,7 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
             {steps.map((s, i) => (
               <li key={s.label} className={`steps__item ${s.done ? 'is-done' : ''}`}>
                 <span className="steps__num num">{i + 1}</span>
-                <span className="steps__label">{s.label}</span>
+                <span className="steps__label" title={s.label}>{s.label}</span>
                 <span className="steps__date num">{s.done ? (s.date ? fmtDate(s.date) : 'tak') : '—'}</span>
               </li>
             ))}

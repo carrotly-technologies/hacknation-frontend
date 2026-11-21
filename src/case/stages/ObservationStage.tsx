@@ -146,10 +146,10 @@ export function ObservationStage({ detail, model, criteria, stage }: StageProps)
                   <span className="timeline__date num">{fmtDate(o.date)}</span>
                   <div className="timeline__body">
                     <div className="timeline__meta">
-                      <strong>{competencyName(model, o.criterionId)}</strong>
+                      <strong title={competencyName(model, o.criterionId)}>{competencyName(model, o.criterionId)}</strong>
                       <span className={`tag ${o.kind === 'STRENGTH' ? 'tag--ok' : 'tag--warn'}`}>{o.kind === 'STRENGTH' ? 'mocna strona' : 'do rozwoju'}</span>
                     </div>
-                    {indicatorName(o) && <p className="timeline__ind">{indicatorName(o)}</p>}
+                    {indicatorName(o) && <p className="timeline__ind" title={indicatorName(o) ?? undefined}>{indicatorName(o)}</p>}
                     <dl className="sdr">
                       <dt>Sytuacja</dt>
                       <dd>{o.situation}</dd>
@@ -171,7 +171,7 @@ export function ObservationStage({ detail, model, criteria, stage }: StageProps)
             {criteria.all.map((c) => (
               <li key={c}>
                 <button type="button" className={`coverage__row ${filter === c ? 'is-active' : ''}`} onClick={() => setFilter(filter === c ? '' : c)}>
-                  <span className="coverage__name">{competencyName(model, c)}</span>
+                  <span className="coverage__name" title={competencyName(model, c)}>{competencyName(model, c)}</span>
                   <span className="coverage__bar" aria-hidden="true">
                     {Array.from({ length: Math.max(3, counts[c]) }, (_, i) => (
                       <span key={i} className={i < counts[c] ? 'is-on' : ''} />
