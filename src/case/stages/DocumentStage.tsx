@@ -11,13 +11,15 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
   const info = detail.stages.find((s) => s.id === stage)!
   const act = useCaseAction(detail.id)
   const isFirst = detail.path === 'FIRST'
-  const sent = detail.availableActions
-    ? !detail.availableActions.includes('SEND_FOR_ACK') && !!detail.signedByEvaluatorOn
-    : detail.status !== 'W_TOKU' || !!detail.acknowledgedOn
+  // SEND_FOR_ACK stays available after the handover (it generates a new link), so the date decides.
+  const sent =
+    detail.sentForAckOn !== undefined
+      ? !!detail.sentForAckOn || !!detail.acknowledgedOn
+      : detail.status !== 'W_TOKU' || !!detail.acknowledgedOn
   const acked = !!detail.acknowledgedOn
   const steps = [
     { label: 'Ocena podpisana przez oceniającego', date: detail.signedByEvaluatorOn, done: !!detail.signedByEvaluatorOn },
-    { label: 'Przekazana ocenianemu do zapoznania', date: null, done: sent },
+    { label: 'Przekazana ocenianemu do zapoznania', date: detail.sentForAckOn ?? null, done: sent },
     { label: isFirst ? 'Oceniany zapoznał się z pierwszą oceną' : 'Oceniany zapoznał się z oceną', date: detail.acknowledgedOn, done: acked },
   ]
   const nextCycle = detail.history.filter((h) => h.text.startsWith('Nowy cykl')).at(-1)
@@ -66,7 +68,7 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
                 <button type="button" className="btn btn--primary" disabled={act.isPending || !allows(detail, 'EMPLOYEE_ACK_ASSESSMENT')} onClick={() => act.mutate('EMPLOYEE_ACK_ASSESSMENT')}>
                   Oceniany zapoznał się z oceną
                 </button>
-                <BlockedReason>W wersji demonstracyjnej potwierdzenie ocenianego symulujemy przyciskiem. Datą zapoznania będzie dzisiejsza data.</BlockedReason>
+                <BlockedReason>Oceniany potwierdza zapoznanie przez link z części II arkusza. W wersji demonstracyjnej możesz też zasymulować potwierdzenie tym przyciskiem; datą zapoznania będzie dzisiejsza data.</BlockedReason>
               </>
             )}
             <MutationError error={act.error} />

@@ -27,7 +27,10 @@ export function useCivilServiceGrades() {
   })
 }
 
-export function competencyName(model: CompetencyModel | undefined, id: string): string {
+/** The part of the competency model a sheet needs (the public page of the assessed person gets only this). */
+export type ModelNames = { scale: CompetencyModel['scale']; competencies: Pick<Competency, 'id' | 'name'>[] }
+
+export function competencyName(model: ModelNames | undefined, id: string): string {
   const c = model?.competencies.find((x) => x.id === id)
   return c ? sentenceCase(c.name) : id
 }
@@ -45,7 +48,10 @@ export interface CaseCriteria {
 }
 
 /** Criteria assessed in this case: mandatory for the sheet + additional from part I. */
-export function caseCriteria(detail: CaseDetail, sheets: Sheet[] | undefined): CaseCriteria {
+export function caseCriteria(
+  detail: Pick<CaseDetail, 'path' | 'sheetId'> & { partI: Pick<CaseDetail['partI'], 'additionalCriteria'> },
+  sheets: Sheet[] | undefined,
+): CaseCriteria {
   const sheetId = detail.path === 'FIRST' ? 'FIRST' : detail.sheetId
   const sheet = sheets?.find((s) => s.id === sheetId)
   const mandatory = sheet?.mandatoryCriteria ?? []

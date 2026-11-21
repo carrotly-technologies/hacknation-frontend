@@ -1,0 +1,46 @@
+.root {
+  min-height: 100dvh;
+  padding: var(--s-6) var(--s-4) var(--s-12);
+  background: var(--bg-app);
+}
+
+.inner {
+  display: grid;
+  gap: var(--s-6);
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.lead {
+  margin-top: var(--s-2);
+  color: var(--text-muted);
+}
+
+.card {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.h2 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}

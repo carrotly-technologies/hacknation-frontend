@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { CasePage } from './case/CasePage'
+import { AckPage } from './pages/AckPage'
 import { AdminUsersPage } from './pages/AdminUsersPage'
 import { DemoFormPage } from './pages/DemoFormPage'
 import { HrPage } from './pages/HrPage'
@@ -19,6 +20,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/logowanie" element={<LoginPage />} />
+      {/* Public: the assessed person opens the link from the evaluator, without an account or the app shell. */}
+      <Route path="/zapoznanie/:token" element={<AckPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<RequireRole roles={['SUPERVISOR']} />}>
           <Route path="/teczka/:id/arkusz" element={<SheetPage />} />

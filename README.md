@@ -40,6 +40,10 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   (OSP analysis, the "Formularz oceny" sheet wizard filled part by part — parts I, II, III, current part in `?czesc=`, also opened for the assessment period (no sub-step tiles; the old `/obserwacje` link redirects there, and the assessment talk starts in step 4), rubric assessment with system suggestion and supervisor
   decision, justification/IPRZ with formal check, document), docked assistant panel;
 - `/teczka/:id/arkusz` — official sheet preview (parts I/II/III); print it to get the PDF;
+- `/zapoznanie/:token` — public page for the assessed person (no sign-in, outside the app shell): the signed sheet
+  read only, the notice and the "zapoznałem(-łam) się" confirmation (`GET/POST /api/ack/:token`). The supervisor
+  generates the link in part II of the sheet wizard ("Zapoznanie ocenianego z oceną"); the full address is built from
+  this app's origin (`window.location.origin` + `ackLink` from the API);
 - `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant;
 - `/ustawienia` — appearance settings for every role (gear icon in the top bar; on phones in "Menu"): theme
   system/light/dark, text size 100/125/150%, high contrast. Kept only in this browser (`localStorage`
