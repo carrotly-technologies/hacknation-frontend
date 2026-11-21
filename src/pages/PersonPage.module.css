@@ -28,8 +28,29 @@
   overflow-wrap: anywhere;
 }
 
-.ospTitle {
-  font-weight: var(--weight-semibold);
+.ospHead {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.ospHeadTitle {
+  font-weight: var(--weight-regular);
+  color: var(--text-muted);
+}
+
+.supervisorPosition {
+  display: block;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.edit {
+  margin-top: var(--s-3);
+}
+
+.form {
+  display: grid;
+  gap: var(--s-4);
 }
 
 .osp h3 {

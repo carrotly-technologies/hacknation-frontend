@@ -1,4 +1,4 @@
-import { apiGet } from './client'
+import { apiGet, apiPatch } from './client'
 import type { CaseStatus, Path, Person, StageId } from './cases'
 
 /** Contract of GET /api/people/:personId (backend src/people/people.types.ts). */
@@ -56,3 +56,9 @@ export interface PersonProfile {
 
 export const getPerson = (personId: string, signal?: AbortSignal) =>
   apiGet<PersonProfile>(`/people/${encodeURIComponent(personId)}`, signal)
+
+/** Body of PATCH /api/people/:personId: all fields required, `hiredOn` not after today. */
+export type UpdatePerson = Pick<Person, 'position' | 'unit' | 'employment' | 'hiredOn'>
+
+export const updatePerson = (personId: string, data: UpdatePerson) =>
+  apiPatch<PersonProfile>(`/people/${encodeURIComponent(personId)}`, data)
