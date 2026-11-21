@@ -10,6 +10,7 @@ import {
   EmptyState,
   ErrorSummary,
   Field,
+  FormProgress,
   InfoList,
   InfoRow,
   InlineAlert,
@@ -27,6 +28,7 @@ import {
   TextInput,
   UserMenu,
   type ButtonVariant,
+  type FormProgressStep,
   type RadioMatrixColumn,
   type RadioMatrixGroup,
   type StageStep,
@@ -39,6 +41,28 @@ import s from './UiPage.module.css'
 const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'tertiary', 'text']
 
 const STEP_LABELS = ['Analiza opisu stanowiska', 'Proponowany formularz', 'Formularz oceny', 'Formularz oceny kompetencji', 'Weryfikacja formularza', 'Ocena końcowa']
+
+const PART_LABELS = ['Ocena okresowa', 'Cele i zadania', 'Podsumowanie i podpisy']
+const COMPETENCY_LABELS = [
+  'Zorientowanie na klienta',
+  'Komunikacja',
+  'Współpraca',
+  'Zarządzanie informacją',
+  'Rozwiązywanie problemów',
+  'Kreatywność i innowacyjność',
+  'Odporność na stres',
+  'Planowanie i organizacja pracy',
+]
+
+/** Demo form progress over `labels` with `current` parts done before it; with `links` every part is a link. */
+function demoParts(labels: string[], current: number, links = false): FormProgressStep[] {
+  return labels.map((label, i) => ({
+    key: String(i),
+    label,
+    state: i < current ? 'done' : i === current ? 'current' : 'todo',
+    to: links ? '#postep-formularza' : undefined,
+  }))
+}
 
 /** Demo stepper with `current` steps done before it (index of the current step; = length means all done). */
 function demoSteps(current: number): StageStep[] {
@@ -333,6 +357,25 @@ export function UiPage() {
           <Stepper current={1} total={3} />
           <Stepper current={2} total={3} />
           <Stepper current={3} total={3} />
+        </div>
+      </Section>
+
+      <Section
+        id="postep-formularza"
+        title="Postęp formularza"
+        note="Części formularza zawsze w jednej linii: nazwy, które się nie mieszczą, są ucinane „…” (pełna nazwa w podpowiedzi), a gdy kolumna jest węższa niż ok. 6rem, widać tylko numery i ✓. Zwęź okno albo powiększ tekst w ustawieniach, żeby to zobaczyć."
+      >
+        <div className={s.block}>
+          <h3 className={s.h3}>3 części (Formularz oceny)</h3>
+          <FormProgress unit="Część" label="Części arkusza (przykład)" steps={demoParts(PART_LABELS, 1)} />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>5 kompetencji, kroki są linkami</h3>
+          <FormProgress unit="Kompetencja" label="Kompetencje (przykład: 5)" steps={demoParts(COMPETENCY_LABELS.slice(0, 5), 2, true)} />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>8 kompetencji, kroki są linkami</h3>
+          <FormProgress unit="Kompetencja" label="Kompetencje (przykład: 8)" steps={demoParts(COMPETENCY_LABELS, 5, true)} />
         </div>
       </Section>
 

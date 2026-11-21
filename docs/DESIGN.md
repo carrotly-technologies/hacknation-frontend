@@ -59,7 +59,7 @@ may scroll sideways (WCAG 1.4.4, 1.4.10); on phones buttons wrap their label.
 | `Snackbar` | short confirmation with optional action, in a polite live region. |
 | `EmptyState`, `Spinner`, `Stepper`, `SearchBar` | empty lists, loading, "Krok X z Y" + progress bar (`unit`, `name`: "Część 2 z 3: Ocena okresowa"), search form. |
 | `StageStepper` | horizontal process stepper (chevrons): done = dark + ✓, current = `--accent-subtle`, future = outlined; the step on screen has `aria-current="step"`; every step is a link; < 768px numbered dots + "Krok X z Y: name". |
-| `FormProgress` | progress of a multi-part form ("Formularz oceny", "Formularz oceny kompetencji"): full-width `Stepper` bar with the "{unit} X z N: name" counter for screen readers only, then the parts in a grid (`auto-fit, minmax(10rem, 1fr)`, one column < 600px) with numbered circles, ✓ for done, the current one marked (`aria-current="step"`); a step with `to` is a link; names on one line with "…" and `title`. |
+| `FormProgress` | progress of a multi-part form ("Formularz oceny", "Formularz oceny kompetencji"): full-width `Stepper` bar with the "{unit} X z N: name" counter for screen readers only, then the parts always in one row (`repeat(var(--n), minmax(0, 1fr))`, `--n` = number of parts) with numbered circles, ✓ for done, the current one marked (`aria-current="step"`); a step with `to` is a link; names on one line with "…" and `title`; a column < 6rem (container query) shows only the circle, the name stays in `title` and for screen readers. |
 | `BackLink` | "‹ Powrót" above the page content (`--link`, 44px target). |
 | `UserMenu` | top-bar avatar + name + role + chevron; disclosure menu (Esc / click outside close it). |
 

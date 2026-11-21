@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { cx } from './cx'
 import s from './FormProgress.module.css'
@@ -25,7 +26,8 @@ type Props = {
 /**
  * Progress of a multi-part form: a full-width bar (its "{unit} X z N: name" counter is for screen readers
  * only) and the list of parts with numbered circles, a check for done parts and the current part marked
- * with aria-current="step". Steps with `to` are links. Shared by "Formularz oceny" and "Formularz oceny
+ * with aria-current="step". Steps with `to` are links. The parts always sit in one row: names that do not
+ * fit are cut with "…" (full name in `title`), and in very narrow columns only the circles are shown. Shared by "Formularz oceny" and "Formularz oceny
  * kompetencji", so both forms look and behave the same.
  */
 export function FormProgress({ steps, unit, label }: Props) {
@@ -35,7 +37,7 @@ export function FormProgress({ steps, unit, label }: Props) {
   return (
     <div className={s.root}>
       <Stepper unit={unit} current={current} total={steps.length} name={index >= 0 ? steps[index].label : undefined} hideText />
-      <ol className={s.list} aria-label={label ?? `${unit} formularza`}>
+      <ol className={s.list} style={{ '--n': steps.length } as CSSProperties} aria-label={label ?? `${unit} formularza`}>
         {steps.map((st, i) => {
           const n = i + 1
           const isCurrent = st.state === 'current'
