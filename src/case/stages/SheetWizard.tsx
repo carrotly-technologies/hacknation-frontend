@@ -4,6 +4,7 @@ import type { CaseDetail } from '../../api/cases'
 import { FormProgress, InfoList, InfoRow, InlineAlert } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
+import { scrollPageToTop } from '../../lib/scrollPage'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetPartI } from './SheetPartI'
@@ -78,7 +79,7 @@ export function SheetWizard(props: StageProps) {
 
   const goTo = (n: number) => {
     setParams((p) => { p.set('czesc', String(n)); return p })
-    document.querySelector('.case-work')?.scrollTo({ top: 0 })
+    scrollPageToTop()
   }
 
   // "Dalej" after part III goes straight to step 4, "Formularz oceny kompetencji". The assessment period has no

@@ -18,6 +18,7 @@ import {
 import { useOpenAssessmentForm, usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate, sentenceCase } from '../../lib/format'
 import { competencyName, findCompetency } from '../../lib/model'
+import { scrollPageToTop } from '../../lib/scrollPage'
 import { caseUrl, isPartIIDraft, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentStage.module.css'
@@ -72,7 +73,7 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 
   // Every change of competency (the progress bar links, "Dalej", "Wstecz") starts at the top of the form.
   useEffect(() => {
-    document.querySelector('.case-work')?.scrollTo({ top: 0 })
+    scrollPageToTop()
   }, [selected])
 
   if (!competency) {
