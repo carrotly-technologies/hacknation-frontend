@@ -10,9 +10,12 @@ npm install
 cp .env.example .env   # optional
 ```
 
-| Variable       | Default | Description                                                                 |
-| -------------- | ------- | --------------------------------------------------------------------------- |
-| `VITE_API_URL` | empty   | Backend base URL. Empty = same origin, via the dev proxy `/api` -> `:3000`  |
+| Variable             | Default | Description                                                                                       |
+| -------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `VITE_API_URL`       | empty   | Backend base URL. Empty = same origin, via the dev proxy `/api` -> `:3000`                        |
+| `VITE_DEMO_ACCOUNTS` | empty   | `false` hides the demo accounts (one-click sign-in) on `/logowanie`; anything else shows them     |
+
+Both are read at build time (`npm run build`, Docker build args).
 
 ## Run
 
@@ -26,7 +29,8 @@ The app is **Kompas Kompetencji** (UI in Polish), a work tool for civil-service
 supervisors and HR, built around the assessment file ("teczka oceny"):
 
 - `/logowanie` — sign-in with login and password; the role (supervisor, HR, admin) comes from the account
-  (demo accounts: backend README). The token sits in `sessionStorage` and goes with every API call
+  (demo accounts: backend README; below the form one card per demo account signs in with one click,
+  list in `src/lib/demoAccounts.ts`, hidden with `VITE_DEMO_ACCOUNTS=false`). The token sits in `sessionStorage` and goes with every API call
   (`Authorization: Bearer`); a 401 sends you back to sign-in. Routes and the menu depend on the role, and a
   route for another role redirects to your start page (`src/lib/useAuth.ts`, `src/shell/RequireAuth.tsx`);
 - `/admin/uzytkownicy` — admin only: accounts and their roles;
@@ -74,5 +78,6 @@ Build and run the image locally:
 
 ```bash
 docker build --build-arg VITE_API_URL=http://localhost:3000 -t hacknation-frontend .
+# add --build-arg VITE_DEMO_ACCOUNTS=false to build without the demo accounts
 docker run --rm -p 8080:80 hacknation-frontend   # http://localhost:8080
 ```

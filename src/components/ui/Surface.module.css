@@ -61,6 +61,44 @@
   box-shadow: var(--focus-shadow);
 }
 
+/* Card as a button: same look as a link tile */
+.cardButton {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+}
+
+.cardButton .cardTitle,
+.cardButton .cardBody {
+  display: block;
+}
+
+.cardButton:disabled {
+  cursor: not-allowed;
+}
+
+.cardButton:disabled:not(.cardLoading) {
+  background: var(--bg-muted);
+  box-shadow: none;
+}
+
+.cardButton:disabled:not(.cardLoading) .cardTitle,
+.cardButton:disabled:not(.cardLoading) .chevron {
+  color: var(--text-muted);
+}
+
+.cardButton:disabled:hover {
+  border-color: var(--border);
+}
+
+.cardButton:disabled:hover .cardTitle {
+  text-decoration: none;
+}
+
+.cardLoading {
+  cursor: progress;
+}
+
 .cardIcon {
   display: inline-flex;
   align-items: center;

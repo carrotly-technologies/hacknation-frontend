@@ -9,6 +9,9 @@ COPY . .
 # Backend base URL baked into the bundle at build time (empty = same origin).
 ARG VITE_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL
+# "false" hides the demo accounts on the sign-in page.
+ARG VITE_DEMO_ACCOUNTS=""
+ENV VITE_DEMO_ACCOUNTS=$VITE_DEMO_ACCOUNTS
 RUN npm run build
 
 # ---- runtime ----

@@ -2,6 +2,7 @@ import { ChevronRight } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { cx } from './cx'
+import { Spinner } from './Spinner'
 import s from './Surface.module.css'
 
 type Props = {
@@ -12,11 +13,17 @@ type Props = {
   children?: ReactNode
   /** Makes the whole card a link (service tile). */
   to?: string
+  /** Makes the whole card a button (action tile); the body may wrap to several lines. */
+  onClick?: () => void
+  /** Button card only: shows a spinner instead of the chevron and blocks clicks. */
+  loading?: boolean
+  /** Button card only. */
+  disabled?: boolean
   forceState?: 'hover' | 'focus'
   className?: string
 }
 
-export function Card({ title, as: H = 'h3', icon, children, to, forceState, className }: Props) {
+export function Card({ title, as: H = 'h3', icon, children, to, onClick, loading, disabled, forceState, className }: Props) {
   if (to) {
     return (
       <Link to={to} className={cx(s.card, s.clickable, className)} data-force={forceState}>
@@ -27,6 +34,25 @@ export function Card({ title, as: H = 'h3', icon, children, to, forceState, clas
         </span>
         <ChevronRight className={s.chevron} size={22} aria-hidden="true" />
       </Link>
+    )
+  }
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
+        className={cx(s.card, s.clickable, s.cardButton, loading && s.cardLoading, className)}
+        data-force={forceState}
+      >
+        {icon && <span className={s.cardIcon}>{icon}</span>}
+        <span>
+          {title && <span className={s.cardTitle}>{title}</span>}
+          {children && <span className={s.cardBody}>{children}</span>}
+        </span>
+        {loading ? <Spinner label="Trwa ładowanie" /> : <ChevronRight className={s.chevron} size={22} aria-hidden="true" />}
+      </button>
     )
   }
   return (

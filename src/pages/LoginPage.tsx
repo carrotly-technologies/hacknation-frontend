@@ -2,11 +2,15 @@ import { Compass, LogIn } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ApiError, errorMessage } from '../api/client'
-import { Button, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
-import { HOME_BY_ROLE, LOGIN_PATH, useAuth } from '../lib/useAuth'
+import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
+import { DEMO_ACCOUNTS, DEMO_ACCOUNTS_ENABLED, DEMO_PASSWORD } from '../lib/demoAccounts'
+import { HOME_BY_ROLE, LOGIN_PATH, ROLE_LABEL, useAuth } from '../lib/useAuth'
 import s from './LoginPage.module.css'
 
-/** Sign-in with login and password. The role comes from the account; there are no shortcuts to demo accounts. */
+/**
+ * Sign-in with login and password. The role comes from the account.
+ * Below the form: one-click sign-in as a demo account (POC, hidden with VITE_DEMO_ACCOUNTS=false).
+ */
 export function LoginPage() {
   const { user, signIn } = useAuth()
   const navigate = useNavigate()
@@ -16,13 +20,33 @@ export function LoginPage() {
   const [errors, setErrors] = useState<FormError[]>([])
   const [failure, setFailure] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  /** Login of the demo account being signed in, if any. */
+  const [demoBusy, setDemoBusy] = useState<string | null>(null)
 
   const next = safeNext(params.get('next'))
 
   if (user) return <Navigate to={next ?? HOME_BY_ROLE[user.role]} replace />
 
+  const pending = busy || demoBusy !== null
+
+  /** Shared by the form and the demo cards; throws nothing, shows the failure in the alert. */
+  const attempt = async (l: string, p: string): Promise<boolean> => {
+    setFailure(null)
+    try {
+      const me = await signIn(l, p)
+      navigate(next ?? HOME_BY_ROLE[me.role], { replace: true })
+      return true
+    } catch (err) {
+      setFailure(
+        err instanceof ApiError && err.status === 401 ? 'Nieprawidłowy login lub hasło. Sprawdź dane i spróbuj ponownie.' : errorMessage(err),
+      )
+      return false
+    }
+  }
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (pending) return
     const errs: FormError[] = []
     if (!login.trim()) errs.push({ id: 'login', message: 'Podaj login' })
     if (!password) errs.push({ id: 'password', message: 'Podaj hasło' })
@@ -30,17 +54,17 @@ export function LoginPage() {
     setFailure(null)
     if (errs.length) return
     setBusy(true)
-    try {
-      const me = await signIn(login.trim(), password)
-      navigate(next ?? HOME_BY_ROLE[me.role], { replace: true })
-    } catch (err) {
-      setPassword('')
-      setFailure(
-        err instanceof ApiError && err.status === 401 ? 'Nieprawidłowy login lub hasło. Sprawdź dane i spróbuj ponownie.' : errorMessage(err),
-      )
-    } finally {
-      setBusy(false)
-    }
+    const ok = await attempt(login.trim(), password)
+    if (!ok) setPassword('')
+    setBusy(false)
+  }
+
+  const onDemo = async (demoLogin: string) => {
+    if (pending) return
+    setErrors([])
+    setDemoBusy(demoLogin)
+    await attempt(demoLogin, DEMO_PASSWORD)
+    setDemoBusy(null)
   }
 
   const fieldError = (id: string) => errors.find((x) => x.id === id)?.message
@@ -88,10 +112,40 @@ export function LoginPage() {
               />
             )}
           </Field>
-          <Button type="submit" loading={busy} icon={<LogIn size={20} aria-hidden="true" />} fullWidth>
+          <Button
+            type="submit"
+            loading={busy}
+            disabled={demoBusy !== null}
+            icon={<LogIn size={20} aria-hidden="true" />}
+            fullWidth
+          >
             Zaloguj się
           </Button>
         </form>
+
+        {DEMO_ACCOUNTS_ENABLED && (
+          <section className={s.demo} aria-labelledby="demo-accounts">
+            <h2 className={s.h2} id="demo-accounts">
+              Konta demonstracyjne
+            </h2>
+            <p className={s.demoLead}>Wybierz osobę, żeby zalogować się jednym kliknięciem i zobaczyć widok jej roli.</p>
+            <ul className={s.demoList}>
+              {DEMO_ACCOUNTS.map((a) => (
+                <li key={a.login}>
+                  <Card
+                    title={a.name}
+                    onClick={() => void onDemo(a.login)}
+                    loading={demoBusy === a.login}
+                    disabled={pending && demoBusy !== a.login}
+                  >
+                    <span className={s.demoRole}>{ROLE_LABEL[a.role]}</span> · {a.description}
+                    <span className={s.demoLogin}>Login: {a.login}</span>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </main>
   )
