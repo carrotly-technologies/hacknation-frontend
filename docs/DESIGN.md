@@ -45,7 +45,7 @@ emblems or product names**.
 | `Accordion` | native `<details>`; for content pages, never inside forms. |
 | `Dialog` | native `<dialog>` (focus trap, Esc); bottom sheet on phones. |
 | `Snackbar` | short confirmation with optional action, in a polite live region. |
-| `EmptyState`, `Spinner`, `Stepper`, `SearchBar` | empty lists, loading, "Krok X z Y" + progress bar, search form. |
+| `EmptyState`, `Spinner`, `Stepper`, `SearchBar` | empty lists, loading, "Krok X z Y" + progress bar (`unit`, `name`: "Część 2 z 3: Ocena okresowa"), search form. |
 | `StageStepper` | horizontal process stepper (chevrons): done = dark + ✓, current = `--accent-subtle`, future = outlined; the step on screen has `aria-current="step"`; every step is a link; < 768px numbered dots + "Krok X z Y: name". |
 | `BackLink` | "‹ Powrót" above the page content (`--link`, 44px target). |
 | `UserMenu` | top-bar avatar + name + role + chevron; disclosure menu (Esc / click outside close it). |
