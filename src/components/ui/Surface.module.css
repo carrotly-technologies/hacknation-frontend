@@ -135,6 +135,8 @@
 }
 
 .infoValue {
+  /* Below 768px the value goes under its label (the action stays on the right). */
+  grid-column: 1;
   color: var(--text);
   font-size: var(--text-body);
   font-weight: var(--weight-semibold);
@@ -149,6 +151,10 @@
 @media (min-width: 768px) {
   .infoRow {
     grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr) auto;
+  }
+
+  .infoValue {
+    grid-column: 2;
   }
 
   .infoAction {
