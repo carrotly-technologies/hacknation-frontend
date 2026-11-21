@@ -1,17 +1,37 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ApiError } from '../api/client'
-import { getPerson, type HistoryItem, type PersonOsp, type PersonProfile } from '../api/people'
+import type { Person } from '../api/cases'
+import { getPerson, updatePerson, type HistoryItem, type PersonOsp, type PersonProfile, type UpdatePerson } from '../api/people'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { BackLink, Button, ButtonLink, Card, EmptyState, InfoList, InfoRow, InlineAlert, PageLayout, StatusBadge } from '../components/ui'
+import {
+  Accordion,
+  BackLink,
+  Button,
+  ButtonLink,
+  Card,
+  Dialog,
+  EmptyState,
+  ErrorSummary,
+  Field,
+  InfoList,
+  InfoRow,
+  InlineAlert,
+  PageLayout,
+  Select,
+  StatusBadge,
+  TextInput,
+  type FormError,
+} from '../components/ui'
 import { fmtDate } from '../lib/format'
 import { assessmentAction, EMPLOYMENT_LABEL, lastCompleted, RESULT_LABEL } from '../lib/people'
 import { caseUrl } from '../lib/stages'
 import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
 import s from './PersonPage.module.css'
 
-/** Employee profile: data, job description, supervisor and assessment history in one column, with one button to the right assessment. */
+/** Employee profile: data with the supervisor, job description (collapsed) and assessment history in one column, with one button to the right assessment. */
 export function PersonPage() {
   const { personId = '' } = useParams()
   const me = useMe()
@@ -34,6 +54,7 @@ export function PersonPage() {
 
   const profile = q.data
   const { person, supervisor } = profile
+  const name = `${person.firstName} ${person.lastName}`
 
   return (
     <PageLayout
@@ -45,30 +66,43 @@ export function PersonPage() {
       <LastAssessment history={profile.history} />
 
       <div className={s.sections}>
-        <Card title="Dane pracownika" as="h2">
+        <Card title="O pracowniku" as="h2">
           <InfoList>
             <InfoRow label="Komórka organizacyjna" value={person.unit} />
             <InfoRow label="Stanowisko" value={person.position} />
             <InfoRow label="Status" value={EMPLOYMENT_LABEL[person.employment]} />
             <InfoRow label="Data zatrudnienia" value={fmtDate(person.hiredOn)} />
+            <InfoRow
+              label="Przełożony"
+              value={
+                supervisor ? (
+                  <>
+                    {supervisor.firstName} {supervisor.lastName}
+                    <span className={s.supervisorPosition}>{supervisor.position}</span>
+                  </>
+                ) : (
+                  'Brak danych'
+                )
+              }
+            />
           </InfoList>
+          <EditPerson person={person} name={name} />
         </Card>
-        <Card title="Opis stanowiska" as="h2">
-          <JobDescription osp={profile.osp} />
-        </Card>
-        <Card title="Przełożony" as="h2">
-          {supervisor ? (
-            <InfoList>
-              <InfoRow label="Imię i nazwisko" value={`${supervisor.firstName} ${supervisor.lastName}`} />
-              <InfoRow label="Stanowisko" value={supervisor.position} />
-              <InfoRow label="Komórka organizacyjna" value={supervisor.unit} />
-            </InfoList>
-          ) : (
-            <p>Brak danych o przełożonym.</p>
-          )}
-        </Card>
+        <Accordion
+          items={[
+            {
+              title: (
+                <span className={s.ospHead}>
+                  <span className="h-sub">Opis stanowiska</span>
+                  {profile.osp && <span className={s.ospHeadTitle}>{profile.osp.title}</span>}
+                </span>
+              ),
+              content: <JobDescription osp={profile.osp} />,
+            },
+          ]}
+        />
         <Card title="Historia ocen" as="h2">
-          <HistoryTable history={profile.history} name={`${person.firstName} ${person.lastName}`} />
+          <HistoryTable history={profile.history} name={name} />
         </Card>
       </div>
     </PageLayout>
@@ -79,7 +113,6 @@ function JobDescription({ osp }: { osp: PersonOsp | null }) {
   if (!osp) return <p>Brak opisu stanowiska w systemie</p>
   return (
     <div className={s.osp}>
-      <p className={s.ospTitle}>{osp.title}</p>
       <p>{osp.purpose}</p>
       <h3 className="h-sub">Zadania pracownika</h3>
       <ul className="bullets">
@@ -88,6 +121,86 @@ function JobDescription({ osp }: { osp: PersonOsp | null }) {
         ))}
       </ul>
     </div>
+  )
+}
+
+const EMPLOYMENT_OPTIONS = Object.entries(EMPLOYMENT_LABEL).map(([value, label]) => ({ value, label }))
+const todayIso = () => new Date().toLocaleDateString('sv-SE')
+const editable = ({ position, unit, employment, hiredOn }: Person): UpdatePerson => ({ position, unit, employment, hiredOn })
+
+/** "Edytuj informacje o pracowniku": position, unit, employment and hiring date in a dialog. */
+function EditPerson({ person, name }: { person: Person; name: string }) {
+  const qc = useQueryClient()
+  const [open, setOpen] = useState(false)
+  const [form, setForm] = useState(() => editable(person))
+  const [errors, setErrors] = useState<FormError[]>([])
+  const save = useMutation({
+    mutationFn: (data: UpdatePerson) => updatePerson(person.id, data),
+    onSuccess: (profile) => {
+      qc.setQueryData(['person', person.id], profile)
+      qc.invalidateQueries({ queryKey: ['person', person.id] })
+      qc.invalidateQueries({ queryKey: ['case'] })
+      setOpen(false)
+    },
+    onError: (err) => setErrors([{ id: 'person-position', message: err.message }]),
+  })
+  const set = (key: keyof UpdatePerson) => (e: { target: { value: string } }) => setForm({ ...form, [key]: e.target.value })
+  const errorOf = (id: string) => errors.find((e) => e.id === id)?.message
+
+  const start = () => {
+    setForm(editable(person))
+    setErrors([])
+    setOpen(true)
+  }
+  const submit = () => {
+    const next: FormError[] = []
+    if (!form.position.trim()) next.push({ id: 'person-position', message: 'Podaj stanowisko.' })
+    if (!form.unit.trim()) next.push({ id: 'person-unit', message: 'Podaj komórkę organizacyjną.' })
+    if (!form.hiredOn) next.push({ id: 'person-hired', message: 'Podaj datę zatrudnienia.' })
+    else if (form.hiredOn > todayIso()) next.push({ id: 'person-hired', message: 'Data zatrudnienia nie może być z przyszłości.' })
+    setErrors(next)
+    if (next.length === 0) save.mutate(form)
+  }
+
+  return (
+    <>
+      <div className={s.edit}>
+        <Button variant="text" onClick={start}>
+          Edytuj informacje o pracowniku
+        </Button>
+      </div>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Edytuj informacje: ${name}`}
+        actions={
+          <>
+            <Button type="button" variant="text" onClick={() => setOpen(false)}>
+              Anuluj
+            </Button>
+            <Button type="button" onClick={submit} loading={save.isPending}>
+              Zapisz
+            </Button>
+          </>
+        }
+      >
+        <div className={s.form}>
+          <ErrorSummary errors={errors} />
+          <Field label="Stanowisko" id="person-position" error={errorOf('person-position')}>
+            {(c) => <TextInput {...c} value={form.position} onChange={set('position')} />}
+          </Field>
+          <Field label="Komórka organizacyjna" id="person-unit" error={errorOf('person-unit')}>
+            {(c) => <TextInput {...c} value={form.unit} onChange={set('unit')} />}
+          </Field>
+          <Field label="Status zatrudnienia" id="person-employment">
+            {(c) => <Select {...c} options={EMPLOYMENT_OPTIONS} value={form.employment} onChange={set('employment')} />}
+          </Field>
+          <Field label="Data zatrudnienia" id="person-hired" error={errorOf('person-hired')}>
+            {(c) => <TextInput {...c} type="date" width={10} max={todayIso()} value={form.hiredOn} onChange={set('hiredOn')} />}
+          </Field>
+        </div>
+      </Dialog>
+    </>
   )
 }
 
