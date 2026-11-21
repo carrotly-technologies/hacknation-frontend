@@ -1589,11 +1589,6 @@
   margin-top: 6px;
 }
 
-.topic__crit {
-  margin-top: 4px;
-  font-size: var(--text-sm);
-}
-
 .topic__check {
   display: flex;
   align-items: flex-start;
@@ -1604,29 +1599,6 @@
 
 .topic__check .checkbox {
   margin-top: 2px;
-}
-
-.expect-table th {
-  width: 220px;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-subtle);
-  color: var(--text);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0;
-  text-transform: none;
-  vertical-align: top;
-  white-space: normal;
-}
-
-.expect-table td {
-  padding: 8px;
-}
-
-.expect-table .textarea {
-  min-height: 52px;
-  font-size: var(--text-sm);
 }
 
 .due-row {

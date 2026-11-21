@@ -18,9 +18,9 @@ import { FirstConditionsStage } from './stages/FirstConditionsStage'
 import { IntroTalkStage, ReportStage } from './stages/FirstPrepStages'
 import { JustificationStage } from './stages/JustificationStage'
 import { ObservationStage } from './stages/ObservationStage'
-import { OpeningTalkStage } from './stages/OpeningTalkStage'
 import { OspAnalysisStage } from './stages/OspAnalysisStage'
 import { SheetProposalStage } from './stages/SheetProposalStage'
+import { SheetWizard } from './stages/SheetWizard'
 import { StageNotOpen } from './stages/StageNotOpen'
 
 export interface StageProps {
@@ -176,7 +176,7 @@ function StageWorkspace(p: StageProps) {
     case 'SHEET_PROPOSAL':
       return <SheetProposalStage {...p} />
     case 'OPENING_TALK':
-      return <OpeningTalkStage {...p} />
+      return <SheetWizard {...p} />
     case 'OBSERVATION':
       return <ObservationStage {...p} />
     case 'ASSESSMENT':
