@@ -441,7 +441,10 @@
   /* ---------- Layout ---------- */
   --topbar-h: 3.5rem;
   --rail-w: 248px;
-  --assistant-w: 360px;
+  /* "Asystent AI" floating button (AssistantLauncher) and the room pages leave for it at the bottom */
+  --fab-size: 3.5rem;
+  --fab-offset: var(--s-5);
+  --fab-clearance: calc(var(--fab-size) + var(--fab-offset) + var(--s-2));
 }
 
 @media (prefers-reduced-motion: reduce) {

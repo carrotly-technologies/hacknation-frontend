@@ -14,6 +14,8 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import { resetDemo, type Role } from '../api/cases'
+import { AssistantLauncher } from '../assistant/AssistantLauncher'
+import { useAssistant } from '../assistant/useAssistant'
 import { BrandMark } from '../components/BrandMark'
 import { ApiStatus } from '../components/ApiStatus'
 import { UserMenu } from '../components/ui'
@@ -24,6 +26,7 @@ export function AppShell() {
   const { signOut } = useAuth()
   const location = useLocation()
   const qc = useQueryClient()
+  const assistant = useAssistant()
   // Below 1024px the links live under a "Menu" button (CSS hides the button on wider screens)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -63,7 +66,8 @@ export function AppShell() {
   const settingsActive = isUnder(location.pathname, '/ustawienia')
 
   return (
-    <div className="shell">
+    // data-fab: the pages leave room at the bottom for the "Asystent AI" button (app.css)
+    <div className="shell" data-fab={assistant.enabled || undefined}>
       <a className="skip-link" href="#main">
         Przejdź do treści
       </a>
@@ -155,6 +159,7 @@ export function AppShell() {
       <main className="main" id="main" tabIndex={-1}>
         <Outlet />
       </main>
+      <AssistantLauncher />
     </div>
   )
 }

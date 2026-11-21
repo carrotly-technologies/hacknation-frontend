@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router'
+import { AssistantProvider } from './assistant/AssistantProvider'
 import { CasePage } from './case/CasePage'
 import { AckPage } from './pages/AckPage'
 import { AdminUsersPage } from './pages/AdminUsersPage'
@@ -22,7 +23,14 @@ export default function App() {
       <Route path="/logowanie" element={<LoginPage />} />
       {/* Public: the assessed person opens the link from the evaluator, without an account or the app shell. */}
       <Route path="/zapoznanie/:token" element={<AckPage />} />
-      <Route element={<RequireAuth />}>
+      {/* The assistant's conversation lives for the signed-in session (also across the sheet print view). */}
+      <Route
+        element={
+          <RequireAuth>
+            <AssistantProvider />
+          </RequireAuth>
+        }
+      >
         <Route element={<RequireRole roles={['SUPERVISOR']} />}>
           <Route path="/teczka/:id/arkusz" element={<SheetPage />} />
         </Route>
