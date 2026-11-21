@@ -1,10 +1,13 @@
 import { Sparkles, X } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
+import { useLocation } from 'react-router'
 import { useMediaQuery } from '../components/ui/useMediaQuery'
 import { AssistantPanel } from './AssistantPanel'
 import { useAssistant } from './useAssistant'
 
 const POPUP_ID = 'assistant-popup'
+/** "Baza wiedzy" has the chat on the page itself: no floating button there, so it never covers the question field. */
+const CHAT_PAGE = '/baza-wiedzy'
 
 /**
  * "Asystent AI": the floating button in the bottom right corner of every AppShell screen and the chat window it
@@ -19,6 +22,12 @@ export function AssistantLauncher() {
   const fabRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
   const { isOpen, close } = a
+  const onChatPage = useLocation().pathname === CHAT_PAGE
+
+  // Going to "Baza wiedzy" with the window open closes it; the conversation stays in the provider.
+  useEffect(() => {
+    if (onChatPage) close()
+  }, [onChatPage, close])
 
   useEffect(() => {
     const d = dialogRef.current
@@ -43,19 +52,21 @@ export function AssistantLauncher() {
 
   return (
     <>
-      <button
-        ref={fabRef}
-        type="button"
-        className={`assistant-fab ${a.isOpen ? 'is-open' : ''}`}
-        aria-label="Asystent AI"
-        title="Asystent AI"
-        aria-haspopup="dialog"
-        aria-expanded={a.isOpen}
-        aria-controls={POPUP_ID}
-        onClick={a.toggle}
-      >
-        {a.isOpen ? <X size={24} strokeWidth={2} aria-hidden="true" /> : <Sparkles size={24} strokeWidth={1.75} aria-hidden="true" />}
-      </button>
+      {!onChatPage && (
+        <button
+          ref={fabRef}
+          type="button"
+          className={`assistant-fab ${a.isOpen ? 'is-open' : ''}`}
+          aria-label="Asystent AI"
+          title="Asystent AI"
+          aria-haspopup="dialog"
+          aria-expanded={a.isOpen}
+          aria-controls={POPUP_ID}
+          onClick={a.toggle}
+        >
+          {a.isOpen ? <X size={24} strokeWidth={2} aria-hidden="true" /> : <Sparkles size={24} strokeWidth={1.75} aria-hidden="true" />}
+        </button>
+      )}
       <dialog
         ref={dialogRef}
         id={POPUP_ID}

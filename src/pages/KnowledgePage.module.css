@@ -1,0 +1,58 @@
+/* "Baza wiedzy": chat 2fr | sources 1fr from 1024px, stacked below; see PageLayout `fill` for the height. */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+  min-width: 0;
+}
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sourcesBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-height: 0;
+}
+
+/* Only the list scrolls; the card title and the note under it stay visible */
+.scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: 60vh;
+  margin-top: var(--s-2);
+  margin-inline: calc(-1 * var(--s-5));
+  border-block: var(--border-w) solid var(--border);
+  overflow-y: auto;
+}
+
+.scroll:focus-visible {
+  outline-offset: -2px;
+}
+
+.note {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
+  }
+
+  .sources {
+    min-height: 0;
+  }
+
+  .scroll {
+    max-height: none;
+  }
+}

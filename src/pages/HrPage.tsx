@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { getHrOverview, sendReminders, type HrCase, type HrOverview, type ReminderResponse } from '../api/cases'
 import { DeadlineText } from '../components/Deadline'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { PageLayout } from '../components/ui'
 import { StageDots } from '../components/StageDots'
 import { countLabel, DEMO_TODAY, fmtDate } from '../lib/format'
 import { CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
@@ -51,8 +52,8 @@ export function HrPage() {
   const cases = q.data?.cases
   const depts = useMemo(() => [...new Set((cases ?? []).map((c) => deptOf(c.person.unit)))].sort(), [cases])
 
-  if (q.isPending) return <div className="page"><LoadingState /></div>
-  if (q.isError) return <div className="page"><ErrorState error={q.error} what="monitoring ocen" onRetry={() => q.refetch()} /></div>
+  if (q.isPending) return <PageLayout><LoadingState /></PageLayout>
+  if (q.isError) return <PageLayout><ErrorState error={q.error} what="monitoring ocen" onRetry={() => q.refetch()} /></PageLayout>
 
   const { counters } = q.data
   const rows = q.data.cases
@@ -64,17 +65,15 @@ export function HrPage() {
   const soonIds = q.data.cases.filter((c) => c.nextDeadline && (c.nextDeadline.state === 'SOON' || c.nextDeadline.state === 'OVERDUE')).map((c) => c.id)
 
   return (
-    <div className="page page--wide">
-      <header className="page-head">
-        <div>
-          <h1 className="h-page">Monitoring ocen</h1>
-          <p className="page-head__meta" title={`Wszystkie procesy ocen w urzędzie · stan na ${fmtDate(DEMO_TODAY)}`}>Wszystkie procesy ocen w urzędzie · stan na {fmtDate(DEMO_TODAY)}</p>
-        </div>
+    <PageLayout
+      title="Monitoring ocen"
+      meta={`Wszystkie procesy ocen w urzędzie · stan na ${fmtDate(DEMO_TODAY)}`}
+      actions={
         <button type="button" className="btn btn--primary" disabled={soonIds.length === 0 || remind.isPending} onClick={() => remind.mutate(soonIds)}>
           <Bell size={15} aria-hidden="true" /> Przypomnij wszystkim z terminem ≤ 14 dni ({soonIds.length})
         </button>
-      </header>
-
+      }
+    >
       <div className="counters" role="group" aria-label="Filtr według stanu">
         {COUNTERS.map((c) => (
           <button
@@ -90,80 +89,82 @@ export function HrPage() {
         ))}
       </div>
 
-      <div className="filters">
-        <input type="search" className="input" style={{ width: 240 }} placeholder="Szukaj pracownika lub oceniającego" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Szukaj" />
-        <select className="select" style={{ width: 260 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Komórka">
-          <option value="">Wszystkie komórki</option>
-          {depts.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
-        <select className="select" style={{ width: 180 }} value={path} onChange={(e) => setPath(e.target.value)} aria-label="Rodzaj oceny">
-          <option value="">Każdy rodzaj oceny</option>
-          <option value="PERIODIC">Ocena okresowa</option>
-          <option value="FIRST">Pierwsza ocena</option>
-        </select>
-        <span className="faint small">{countLabel(rows.length, 'proces', 'procesy', 'procesów')}</span>
-        {(counter !== 'all' || dept || path || search) && (
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => { setCounter('all'); setDept(''); setPath(''); setSearch('') }}>
-            Wyczyść filtry
-          </button>
-        )}
-      </div>
+      <div>
+        <div className="filters">
+          <input type="search" className="input" style={{ width: 240 }} placeholder="Szukaj pracownika lub oceniającego" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Szukaj" />
+          <select className="select" style={{ width: 260 }} value={dept} onChange={(e) => setDept(e.target.value)} aria-label="Komórka">
+            <option value="">Wszystkie komórki</option>
+            {depts.map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <select className="select" style={{ width: 180 }} value={path} onChange={(e) => setPath(e.target.value)} aria-label="Rodzaj oceny">
+            <option value="">Każdy rodzaj oceny</option>
+            <option value="PERIODIC">Ocena okresowa</option>
+            <option value="FIRST">Pierwsza ocena</option>
+          </select>
+          <span className="faint small">{countLabel(rows.length, 'proces', 'procesy', 'procesów')}</span>
+          {(counter !== 'all' || dept || path || search) && (
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => { setCounter('all'); setDept(''); setPath(''); setSearch('') }}>
+              Wyczyść filtry
+            </button>
+          )}
+        </div>
 
-      <div className="panel">
-        <table className="table hr-table">
-          <thead>
-            <tr>
-              <th>Pracownik</th>
-              <th>Komórka</th>
-              <th>Oceniający</th>
-              <th>Rodzaj</th>
-              <th>Etap</th>
-              <th>Termin</th>
-              <th>Status</th>
-              <th>Przypomnienie</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr><td colSpan={8} className="muted">Brak procesów spełniających filtry.</td></tr>
-            )}
-            {rows.map((c) => {
-              const sentToday = c.lastReminderOn === DEMO_TODAY
-              return (
-                <tr key={c.id}>
-                  <td>
-                    <div className="person">
-                      <span className="person__name" title={`${c.person.firstName} ${c.person.lastName}`}>{c.person.firstName} {c.person.lastName}</span>
-                      <span className="person__meta" title={c.person.position}>{c.person.position}</span>
-                    </div>
-                  </td>
-                  <td className="cell-unit" title={c.person.unit}>{deptOf(c.person.unit)}</td>
-                  <td title={c.evaluatorName}>{c.evaluatorName}</td>
-                  <td>{c.path === 'FIRST' ? 'Pierwsza' : `Okresowa · ${c.sheetId ?? '—'}`}</td>
-                  <td>
-                    <div className="stage-cell">
-                      <StageDots stages={c.stages} />
-                      <span className="stage-cell__name" title={STAGE_SHORT[c.currentStage]}>{STAGE_SHORT[c.currentStage]}</span>
-                    </div>
-                  </td>
-                  <td>{c.nextDeadline ? <DeadlineText deadline={c.nextDeadline} /> : <span className="faint">—</span>}</td>
-                  <td><span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span></td>
-                  <td className="cell-action">
-                    <button type="button" className="btn btn--sm" disabled={sentToday || remind.isPending} onClick={() => remind.mutate([c.id])}>
-                      {sentToday ? 'Wysłano dziś' : 'Wyślij przypomnienie'}
-                    </button>
-                    {c.lastReminderOn && !sentToday && <span className="cell-sub num">ostatnio {fmtDate(c.lastReminderOn)}</span>}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <div className="panel">
+          <table className="table hr-table">
+            <thead>
+              <tr>
+                <th>Pracownik</th>
+                <th>Komórka</th>
+                <th>Oceniający</th>
+                <th>Rodzaj</th>
+                <th>Etap</th>
+                <th>Termin</th>
+                <th>Status</th>
+                <th>Przypomnienie</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 && (
+                <tr><td colSpan={8} className="muted">Brak procesów spełniających filtry.</td></tr>
+              )}
+              {rows.map((c) => {
+                const sentToday = c.lastReminderOn === DEMO_TODAY
+                return (
+                  <tr key={c.id}>
+                    <td>
+                      <div className="person">
+                        <span className="person__name" title={`${c.person.firstName} ${c.person.lastName}`}>{c.person.firstName} {c.person.lastName}</span>
+                        <span className="person__meta" title={c.person.position}>{c.person.position}</span>
+                      </div>
+                    </td>
+                    <td className="cell-unit" title={c.person.unit}>{deptOf(c.person.unit)}</td>
+                    <td title={c.evaluatorName}>{c.evaluatorName}</td>
+                    <td>{c.path === 'FIRST' ? 'Pierwsza' : `Okresowa · ${c.sheetId ?? '—'}`}</td>
+                    <td>
+                      <div className="stage-cell">
+                        <StageDots stages={c.stages} />
+                        <span className="stage-cell__name" title={STAGE_SHORT[c.currentStage]}>{STAGE_SHORT[c.currentStage]}</span>
+                      </div>
+                    </td>
+                    <td>{c.nextDeadline ? <DeadlineText deadline={c.nextDeadline} /> : <span className="faint">—</span>}</td>
+                    <td><span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span></td>
+                    <td className="cell-action">
+                      <button type="button" className="btn btn--sm" disabled={sentToday || remind.isPending} onClick={() => remind.mutate([c.id])}>
+                        {sentToday ? 'Wysłano dziś' : 'Wyślij przypomnienie'}
+                      </button>
+                      {c.lastReminderOn && !sentToday && <span className="cell-sub num">ostatnio {fmtDate(c.lastReminderOn)}</span>}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <MutationError error={remind.error} />
       </div>
-      <MutationError error={remind.error} />
 
       {log.length > 0 && (
-        <section className="section" aria-labelledby="log-h">
+        <section aria-labelledby="log-h">
           <div className="section__head">
             <h2 id="log-h" className="h-section">Wysłane przypomnienia</h2>
             <span className="faint small" title="Symulacja — docelowo e-mail lub zadanie w EZD">Symulacja — docelowo e-mail lub zadanie w EZD</span>
@@ -179,6 +180,6 @@ export function HrPage() {
           </ul>
         </section>
       )}
-    </div>
+    </PageLayout>
   )
 }

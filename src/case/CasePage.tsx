@@ -6,7 +6,7 @@ import type { CaseDetail, StageId } from '../api/cases'
 import type { CompetencyModel } from '../api/kompas'
 import { useAssistant, useAssistantContext, type AssistantRequest } from '../assistant/useAssistant'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { BackLink, Snackbar, Spinner, StageStepper, StatusBadge } from '../components/ui'
+import { BackLink, PageLayout, Snackbar, Spinner, StageStepper, StatusBadge } from '../components/ui'
 import { useCase, useSheetDownload } from '../lib/caseQueries'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
 import { personUrl } from '../lib/people'
@@ -53,9 +53,9 @@ export function CasePage() {
     workRef.current?.scrollTo({ top: 0 })
   }, [slug])
 
-  if (q.isPending || model.isPending || sheets.isPending) return <div className="page"><LoadingState /></div>
-  if (q.isError) return <div className="page"><ErrorState error={q.error} what="teczka oceny" onRetry={() => q.refetch()} /></div>
-  if (model.isError) return <div className="page"><ErrorState error={model.error} what="model kompetencji" /></div>
+  if (q.isPending || model.isPending || sheets.isPending) return <PageLayout><LoadingState /></PageLayout>
+  if (q.isError) return <PageLayout><ErrorState error={q.error} what="teczka oceny" onRetry={() => q.refetch()} /></PageLayout>
+  if (model.isError) return <PageLayout><ErrorState error={model.error} what="model kompetencji" /></PageLayout>
 
   const detail = q.data
   const stage = stageFromSlug(slug)
@@ -75,36 +75,40 @@ export function CasePage() {
   return (
     <div className={s.root}>
       <header className={s.head}>
-        <div className={s.headTop}>
-          <BackLink to={personUrl(detail.person.id)} />
-          <div className={s.actions}>
-            <Link className="btn" to={`/teczka/${detail.id}/arkusz`}>
-              <FileText size={15} strokeWidth={1.75} aria-hidden="true" />
-              Podgląd arkusza
-            </Link>
-            <SheetPdfButton detail={detail} />
+        <div className={s.inner}>
+          <div className={s.headTop}>
+            <BackLink to={personUrl(detail.person.id)} />
+            <div className={s.actions}>
+              <Link className="btn" to={`/teczka/${detail.id}/arkusz`}>
+                <FileText size={15} strokeWidth={1.75} aria-hidden="true" />
+                Podgląd arkusza
+              </Link>
+              <SheetPdfButton detail={detail} />
+            </div>
           </div>
-        </div>
-        <div className={s.person}>
-          <h1 className={s.name}>{name}</h1>
-          <StatusBadge tone={STATUS_TONE[detail.status]}>{CASE_STATUS_LABEL[detail.status]}</StatusBadge>
-        </div>
-        <p className={s.position}>
-          {detail.person.position}
-          <span className={s.cycle}> · {detail.path === 'FIRST' ? 'Pierwsza ocena w służbie cywilnej' : detail.cycleLabel} · {sheetLabel}</span>
-        </p>
-        <div className={s.stepper}>
-          <StageStepper
-            label={detail.path === 'FIRST' ? 'Etapy pierwszej oceny' : 'Etapy oceny okresowej'}
-            activeKey={activeStep?.key}
-            steps={steps.map((st) => ({ key: st.key, label: st.label, status: st.status, to: caseUrl(detail.id, stepTarget(st)) }))}
-          />
+          <div className={s.person}>
+            <h1 className={s.name}>{name}</h1>
+            <StatusBadge tone={STATUS_TONE[detail.status]}>{CASE_STATUS_LABEL[detail.status]}</StatusBadge>
+          </div>
+          <p className={s.position}>
+            {detail.person.position}
+            <span className={s.cycle}> · {detail.path === 'FIRST' ? 'Pierwsza ocena w służbie cywilnej' : detail.cycleLabel} · {sheetLabel}</span>
+          </p>
+          <div className={s.stepper}>
+            <StageStepper
+              label={detail.path === 'FIRST' ? 'Etapy pierwszej oceny' : 'Etapy oceny okresowej'}
+              activeKey={activeStep?.key}
+              steps={steps.map((st) => ({ key: st.key, label: st.label, status: st.status, to: caseUrl(detail.id, stepTarget(st)) }))}
+            />
+          </div>
         </div>
       </header>
 
       <div className={s.body}>
         <section ref={workRef} className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
-          {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
+          <div className={`${s.inner} ${s.workInner}`}>
+            {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
+          </div>
         </section>
       </div>
     </div>

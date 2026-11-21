@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import type { Role } from '../api/cases'
 import { ErrorState, LoadingState } from '../components/QueryState'
+import { PageLayout } from '../components/ui'
 import { HOME_BY_ROLE, LOGIN_PATH, useAuth, useMe } from '../lib/useAuth'
 
 /** Signed-out users go to the sign-in page, then back to where they were going. */
@@ -14,13 +15,13 @@ export function RequireAuth({ children }: { children?: ReactNode }) {
   }
   if (user === undefined) {
     return (
-      <div className="page">
+      <PageLayout>
         {meError ? (
           <ErrorState error={meError} what="dane zalogowanego użytkownika" onRetry={() => void signOut()} />
         ) : (
           <LoadingState />
         )}
-      </div>
+      </PageLayout>
     )
   }
   return children ?? <Outlet />

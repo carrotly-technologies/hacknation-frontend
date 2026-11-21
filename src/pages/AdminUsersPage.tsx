@@ -4,7 +4,7 @@ import { getUsers, updateUserRole, type UserView } from '../api/auth'
 import type { Role } from '../api/cases'
 import { errorMessage } from '../api/client'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { InlineAlert, Select, Snackbar, StatusBadge } from '../components/ui'
+import { InlineAlert, PageLayout, Select, Snackbar, StatusBadge } from '../components/ui'
 import { ROLE_LABEL, useMe } from '../lib/useAuth'
 import { countLabel } from '../lib/format'
 
@@ -24,17 +24,11 @@ export function AdminUsersPage() {
     },
   })
 
-  if (users.isPending) return <div className="page"><LoadingState /></div>
-  if (users.isError) return <div className="page"><ErrorState error={users.error} what="lista użytkowników" onRetry={() => users.refetch()} /></div>
+  if (users.isPending) return <PageLayout><LoadingState /></PageLayout>
+  if (users.isError) return <PageLayout><ErrorState error={users.error} what="lista użytkowników" onRetry={() => users.refetch()} /></PageLayout>
 
   return (
-    <div className="page page--wide">
-      <header className="page-head">
-        <div>
-          <h1 className="h-page">Użytkownicy</h1>
-          <p className="page-head__meta">Konta i role w systemie · {countLabel(users.data.length, 'konto', 'konta', 'kont')}</p>
-        </div>
-      </header>
+    <PageLayout title="Użytkownicy" meta={`Konta i role w systemie · ${countLabel(users.data.length, 'konto', 'konta', 'kont')}`}>
 
       {change.isError && (
         <InlineAlert tone="error" live title="Nie udało się zmienić roli">
@@ -42,7 +36,7 @@ export function AdminUsersPage() {
         </InlineAlert>
       )}
 
-      <section className="section" aria-labelledby="users-h">
+      <section aria-labelledby="users-h">
         <h2 id="users-h" className="visually-hidden">Lista kont</h2>
         <div className="panel">
           <table className="table">
@@ -90,6 +84,6 @@ export function AdminUsersPage() {
       </section>
 
       <Snackbar open={saved !== null} message={saved ?? ''} onClose={() => setSaved(null)} />
-    </div>
+    </PageLayout>
   )
 }

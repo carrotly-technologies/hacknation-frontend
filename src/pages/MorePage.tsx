@@ -1,13 +1,10 @@
 import { BookOpen, FileText, LayoutGrid, Palette, Settings } from 'lucide-react'
-import { Card } from '../components/ui'
+import { Card, PageLayout } from '../components/ui'
 
 /** "Więcej": secondary destinations; reachable only by its address, not linked from the navigation. */
 export function MorePage() {
   return (
-    <div className="page">
-      <header className="page-head">
-        <h1 className="h-page">Więcej</h1>
-      </header>
+    <PageLayout title="Więcej">
       <ul className="more-list">
         <li>
           <Card to="/ustawienia" title="Ustawienia" icon={<Settings size={24} aria-hidden="true" />}>
@@ -35,6 +32,6 @@ export function MorePage() {
           </Card>
         </li>
       </ul>
-    </div>
+    </PageLayout>
   )
 }

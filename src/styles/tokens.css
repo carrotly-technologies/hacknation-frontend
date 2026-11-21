@@ -428,7 +428,10 @@
   --control-h-sm: 2.25rem;
   --tap: 2.75rem; /* minimum touch target */
   --duration: 0.15s;
+  /* Width of the content of every main page (PageLayout) and of the case file header */
   --content-max: 1200px;
+  /* Side padding of that container; 16px below 768px (app.css) */
+  --page-pad-x: var(--s-8);
   --form-max: 640px;
   /* Wider form column (step 4 "Formularz oceny kompetencji"): wider tiles, text inside kept at --measure */
   --form-wide-max: 60rem;
