@@ -1,13 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { MessageSquareText } from 'lucide-react'
+import { Lightbulb, MessageSquareText } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import type { CaseDetail } from '../../api/cases'
-import { suggestLevel, type CompetencyModel } from '../../api/kompas'
-import { Button, Field, Fieldset, InlineAlert, TextInput, Checkbox } from '../../components/ui'
+import { Button, Field, InlineAlert, TextInput } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { DEMO_TODAY, fmtDate } from '../../lib/format'
-import { competencyName, findCompetency } from '../../lib/model'
 import { liveResult } from '../../lib/result'
 import { allows, caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
@@ -21,14 +17,13 @@ const DATE_ID = 'data-rozmowy'
 /**
  * Step 5, "Rozmowa oceniająca" (Poradnik „Oceny okresowe w służbie cywilnej”, Tabela nr 1, etap III; §10 rozp. PRM
  * z 4.04.2016). The evaluator prepares the talk from the draft sheet (read only here), goes through the §10 topics
- * (sent by the API, ticked only as a personal checklist, not saved) and records the date of the talk. Recording it
+ * (sent by the API, shown as a system suggestion, not a checklist) and records the date of the talk. Recording it
  * moves the case on to step 6, "Weryfikacja formularza", where the forms can still be corrected.
  */
 export function AssessmentTalkStage({ detail, model, criteria, stage, askAssistant }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
   const act = useCaseAction(detail.id)
   const [date, setDate] = useState(DEMO_TODAY)
-  const [ticked, setTicked] = useState<Record<string, boolean>>({})
   const [dateError, setDateError] = useState<string>()
   const r = liveResult(detail, criteria.all, model)
   const talk = detail.assessmentTalkOn
@@ -39,6 +34,7 @@ export function AssessmentTalkStage({ detail, model, criteria, stage, askAssista
   const byPoints = [...decided].sort((a, b) => detail.decisions[b] - detail.decisions[a])
   const strongest = byPoints.filter((c) => detail.decisions[c] > 5).slice(0, 2)
   const weakest = [...byPoints].reverse().filter((c) => detail.decisions[c] < 5).slice(0, 2)
+  const topics = detail.assessmentTalkTopics
 
   const record = () => {
     if (!date) {
@@ -76,78 +72,59 @@ export function AssessmentTalkStage({ detail, model, criteria, stage, askAssista
 
       <section aria-labelledby="material-h" className={s.section}>
         <h3 id="material-h" className={s.heading}>Materiał do rozmowy</h3>
-        <CompetencyScoresTable
-          detail={detail}
-          model={model}
-          criteria={criteria.all}
-          caption="Oceny cząstkowe (wersja robocza) i sugestie systemu dla każdej kompetencji"
-          note={(c) => detail.deviationNotes[c] && `Odstępstwo od sugestii: ${detail.deviationNotes[c]}`}
-          extra={[{ header: 'Sugestia systemu', cell: (c) => <Suggestion detail={detail} model={model} criterionId={c} /> }]}
-        />
+        <CompetencyScoresTable detail={detail} model={model} criteria={criteria.all} caption="Oceny cząstkowe (wersja robocza)" />
         <ResultSummary result={r} />
-        <p className={layout.muted}>Oceny pochodzą z wersji roboczej formularza. Sugestie są tylko pomocą: ocenę ustalasz Ty.</p>
-        <div className={s.lists}>
-          <div>
-            <h4 className={s.subheading}>Najmocniejsze kryteria</h4>
-            {strongest.length ? (
-              <ul className={layout.bullets}>
-                {strongest.map((c) => (
-                  <li key={c}>{competencyName(model, c)} ({detail.decisions[c]} pkt)</li>
-                ))}
-              </ul>
-            ) : (
-              <p className={layout.muted}>Żadne kryterium nie ma oceny powyżej oczekiwań.</p>
-            )}
-          </div>
-          <div>
-            <h4 className={s.subheading}>Najsłabsze kryteria</h4>
-            {weakest.length ? (
-              <ul className={layout.bullets}>
-                {weakest.map((c) => (
-                  <li key={c}>{competencyName(model, c)} ({detail.decisions[c]} pkt)</li>
-                ))}
-              </ul>
-            ) : (
-              <p className={layout.muted}>Żadne kryterium nie ma oceny poniżej oczekiwań.</p>
-            )}
-          </div>
-        </div>
+        <p className={layout.muted}>Oceny pochodzą z wersji roboczej formularza.</p>
+        {strongest.length + weakest.length > 0 ? (
+          <CompetencyScoresTable
+            detail={detail}
+            model={model}
+            criteria={[...strongest, ...weakest]}
+            caption="Mocne strony i obszary do rozwoju"
+            showCaption
+            firstHeader="Kryterium"
+            extra={[{ header: 'Do omówienia', cell: (c) => (strongest.includes(c) ? 'Mocna strona' : 'Obszar do rozwoju') }]}
+          />
+        ) : (
+          decided.length > 0 && <p>Wszystkie kryteria na poziomie oczekiwań.</p>
+        )}
       </section>
 
-      {detail.assessmentTalkTopics.length > 0 && (
-        <Fieldset
-          id="tematy-rozmowy"
-          legend="Tematy rozmowy oceniającej"
-          hint="Lista pomocnicza: zaznaczenia nie są zapisywane. §10 rozp. PRM z 4.04.2016."
-        >
-          {detail.assessmentTalkTopics.map((t) => (
-            <Checkbox
-              key={t.id}
-              label={t.label}
-              hint={
-                <>
-                  „{t.quote}” ({t.legalBasis})
-                  {t.id === 'GOALS' && goals && <span className={s.goals}>Cele z części I: {goals}</span>}
-                </>
-              }
-              checked={!!ticked[t.id]}
-              onChange={(e) => setTicked((v) => ({ ...v, [t.id]: e.target.checked }))}
-            />
-          ))}
-        </Fieldset>
-      )}
-
-      {askAssistant && (
-        <div>
-          <Button
-            variant="secondary"
-            icon={<MessageSquareText size={18} aria-hidden="true" />}
-            onClick={() => askAssistant({ mode: 'CONVERSATION', question: 'Przygotuj pytania do rozmowy oceniającej.' })}
-          >
-            Przygotuj pytania do rozmowy
-          </Button>
-          <p className={layout.muted}>Asystent zaproponuje pytania na podstawie kryteriów i obserwacji. Nie proponuje ocen.</p>
-        </div>
+      {(topics.length > 0 || askAssistant) && (
+        <section aria-labelledby="tematy-h" className={s.suggestion}>
+          <h3 id="tematy-h" className={s.suggestionTitle}>
+            <Lightbulb size={20} aria-hidden="true" className={s.suggestionIcon} />
+            Sugestia systemu: o czym porozmawiać
+          </h3>
+          {topics.length > 0 && (
+            <>
+              <ul className={layout.bullets}>
+                {topics.map((t) => (
+                  <li key={t.id}>
+                    {t.label}
+                    <span className={s.topicNote}>
+                      „{t.quote}” ({t.legalBasis})
+                    </span>
+                    {t.id === 'GOALS' && goals && <span className={s.topicNote}>Cele z części I: {goals}</span>}
+                  </li>
+                ))}
+              </ul>
+              <p className={layout.muted}>Na podstawie §10 rozporządzenia. To propozycja — rozmowę prowadzisz po swojemu.</p>
+            </>
+          )}
+          {askAssistant && (
+            <div>
+              <Button
+                variant="secondary"
+                icon={<MessageSquareText size={18} aria-hidden="true" />}
+                onClick={() => askAssistant({ mode: 'CONVERSATION', question: 'Przygotuj pytania do rozmowy oceniającej.' })}
+              >
+                Przygotuj pytania do rozmowy
+              </Button>
+              <p className={layout.muted}>Asystent zaproponuje pytania na podstawie kryteriów i obserwacji. Nie proponuje ocen.</p>
+            </div>
+          )}
+        </section>
       )}
 
       {!talk && (
@@ -167,21 +144,4 @@ export function AssessmentTalkStage({ detail, model, criteria, stage, askAssista
       )}
     </StageLayout>
   )
-}
-
-/** The advisory suggestion of one criterion from its indicator answers (the same query as in step 4). */
-function Suggestion({ detail, model, criterionId }: { detail: CaseDetail; model: CompetencyModel; criterionId: string }) {
-  const ratings = detail.ratings[criterionId] ?? {}
-  const indicators = findCompetency(model, criterionId)?.indicators ?? []
-  const indicatorRatings = indicators.filter((i) => i.id in ratings).map((i) => ({ indicatorId: i.id, points: ratings[i.id] ?? null }))
-  const sheetId = detail.path === 'FIRST' ? 'FIRST' : (detail.sheetId ?? 'C')
-  const q = useQuery({
-    queryKey: ['suggest', sheetId, criterionId, indicatorRatings],
-    queryFn: ({ signal }) => suggestLevel({ sheetId, competencyId: criterionId, indicatorRatings }, signal),
-    enabled: indicatorRatings.length > 0,
-  })
-  if (indicatorRatings.length === 0) return <span className={layout.muted}>brak odpowiedzi przy wskaźnikach</span>
-  if (!q.data) return <span className={layout.muted}>…</span>
-  const p = q.data.suggestedPoints
-  return <span>{p == null ? 'brak sugestii' : `${p} pkt${q.data.suggestedLabel ? ` · ${q.data.suggestedLabel.toLowerCase()}` : ''}`}</span>
 }

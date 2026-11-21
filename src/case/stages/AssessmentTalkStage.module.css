@@ -20,18 +20,37 @@
   line-height: var(--leading-tight);
 }
 
-.goals {
+/* Step 5: §10 topics as a system suggestion (same box as "Sugestia systemu" in step 4), not a checklist */
+.suggestion {
+  display: grid;
+  gap: var(--s-3);
+  min-width: 0;
+  padding: var(--s-4) var(--s-5);
+  border: var(--border-w) solid var(--info-border);
+  border-radius: var(--radius-lg);
+  background: var(--info-bg);
+}
+
+.suggestionTitle {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.suggestionIcon {
+  flex: none;
+  margin-top: 0.1em;
+  color: var(--info);
+}
+
+.topicNote {
   display: block;
   margin-top: var(--s-1);
   color: var(--text-secondary);
   font-size: var(--text-sm);
-  font-weight: normal;
-}
-
-.lists {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: var(--s-4);
 }
 
 .actions {
@@ -63,4 +82,10 @@
 
 .summaryValue {
   color: var(--text-secondary);
+}
+
+@media (max-width: 599px) {
+  .suggestion {
+    padding: var(--s-3);
+  }
 }

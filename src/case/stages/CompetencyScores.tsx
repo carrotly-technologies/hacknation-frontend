@@ -7,7 +7,7 @@ import { competencyName } from '../../lib/model'
 import type { LiveResult } from '../../lib/result'
 import s from './CompetencyScores.module.css'
 
-/** An extra column of the scores table (e.g. the system suggestion in step 5, "Popraw" in step 6). */
+/** An extra column of the scores table (e.g. "Do omówienia" in step 5, "Popraw" in step 6). */
 export interface ScoresColumn {
   header: string
   /** Header hidden visually (still read by screen readers), e.g. for a column of links. */
@@ -20,7 +20,11 @@ interface TableProps {
   model: CompetencyModel
   criteria: string[]
   caption: string
-  /** Shown under the competency name, e.g. the deviation note in step 5. */
+  /** Show the caption as the table's visible title (default: read by screen readers only). */
+  showCaption?: boolean
+  /** Header of the first column (default "Kompetencja"). */
+  firstHeader?: string
+  /** Shown under the competency name, e.g. a deviation note. */
   note?: (criterionId: string) => ReactNode
   extra?: ScoresColumn[]
 }
@@ -29,14 +33,23 @@ interface TableProps {
  * Partial assessments as a plain table: competency, points (just the number) and level from the API scale.
  * Below 600px the level column is hidden and the level shows in small print under the competency name.
  */
-export function CompetencyScoresTable({ detail, model, criteria, caption, note, extra = [] }: TableProps) {
+export function CompetencyScoresTable({
+  detail,
+  model,
+  criteria,
+  caption,
+  showCaption,
+  firstHeader = 'Kompetencja',
+  note,
+  extra = [],
+}: TableProps) {
   const level = (p: number | null | undefined) => (p == null ? '—' : (model.scale.find((x) => x.points === p)?.label.toLowerCase() ?? '—'))
   return (
     <table className={s.table}>
-      <caption className="visually-hidden">{caption}</caption>
+      <caption className={showCaption ? s.caption : 'visually-hidden'}>{caption}</caption>
       <thead>
         <tr>
-          <th scope="col">Kompetencja</th>
+          <th scope="col">{firstHeader}</th>
           <th scope="col" className={s.points}>
             Punkty
           </th>
