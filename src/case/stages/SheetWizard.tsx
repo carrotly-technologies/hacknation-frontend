@@ -1,8 +1,9 @@
 import { Check } from 'lucide-react'
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
+import type { StageId } from '../../api/cases'
 import { Stepper } from '../../components/ui'
-import { caseUrl } from '../../lib/stages'
+import { caseUrl, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetPartI } from './SheetPartI'
 import { SheetPartII } from './SheetPartII'
@@ -48,11 +49,13 @@ export function SheetWizard(props: StageProps) {
   }
 
   // After part III: the stage the case is at now when it is further on, otherwise the next stage of the file.
+  // Stages shown in this same view (the assessment period) are skipped, so "Dalej" never reopens part I.
   const finish = () => {
     const ids = detail.stages.map((x) => x.id)
+    const elsewhere = (id: StageId) => viewStage(detail.stages, id) !== stage
     const here = ids.indexOf(stage)
     const current = ids.indexOf(detail.currentStage)
-    const target = current > here ? detail.currentStage : ids[here + 1]
+    const target = current > here && elsewhere(detail.currentStage) ? detail.currentStage : ids.slice(here + 1).find(elsewhere)
     if (target) navigate(caseUrl(detail.id, target))
   }
 

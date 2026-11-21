@@ -37,7 +37,7 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
 
 - `/zespol` — my team: deadline-driven to-do list and team table;
 - `/teczka/:id/:stage` — the case file: stage rail (periodic and first-assessment paths), stage workspaces
-  (OSP analysis, the "Formularz oceny" sheet wizard filled part by part — parts I, II, III, current part in `?czesc=` — observations, rubric assessment with system suggestion and supervisor
+  (OSP analysis, the "Formularz oceny" sheet wizard filled part by part — parts I, II, III, current part in `?czesc=`, also opened for the assessment period (no sub-step tiles; the old `/obserwacje` link redirects there, and the assessment talk starts in step 4), rubric assessment with system suggestion and supervisor
   decision, justification/IPRZ with formal check, document), docked assistant panel;
 - `/teczka/:id/arkusz` — official sheet preview (parts I/II/III); print it to get the PDF;
 - `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant;

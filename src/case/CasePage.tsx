@@ -9,7 +9,7 @@ import { BackLink, StageStepper, StatusBadge } from '../components/ui'
 import { useCase } from '../lib/caseQueries'
 import { useFeatures } from '../lib/features'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
-import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, type CaseStep } from '../lib/stages'
+import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, viewStage } from '../lib/stages'
 import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
 import s from './CasePage.module.css'
 import { AssessmentStage } from './stages/AssessmentStage'
@@ -78,7 +78,10 @@ export function CasePage() {
 
   const detail = q.data
   const stage = stageFromSlug(slug)
-  if (!stage || !detail.stages.some((st) => st.id === stage)) return <Navigate to={caseUrl(detail.id, detail.currentStage)} replace />
+  if (!stage || !detail.stages.some((st) => st.id === stage)) return <Navigate to={caseUrl(detail.id, viewStage(detail.stages, detail.currentStage))} replace />
+  // A stage shown in another stage's view (the assessment period → the sheet of step 3), e.g. an old /obserwacje link.
+  const shown = viewStage(detail.stages, stage)
+  if (shown !== stage) return <Navigate to={caseUrl(detail.id, shown)} replace />
   if (slug !== STAGE_SLUG[stage]) return <Navigate to={caseUrl(detail.id, stage)} replace />
 
   const criteria = caseCriteria(detail, sheets.data)
@@ -124,7 +127,6 @@ export function CasePage() {
             activeKey={activeStep?.key}
             steps={steps.map((st) => ({ key: st.key, label: st.label, status: st.status, to: caseUrl(detail.id, stepTarget(st)) }))}
           />
-          {activeStep && activeStep.stages.length > 1 && <SubSteps detail={detail} step={activeStep} active={stage} />}
         </div>
       </header>
 
@@ -144,28 +146,6 @@ export function CasePage() {
         )}
       </div>
     </div>
-  )
-}
-
-/** The backend stages inside one stepper step ("Formularz oceny" = part I + the assessment period). */
-function SubSteps({ detail, step, active }: { detail: CaseDetail; step: CaseStep; active: StageId }) {
-  return (
-    <nav className={s.sub} aria-label={`Części etapu: ${step.label}`}>
-      <ul className={s.subList}>
-        {step.stages.map((st) => (
-          <li key={st.id}>
-            <Link
-              to={caseUrl(detail.id, st.id)}
-              className={`${s.subLink} ${st.id === active ? s.subActive : ''}`}
-              aria-current={st.id === active ? 'page' : undefined}
-            >
-              {STAGE_SHORT[st.id]}
-              <span className={s.subState}>{st.status === 'DONE' ? 'zakończono' : st.status === 'CURRENT' ? 'w toku' : 'nierozpoczęty'}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
   )
 }
 

@@ -31,6 +31,20 @@ export function stageFromSlug(slug: string | undefined): StageId | null {
 export const caseUrl = (id: string, stage?: StageId) =>
   stage ? `/teczka/${id}/${STAGE_SLUG[stage]}` : `/teczka/${id}`
 
+/**
+ * Stages with no screen of their own, shown in another stage's view. The assessment period runs inside step 3
+ * ("Formularz oceny"), which shows only the official sheet: its template is set by law, so no observations there.
+ */
+const SHOWN_AS: Partial<Record<StageId, StageId>> = {
+  OBSERVATION: 'OPENING_TALK',
+}
+
+/** The stage whose view opens for `stage`; the stage itself when it has its own view (or the other is missing). */
+export function viewStage(stages: Pick<StageInfo, 'id'>[], stage: StageId): StageId {
+  const other = SHOWN_AS[stage]
+  return other && stages.some((s) => s.id === other) ? other : stage
+}
+
 /** Short names used in compact places (team table, HR table, context chip). */
 export const STAGE_SHORT: Record<StageId, string> = {
   OSP_ANALYSIS: 'Analiza OSP',
@@ -139,10 +153,10 @@ export function caseSteps(detail: Pick<CaseDetail, 'path' | 'stages'>): CaseStep
   return steps
 }
 
-/** Where a step's link leads: its current stage, else its last finished one, else its first. */
+/** Where a step's link leads: its current stage, else its last finished one, else its first (as `viewStage` shows it). */
 export function stepTarget(step: CaseStep): StageId {
   const current = step.stages.find((s) => s.status === 'CURRENT')
-  if (current) return current.id
   const done = step.stages.filter((s) => s.status === 'DONE')
-  return (step.status === 'done' ? step.stages[0] : done.at(-1) ?? step.stages[0]).id
+  const target = current ?? (step.status === 'done' ? step.stages[0] : done.at(-1) ?? step.stages[0])
+  return viewStage(step.stages, target.id)
 }

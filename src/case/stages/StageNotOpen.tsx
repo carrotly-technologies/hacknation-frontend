@@ -1,7 +1,9 @@
 import { Link } from 'react-router'
 import type { CaseDetail, StageId } from '../../api/cases'
-import { caseUrl, stageTitle } from '../../lib/stages'
-import { StageHeader } from './common'
+import { useCaseAction } from '../../lib/caseQueries'
+import { fmtDate } from '../../lib/format'
+import { allows, caseUrl, stageTitle, viewStage } from '../../lib/stages'
+import { MutationError, StageHeader } from './common'
 
 const WHAT: Partial<Record<StageId, string>> = {
   SHEET_PROPOSAL: 'Przejrzysz formularz zaproponowany na podstawie opisu stanowiska i zaakceptujesz go albo wprowadzisz zmiany (arkusz, kryteria dodatkowe).',
@@ -19,6 +21,7 @@ const WHAT: Partial<Record<StageId, string>> = {
 export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: StageId }) {
   const info = detail.stages.find((s) => s.id === stage)!
   const current = detail.stages.find((s) => s.id === detail.currentStage)!
+  if (stage === 'ASSESSMENT' && detail.currentStage === 'OBSERVATION') return <AssessmentNotStarted detail={detail} />
   return (
     <div className="stage">
       <StageHeader title={stageTitle(info)} />
@@ -34,6 +37,46 @@ export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: Sta
         <Link className="btn btn--primary" style={{ marginTop: 16 }} to={caseUrl(detail.id, detail.currentStage)}>
           Przejdź do bieżącego etapu
         </Link>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The assessment period has no screen of its own (step 3 shows only the official sheet), so the assessment talk
+ * starts here, in the step where it takes place.
+ */
+function AssessmentNotStarted({ detail }: { detail: CaseDetail }) {
+  const info = detail.stages.find((s) => s.id === 'ASSESSMENT')!
+  const act = useCaseAction(detail.id)
+  const due = detail.partI.assessmentDue
+  return (
+    <div className="stage">
+      <StageHeader title={stageTitle(info)} />
+      <div className="stage-pad">
+        <div className="notice notice--info" style={{ maxWidth: 640 }}>
+          <div>
+            <p>
+              <strong>Trwa okres oceny.</strong> Rozmowę oceniającą przeprowadź na koniec okresu oceny, przed sporządzeniem oceny na piśmie
+              {due ? ` (termin oceny: ${fmtDate(due)})` : ''}.
+            </p>
+            {WHAT.ASSESSMENT && <p style={{ marginTop: 6 }}>{WHAT.ASSESSMENT}</p>}
+          </div>
+        </div>
+        <div className="btn-row" style={{ marginTop: 16 }}>
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')}
+            onClick={() => act.mutate('START_ASSESSMENT')}
+          >
+            Rozpocznij rozmowę oceniającą
+          </button>
+          <Link className="btn" to={caseUrl(detail.id, viewStage(detail.stages, detail.currentStage))}>
+            Wróć do formularza oceny
+          </Link>
+        </div>
+        <MutationError error={act.error} />
       </div>
     </div>
   )
