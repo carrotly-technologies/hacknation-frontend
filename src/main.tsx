@@ -16,6 +16,7 @@ import { BrowserRouter } from 'react-router'
 import App from './App.tsx'
 import { prefetchConfig } from './lib/features'
 import { AuthProvider } from './lib/auth.tsx'
+import { initPreferences } from './lib/preferences'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,7 @@ const queryClient = new QueryClient({
   },
 })
 prefetchConfig(queryClient)
+initPreferences()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

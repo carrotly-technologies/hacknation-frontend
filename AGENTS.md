@@ -16,6 +16,7 @@ Rozwiązanie powinno być:
    - Jedyna wymagana konfiguracja to adres API (`VITE_API_URL`). Każda nowa zmienna → `.env.example` + tabela w `README.md`.
    - UI po polsku, prostym językiem; każdy ekran da się zrozumieć bez instrukcji. Komunikaty błędów mówią, co zrobić dalej.
    - Dostępność WCAG 2.1 AA (wymóg ustawy o dostępności cyfrowej): obsługa klawiaturą, widoczny focus, kontrast ≥ 4.5:1, etykiety pól.
+   - Rozmiary tekstu i wysokości elementów z tekstem w `rem` (powiększanie tekstu w `/ustawienia`); przy 150% i 375px nic nie przewija się w poziomie. Kolory tylko z tokenów, żeby działały motyw ciemny i wysoki kontrast.
 3. **Przygotowane do pracy w różnych urzędach**: w małych i dużych jednostkach, bardziej i mniej scyfryzowanych.
    - Żadnych nazw ani danych konkretnego urzędu w kodzie. Wszystko, co zależy od jednostki, przychodzi z API.
    - Listy i tabele mają działać zarówno dla 3, jak i dla 300 pracowników (filtrowanie, wyszukiwanie, brak ładowania wszystkiego naraz tam, gdzie API pozwala).
@@ -25,7 +26,7 @@ Rozwiązanie powinno być:
    - Komunikacja z API tylko przez `src/api/*`; zmiana kontraktu = zmiana w jednym miejscu.
    - `npm run build` i `npm run lint` muszą przechodzić przed merge.
 5. **Zgodne z przepisami**: ustawa o służbie cywilnej i ochrona danych osobowych.
-   - Minimalizacja danych: w `localStorage` trzymamy tylko preferencje UI (dziś `kompas.assistant`), nigdy danych osobowych ani treści ocen; token logowania tylko w `sessionStorage` (`kompas.token`). Bez narzędzi analitycznych i trackerów zewnętrznych.
+   - Minimalizacja danych: w `localStorage` trzymamy tylko preferencje UI (dziś `kompas.assistant` i `kompas.prefs`: motyw, rozmiar tekstu, kontrast), nigdy danych osobowych ani treści ocen; token logowania tylko w `sessionStorage` (`kompas.token`). Bez narzędzi analitycznych i trackerów zewnętrznych.
    - Dane pracowników pokazujemy tylko roli, która ma do nich prawo (przełożony: własny zespół, HR: monitoring).
    - AI jest doradcze: sugestia systemu jest wyraźnie oznaczona jako sugestia, a ostateczny poziom zawsze wybiera przełożony. UI nigdy nie zatwierdza oceny automatycznie.
    - Odpowiedzi asystenta pokazują źródło. Brak odpowiedzi w bazie wiedzy jest komunikowany wprost.

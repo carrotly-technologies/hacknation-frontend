@@ -1,4 +1,5 @@
-/* Checkbox and radio: native inputs, 24px boxes, whole label clickable (44px target) */
+/* Checkbox and radio: native inputs, 24px boxes, whole label clickable (44px target).
+   Box and switch sizes are in rem so they grow with the text size chosen in /ustawienia. */
 .list {
   display: flex;
   flex-direction: column;
@@ -13,7 +14,7 @@
 
 .item {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-columns: 1.5rem minmax(0, 1fr);
   column-gap: var(--s-3);
   align-items: start;
   min-height: var(--tap);
@@ -22,8 +23,8 @@
 
 .input {
   position: relative;
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   margin: 0;
   border: var(--border-w-strong) solid var(--border-input);
   border-radius: var(--radius-xs);
@@ -58,10 +59,10 @@
 .checkbox:checked::after {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 7px;
-  width: 6px;
-  height: 11px;
+  top: 0.1875rem;
+  left: 0.4375rem;
+  width: 0.375rem;
+  height: 0.6875rem;
   border: solid var(--on-accent);
   border-width: 0 var(--border-w-strong) var(--border-w-strong) 0;
   transform: rotate(45deg);
@@ -119,7 +120,7 @@
 
 /* Progressive disclosure: extra question under the chosen option */
 .conditional {
-  margin: var(--s-1) 0 var(--s-2) 11px;
+  margin: var(--s-1) 0 var(--s-2) calc(0.75rem - 1px); /* under the centre of the radio */
   padding: var(--s-2) 0 var(--s-2) calc(var(--s-4) + 2px);
   border-left: 4px solid var(--border-strong);
 }
@@ -136,8 +137,8 @@
 .switchInput {
   position: relative;
   flex: none;
-  width: 48px;
-  height: 28px;
+  width: 3rem;
+  height: 1.75rem;
   margin: 0;
   border: var(--border-w-strong) solid var(--border-input);
   border-radius: var(--radius-pill);
@@ -152,8 +153,8 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: 50%;
   background: var(--text-secondary);
   transition: transform var(--duration);
@@ -166,7 +167,7 @@
 
 .switchInput:checked::after {
   background: var(--on-accent);
-  transform: translateX(20px);
+  transform: translateX(calc(3rem - 1.25rem - 8px)); /* track − knob − borders and gaps */
 }
 
 .switchInput:focus-visible,

@@ -2,7 +2,9 @@
    Public-service look (gov.pl web palette + the token scale of the public e-service app):
    white cards on a light grey canvas, one blue accent, red only for errors/alerts, and a
    single diverging palette for the 1–3–5–7–9 scale. Only the style is borrowed: no official
-   logos, emblems or names. Dark mode follows the system (prefers-color-scheme).
+   logos, emblems or names. Dark mode follows the system (prefers-color-scheme) unless the user picks
+   a theme in /ustawienia: then <html> carries data-theme="light" | "dark" (src/lib/preferences.ts).
+   data-contrast="high" on <html> switches the semantic roles to the high-contrast set at the end.
    Catalogue and rules: docs/DESIGN.md. Components (src/components/ui) use only these variables. */
 :root,
 .theme-light {
@@ -95,10 +97,11 @@
   --shadow-dialog: 0 16px 48px rgb(16 24 40 / 0.22);
 }
 
-/* ---------- Dark mode (automatic, from the system setting) ----------
-   The same block is repeated for `.theme-dark`, which the /ui showcase uses to show both modes. */
+/* ---------- Dark mode (from the system setting, unless the user chose "Jasny") ----------
+   The same block is repeated for data-theme="dark" (chosen in /ustawienia) and for `.theme-dark`,
+   which the /ui showcase uses to show both modes. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     color-scheme: dark;
     --gray-0: #181b21;
     --gray-25: #1d2027;
@@ -150,6 +153,7 @@
   }
 }
 
+:root[data-theme='dark'],
 .theme-dark {
   color-scheme: dark;
   --gray-0: #181b21;
@@ -228,19 +232,162 @@
   color: var(--text);
 }
 
+/* ---------- High contrast (data-contrast="high", chosen in /ustawienia) ----------
+   Only semantic roles change. Measured against every background role of the same theme:
+   text and links ≥ 7:1 (WCAG 1.4.6 AAA), control borders and the focus ring ≥ 3:1 (1.4.11),
+   status and score colours ≥ 7:1 on their tints and with their on-colour.
+   The dark set must redefine every property of the light set: its selectors are more specific. */
+:root[data-contrast='high'] {
+  --bg-hover: #e6ecf5;
+  --border: #767e8b;
+  --border-strong: #5d6675;
+  --border-input: #4a5260;
+  --text: #000000;
+  --text-secondary: #252a33;
+  --text-muted: #2f3540;
+  --text-faint: #3b424e;
+  --accent: #003d7a;
+  --accent-hover: #002650;
+  --accent-border: #4f79b3;
+  --info-border: #4f79b3;
+  --on-accent: #ffffff;
+  --link: #003d7a;
+  --link-hover: #002650;
+  --focus: #003d7a;
+  --focus-inner: #ffffff;
+  --ok: #1d4a19;
+  --ok-border: #4b8a43;
+  --on-ok: #ffffff;
+  --warn: #5a3500;
+  --warn-border: #9a6a14;
+  --on-warn: #ffffff;
+  --danger: #8f0d22;
+  --danger-border: #c0475a;
+  --danger-strong: #6e0816;
+  --on-danger: #ffffff;
+  --score-1: #8f0d14;
+  --score-3: #6b3608;
+  --score-5: #343b47;
+  --score-7: #164282;
+  --score-9: #08376f;
+  --on-score: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast='high']:not([data-theme='light']) {
+    --bg-app: #000000;
+    --bg-surface: #0f1115;
+    --bg-subtle: #14171c;
+    --bg-muted: #1e2128;
+    --bg-hover: #252a33;
+    --border: #7f8899;
+    --border-strong: #9aa3b2;
+    --border-input: #b4bcc8;
+    --text: #ffffff;
+    --text-secondary: #e6e9ee;
+    --text-muted: #d5dae2;
+    --text-faint: #c2c8d2;
+    --accent: #b7d2fb;
+    --accent-hover: #d6e6fd;
+    --accent-faint: #101a2a;
+    --info-bg: #101a2a;
+    --accent-border: #6f93c9;
+    --info-border: #6f93c9;
+    --on-accent: #000000;
+    --link: #b7d2fb;
+    --link-hover: #d6e6fd;
+    --focus: #ffffff;
+    --focus-inner: #000000;
+    --ok: #b4ecb0;
+    --ok-bg: #0b1a0e;
+    --ok-border: #5e9e5a;
+    --on-ok: #000000;
+    --warn: #ffd98a;
+    --warn-bg: #1f1806;
+    --warn-border: #a8853a;
+    --on-warn: #000000;
+    --danger: #ffbdc5;
+    --danger-bg: #24090d;
+    --danger-border: #c26a76;
+    --danger-strong: #ffd6db;
+    --on-danger: #000000;
+    --score-1: #ffb3b8;
+    --score-1-bg: #2a0d0f;
+    --score-3: #ffcf9e;
+    --score-3-bg: #271a0d;
+    --score-5: #d5dae2;
+    --score-5-bg: #1e2128;
+    --score-7: #b7d2fb;
+    --score-7-bg: #0f1d33;
+    --score-9: #9ec3f5;
+    --score-9-bg: #0c1a36;
+    --on-score: #000000;
+  }
+}
+
+:root[data-contrast='high'][data-theme='dark'] {
+  --bg-app: #000000;
+  --bg-surface: #0f1115;
+  --bg-subtle: #14171c;
+  --bg-muted: #1e2128;
+  --bg-hover: #252a33;
+  --border: #7f8899;
+  --border-strong: #9aa3b2;
+  --border-input: #b4bcc8;
+  --text: #ffffff;
+  --text-secondary: #e6e9ee;
+  --text-muted: #d5dae2;
+  --text-faint: #c2c8d2;
+  --accent: #b7d2fb;
+  --accent-hover: #d6e6fd;
+  --accent-faint: #101a2a;
+  --info-bg: #101a2a;
+  --accent-border: #6f93c9;
+  --info-border: #6f93c9;
+  --on-accent: #000000;
+  --link: #b7d2fb;
+  --link-hover: #d6e6fd;
+  --focus: #ffffff;
+  --focus-inner: #000000;
+  --ok: #b4ecb0;
+  --ok-bg: #0b1a0e;
+  --ok-border: #5e9e5a;
+  --on-ok: #000000;
+  --warn: #ffd98a;
+  --warn-bg: #1f1806;
+  --warn-border: #a8853a;
+  --on-warn: #000000;
+  --danger: #ffbdc5;
+  --danger-bg: #24090d;
+  --danger-border: #c26a76;
+  --danger-strong: #ffd6db;
+  --on-danger: #000000;
+  --score-1: #ffb3b8;
+  --score-1-bg: #2a0d0f;
+  --score-3: #ffcf9e;
+  --score-3-bg: #271a0d;
+  --score-5: #d5dae2;
+  --score-5-bg: #1e2128;
+  --score-7: #b7d2fb;
+  --score-7-bg: #0f1d33;
+  --score-9: #9ec3f5;
+  --score-9-bg: #0c1a36;
+  --on-score: #000000;
+}
+
 :root {
   /* ---------- Typography (Open Sans 400 / 600 / 700) ---------- */
   --font-sans: 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --text-xs: 12px;
-  --text-sm: 13px;
-  --text-base: 14px;
-  --text-md: 15px;
-  --text-body: 16px; /* forms and long-form reading */
-  --text-lg: 18px;
-  --text-xl: 22px;
-  --text-2xl: 26px;
-  --text-3xl: 32px;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 0.9375rem;
+  --text-body: 1rem; /* forms and long-form reading */
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.625rem;
+  --text-3xl: 2rem;
   --leading-tight: 1.25;
   --leading: 1.5;
   --leading-loose: 1.6;
@@ -277,9 +424,9 @@
   --focus-shadow: 0 0 0 2px var(--focus), 0 0 0 4px var(--focus-inner), 0 0 0 6px var(--focus);
 
   /* ---------- Sizes & motion ---------- */
-  --control-h: 48px;
-  --control-h-sm: 36px;
-  --tap: 44px; /* minimum touch target */
+  --control-h: 3rem;
+  --control-h-sm: 2.25rem;
+  --tap: 2.75rem; /* minimum touch target */
   --duration: 0.15s;
   --content-max: 1200px;
   --form-max: 640px;
@@ -288,7 +435,7 @@
   --z-toast: 200;
 
   /* ---------- Layout ---------- */
-  --topbar-h: 56px;
+  --topbar-h: 3.5rem;
   --rail-w: 248px;
   --assistant-w: 360px;
 }

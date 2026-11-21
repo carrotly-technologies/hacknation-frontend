@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage'
 import { MorePage } from './pages/MorePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ServicesPage } from './pages/ServicesPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { TeamPage } from './pages/TeamPage'
 import { UiPage } from './pages/UiPage'
 import { SheetPage } from './sheet/SheetPage'
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/baza-wiedzy" element={<KnowledgePage />} />
           <Route path="/uslugi" element={<ServicesPage />} />
           <Route path="/wiecej" element={<MorePage />} />
+          <Route path="/ustawienia" element={<SettingsPage />} />
           <Route path="/wniosek-demo/:step?" element={<DemoFormPage />} />
           <Route path="/ui" element={<UiPage />} />
           <Route path="*" element={<NotFoundPage />} />

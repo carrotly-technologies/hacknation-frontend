@@ -41,6 +41,9 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   decision, justification/IPRZ with formal check, document), docked assistant panel;
 - `/teczka/:id/arkusz` — official sheet preview (parts I/II/III); print it to get the PDF;
 - `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant;
+- `/ustawienia` — appearance settings for every role (gear icon in the top bar; on phones in "Menu"): theme
+  system/light/dark, text size 100/125/150%, high contrast. Kept only in this browser (`localStorage`
+  `kompas.prefs`, `src/lib/preferences.ts`) and applied before the first paint by a small script in `index.html`;
 - `/ui` — design-system catalogue, `/wniosek-demo` — step-by-step form pattern, `/wiecej`, `/uslugi`
   (helper pages: they work under their addresses but are not linked from the navigation).
 

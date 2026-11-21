@@ -19,14 +19,25 @@ emblems or product names**.
 | accent | `--accent` (#0052A5), `--accent-hover`, `--accent-subtle`, `--accent-faint`, `--on-accent`, `--link`, `--link-hover` (#006CD7) | the only brand colour |
 | status | `--ok*`, `--warn*`, `--danger*` (+ `--danger-strong` #900E1D), `--info*`, each with `-bg`, `-border`, `--on-*` | success bg #EEFAE1 |
 | focus | `--focus` (#0452A8), `--focus-shadow` = `0 0 0 2px focus, 0 0 0 4px inner, 0 0 0 6px focus` | gov.pl triple ring |
-| type | Open Sans 400/600/700; `--text-xs` 12 … `--text-body` 16 … `--text-3xl` 32 | forms use 16px |
+| type | Open Sans 400/600/700; `--text-xs` 12 … `--text-body` 16 … `--text-3xl` 32 (px at 100%, defined in `rem`) | forms use 16px |
 | spacing | `--s-0` 2, `--s-1` 4, `--s-2` 8, `--s-3` 12, `--s-4` 16, `--s-5` 20, `--s-6` 24, `--s-8` 32, `--s-10` 40, `--s-12` 48, `--s-14` 56 | |
 | radius | `--radius-xs` 4 (fields, alerts), `--radius` 8, `--radius-lg` 12 (cards), `--radius-xl` 16 (dialogs), `--radius-pill` (buttons, badges) | |
-| sizes | `--control-h` 48, `--control-h-sm` 36, `--tap` 44, `--content-max` 1200, `--form-max` 640 | |
+| sizes | `--control-h` 48, `--control-h-sm` 36, `--tap` 44 (these three and `--topbar-h` in `rem`), `--content-max` 1200, `--form-max` 640 | |
 
-**Dark mode** is automatic (`prefers-color-scheme`); there is no toggle. The primitives (`--gray-*`,
-`--blue-*`) and status colours are redefined, so anything built on tokens follows. `.theme-light` /
-`.theme-dark` force a theme on a subtree (used by `/ui`). Text contrast is ≥ 4.5:1 in both modes.
+**Dark mode** follows the system (`prefers-color-scheme`) by default; in `/ustawienia` the user can force
+"Jasny" or "Ciemny", which puts `data-theme="light" | "dark"` on `<html>` (`src/lib/preferences.ts`, stored in
+`localStorage` as `kompas.prefs`; an inline script in `index.html` applies it before the first paint). The
+primitives (`--gray-*`, `--blue-*`) and status colours are redefined, so anything built on tokens follows.
+`.theme-light` / `.theme-dark` force a theme on a subtree (used by `/ui`). Text contrast is ≥ 4.5:1 in both modes.
+
+**High contrast** (`data-contrast="high"` on `<html>`, a switch in `/ustawienia`) overrides only the semantic
+roles, for both themes: text and links ≥ 7:1 on every background role, control borders and the focus ring
+≥ 3:1, status and score colours ≥ 7:1, links fully underlined.
+
+**Text size** (`/ustawienia`: 100 / 125 / 150%) is `font-size` on `<html>`. Text, control heights and
+anything holding text are in `rem`, so they grow with it; spacing, borders, radii and icons stay in `px`.
+New text sizes and heights of elements with text go in `rem` (px ÷ 16). At 150% and 375px wide nothing
+may scroll sideways (WCAG 1.4.4, 1.4.10); on phones buttons wrap their label.
 
 ## Components
 
@@ -36,7 +47,7 @@ emblems or product names**.
 | `Field` | label + hint + error for one control, wired with `aria-describedby`; `asHeading` makes the label the page h1. |
 | `Fieldset` | the same for groups (radios, checkboxes). |
 | `TextInput`, `TextArea`, `Select` | native controls; `width={5 \| 10 \| 20}` for short answers. |
-| `Checkbox`, `RadioGroup`, `Switch` | 24px native inputs; `RadioGroup` options take `conditional` (shown under the chosen option). Switch only for settings that apply at once. |
+| `Checkbox`, `RadioGroup`, `Switch` | 24px native inputs (1.5rem, grow with the text size); `RadioGroup` options take `conditional` (shown under the chosen option). Switch only for settings that apply at once. |
 | `ErrorSummary` | errors at the top of the form, links to fields, takes focus after a failed submit. |
 | `InlineAlert` | info / success / warning / error, icon + text. |
 | `StatusBadge` | short status with a dot and text. |
@@ -64,8 +75,9 @@ import { Button, ErrorSummary, Field, TextInput } from '../components/ui'
 
 ## Layout
 
-`AppShell`: skip link "Przejdź do treści"; desktop: top bar ("Kompas kompetencji" + `UserMenu`) + navigation rail; phones (< 768px): compact top
-bar + bottom navigation (team / knowledge base / "Więcej"), no horizontal scrolling. Content max width ~1200px.
+`AppShell`: skip link "Przejdź do treści"; top bar with the product name, the main links, the settings gear
+(`/ustawienia`) and `UserMenu`; below 1024px the links go under a "Menu" button, and below 768px the gear moves
+into that menu as "Ustawienia". No horizontal scrolling. Content max width ~1200px.
 
 ## UX rules
 

@@ -6,6 +6,7 @@ import {
   type LucideIcon,
   Menu,
   RotateCcw,
+  Settings,
   TableProperties,
   UserCog,
   Users,
@@ -59,6 +60,7 @@ export function AppShell() {
   }
 
   const userRole = me.position || ROLE_LABEL[me.role]
+  const settingsActive = isUnder(location.pathname, '/ustawienia')
 
   return (
     <div className="shell">
@@ -109,6 +111,17 @@ export function AppShell() {
                   </li>
                 )
               })}
+              {/* phones only: the gear next to the user menu does not fit there, so settings are a row here */}
+              <li className="topnav__settings">
+                <Link
+                  to="/ustawienia"
+                  className={`topnav__link ${settingsActive ? 'is-active' : ''}`}
+                  aria-current={settingsActive ? 'page' : undefined}
+                >
+                  <Settings size={18} strokeWidth={1.75} aria-hidden="true" />
+                  <span>Ustawienia</span>
+                </Link>
+              </li>
             </ul>
           </nav>
           <div className="topbar__tools">
@@ -121,6 +134,15 @@ export function AppShell() {
         </div>
 
         <div className="topbar__right">
+          <Link
+            to="/ustawienia"
+            className={`topbar__icon-btn ${settingsActive ? 'is-active' : ''}`}
+            aria-label="Ustawienia"
+            title="Ustawienia"
+            aria-current={settingsActive ? 'page' : undefined}
+          >
+            <Settings size={20} strokeWidth={1.75} aria-hidden="true" />
+          </Link>
           <UserMenu
             name={me.name}
             role={userRole}
@@ -141,7 +163,8 @@ type NavItem = { to: string; label: string; Icon: LucideIcon; match: string[] }
 
 /**
  * Main links for a role; `match` lists the paths that highlight the link (a case file belongs to "Mój zespół").
- * The helper pages (`/wiecej`, `/uslugi`, `/wniosek-demo`, `/ui`) keep their routes but are not linked here.
+ * The helper pages (`/wiecej`, `/uslugi`, `/wniosek-demo`, `/ui`) keep their routes but are not linked here;
+ * `/ustawienia` is the gear icon next to the user menu (on phones: an item in the "Menu" dropdown).
  */
 function navItems(role: Role): NavItem[] {
   const byRole: Partial<Record<Role, NavItem>> = {

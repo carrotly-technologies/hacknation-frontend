@@ -1,0 +1,61 @@
+/* /ustawienia: one white card per setting, like a settings list in a public e-service app */
+.lead {
+  margin-top: var(--s-1);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  max-width: var(--form-max);
+  margin-top: var(--s-4);
+}
+
+.group {
+  padding: var(--s-5) var(--s-6);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.title {
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.hint {
+  margin-top: var(--s-1);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.group > .hint + * {
+  margin-top: var(--s-2);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  max-width: var(--form-max);
+  margin-top: var(--s-5);
+}
+
+.note {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 767px) {
+  .group {
+    padding: var(--s-4);
+  }
+}

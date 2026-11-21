@@ -4,7 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>Kompas Kompetencji</title>
+    <script>
+      // Appearance settings from /ustawienia, applied before the first paint so a saved dark theme never
+      // flashes light. Same key and attributes as applyPreferences() in src/lib/preferences.ts.
+      try {
+        var p = JSON.parse(localStorage.getItem('kompas.prefs') || '{}') || {}
+        var r = document.documentElement
+        if (p.theme === 'light' || p.theme === 'dark') {
+          r.setAttribute('data-theme', p.theme)
+          r.style.colorScheme = p.theme
+        }
+        if (p.highContrast === true) r.setAttribute('data-contrast', 'high')
+        if (p.textSize === 125 || p.textSize === 150) r.style.fontSize = p.textSize + '%'
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -193,12 +193,13 @@ a.step:visited .label {
     margin-left: 0;
   }
 
+  /* 44px dots in px, not rem: the row must hold every stage even with enlarged text (/ustawienia) */
   .step,
   .item:first-child .step,
   .item:last-child .step {
-    width: var(--tap);
-    height: var(--tap);
-    min-height: var(--tap);
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
     padding: 0;
     border-radius: 50%;
     background: transparent;
