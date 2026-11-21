@@ -99,8 +99,8 @@ function TeamRow({ c, onOpen }: { c: CaseSummary; onOpen: () => void }) {
         <span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span>
       </td>
       <td className="cell-action">
-        <Link to={caseUrl(c.id)} className="btn btn--sm" onClick={(e) => e.stopPropagation()}>
-          Otwórz teczkę <ChevronRight size={14} aria-hidden="true" />
+        <Link to={caseUrl(c.id)} className="btn btn--sm" aria-label={`Otwórz teczkę: ${c.person.firstName} ${c.person.lastName}`} onClick={(e) => e.stopPropagation()}>
+          Otwórz <ChevronRight size={14} aria-hidden="true" />
         </Link>
       </td>
     </tr>
