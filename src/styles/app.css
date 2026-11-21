@@ -1105,52 +1105,15 @@
   overflow: hidden;
 }
 
-.assistant__tabs {
-  display: flex;
-  align-items: stretch;
-  border-bottom: 1px solid var(--border);
-}
-
-.assistant__tab {
-  position: relative;
-  flex: 1;
-  height: 2.625rem;
-  padding: 0 8px;
-  border: 0;
-  background: none;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  cursor: pointer;
-}
-
-.assistant__tab:hover {
-  color: var(--text);
-}
-
-.assistant__tab.is-on {
-  color: var(--accent);
-  font-weight: var(--weight-semibold);
-}
-
-.assistant__tab.is-on::after {
-  content: '';
-  position: absolute;
-  right: 8px;
-  bottom: -1px;
-  left: 8px;
-  height: 2px;
-  background: var(--accent);
-}
-
 .assistant--popup {
   flex: 1;
   height: 100%;
 }
 
-/* Popup header: "Asystent AI" and the close button */
+/* Header: "Asystent AI" (and the close button in the popup) */
 .assistant__head {
   display: flex;
+  min-height: var(--tap);
   align-items: center;
   gap: var(--s-2);
   padding: var(--s-1) var(--s-1) var(--s-1) var(--s-4);

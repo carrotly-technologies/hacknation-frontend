@@ -1,8 +1,6 @@
 import { apiGet, apiPost, apiUrl } from './client'
 import type { StageId } from './cases'
 
-export type AssistantMode = 'FORMAL' | 'CONVERSATION'
-
 export interface AssistantContext {
   caseId?: string
   stageId?: StageId
@@ -37,7 +35,6 @@ export interface AssistantExchange {
 }
 
 export interface AskAssistantRequest {
-  mode: AssistantMode
   question: string
   context: AssistantContext
   /** Earlier exchanges of the conversation, oldest first, so that follow-ups ("a do kogo?") are understood. */
@@ -72,11 +69,13 @@ export async function getSourceDocuments(signal?: AbortSignal): Promise<SourceDo
   return docs.map((d) => ({ ...d, url: d.url ? apiUrl(d.url) : null }))
 }
 
-/** POST /api/assistant/ask — answers only from the knowledge base, with sources. */
+/**
+ * POST /api/assistant/ask — one assistant for rules and talk preparation; answers only from the knowledge base, with
+ * sources. With `caseId` it also uses the case and its stage.
+ */
 export async function askAssistant(req: AskAssistantRequest): Promise<AssistantAnswer> {
   const res = await apiPost<AskResponse>('/assistant/ask', {
     question: req.question,
-    assistant: req.mode,
     ...(req.context.caseId ? { caseId: req.context.caseId } : {}),
     ...(req.context.stageId ? { stageId: req.context.stageId } : {}),
     ...(req.history.length ? { history: req.history } : {}),

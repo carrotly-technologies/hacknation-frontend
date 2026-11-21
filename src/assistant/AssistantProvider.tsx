@@ -24,16 +24,13 @@ export function AssistantProvider({ children }: { children?: ReactNode }) {
     setContextState(next)
   }, [])
 
-  const { ask, setMode } = chat
+  const { ask } = chat
   const open = useCallback(
     (request?: AssistantRequest) => {
       setOpen(true)
-      if (request) {
-        setMode(request.mode)
-        ask(request.question, contextRef.current, request.mode)
-      }
+      if (request) ask(request.question, contextRef.current)
     },
-    [ask, setMode],
+    [ask],
   )
   const close = useCallback(() => setOpen(false), [])
   const toggle = useCallback(() => setOpen((o) => !o), [])

@@ -1,19 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { ArrowUp, ExternalLink, MessageSquarePlus, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { getSourceDocuments, type AssistantContext, type AssistantMode } from '../api/assistant'
+import { getSourceDocuments, type AssistantContext } from '../api/assistant'
 import { suggestedQuestions } from './suggestions'
 import { useAssistantChat, type AssistantChat } from './useAssistant'
 
-const TABS: { mode: AssistantMode; label: string; blurb: string }[] = [
-  { mode: 'FORMAL', label: 'Asystent formalny', blurb: 'Procedura, terminy, przepisy i poprawność formalna.' },
-  { mode: 'CONVERSATION', label: 'Asystent rozmowy', blurb: 'Przygotowanie do rozmowy, pytania, informacja zwrotna, plan rozwoju.' },
-]
+const BLURB = 'Procedura, przepisy, terminy i przygotowanie do rozmowy z pracownikiem.'
 
 /**
- * The chat with the formal and the conversation assistant. `page`: the "Baza wiedzy" screen, with its own
- * conversation. `popup`: inside the AI assistant window (AssistantLauncher), with the session's conversation (`chat`
- * from AssistantProvider), the "Asystent AI" heading (`titleId`) and the close button.
+ * The chat with the AI assistant: one conversation for rules and talk preparation, under the "Asystent AI" heading.
+ * `page`: the "Baza wiedzy" screen, with its own conversation. `popup`: inside the AI assistant window
+ * (AssistantLauncher), with the session's conversation (`chat` from AssistantProvider), the heading id (`titleId`)
+ * and the close button.
  */
 export function AssistantPanel({
   context,
@@ -29,15 +27,14 @@ export function AssistantPanel({
   titleId?: string
 }) {
   const own = useAssistantChat()
-  const { mode, setMode, threads, ask: askIn, reset } = shared ?? own
+  const { msgs, ask: askIn, reset } = shared ?? own
   const [input, setInput] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
-  const msgs = threads[mode]
   const busy = msgs.some((m) => m.pending)
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
-  }, [msgs.length, busy, mode])
+  }, [msgs.length, busy])
 
   const ask = (question: string) => {
     if (!question.trim() || busy) return
@@ -50,29 +47,19 @@ export function AssistantPanel({
     ask(input)
   }
 
-  const suggestions = suggestedQuestions(mode, context.stageId)
-  const tab = TABS.find((t) => t.mode === mode)!
+  const suggestions = suggestedQuestions(context.stageId)
 
   const Root = variant === 'popup' ? 'div' : 'aside'
   return (
-    <Root className={`assistant assistant--${variant}`} aria-label={variant === 'popup' ? undefined : 'Asystent'}>
-      {variant === 'popup' && (
-        <div className="assistant__head">
-          <Sparkles size={18} strokeWidth={1.75} aria-hidden="true" className="assistant__head-icon" />
-          <h2 id={titleId} className="assistant__title">Asystent AI</h2>
-          {onClose && (
-            <button type="button" className="assistant__close" onClick={onClose} aria-label="Zamknij asystenta" title="Zamknij (Esc)">
-              <X size={20} aria-hidden="true" />
-            </button>
-          )}
-        </div>
-      )}
-      <div className="assistant__tabs" role="tablist" aria-label="Rodzaj asystenta">
-        {TABS.map((t) => (
-          <button key={t.mode} type="button" role="tab" aria-selected={mode === t.mode} className={`assistant__tab ${mode === t.mode ? 'is-on' : ''}`} onClick={() => setMode(t.mode)}>
-            {t.label}
+    <Root className={`assistant assistant--${variant}`} aria-label={variant === 'popup' ? undefined : 'Asystent AI'}>
+      <div className="assistant__head">
+        <Sparkles size={18} strokeWidth={1.75} aria-hidden="true" className="assistant__head-icon" />
+        <h2 id={titleId} className="assistant__title">Asystent AI</h2>
+        {variant === 'popup' && onClose && (
+          <button type="button" className="assistant__close" onClick={onClose} aria-label="Zamknij asystenta" title="Zamknij (Esc)">
+            <X size={20} aria-hidden="true" />
           </button>
-        ))}
+        )}
       </div>
 
       <div className="assistant__ctx">
@@ -103,7 +90,7 @@ export function AssistantPanel({
       <div className="assistant__list" ref={listRef} role="log" aria-live="polite" aria-label="Rozmowa z asystentem" tabIndex={0}>
         {msgs.length === 0 && (
           <div className="assistant__intro">
-            <p className="assistant__blurb">{tab.blurb}</p>
+            <p className="assistant__blurb">{BLURB}</p>
             <p className="h-sub" style={{ marginTop: 14, marginBottom: 6 }}>Podpowiadane pytania</p>
             <ul className="assistant__sugg">
               {suggestions.map((s) => (
@@ -116,7 +103,7 @@ export function AssistantPanel({
         )}
         {msgs.map((m) => (
           <div key={m.id} className={`msg msg--${m.role}`}>
-            {m.role === 'assistant' && <span className="msg__who">{tab.label}</span>}
+            {m.role === 'assistant' && <span className="msg__who">Asystent AI</span>}
             {m.pending ? (
               <p className="msg__text msg__text--pending">Szukam w bazie wiedzy…</p>
             ) : (
@@ -162,7 +149,7 @@ export function AssistantPanel({
           className="assistant__input"
           rows={2}
           value={input}
-          placeholder={mode === 'FORMAL' ? 'Zapytaj o procedurę lub przepisy…' : 'Zapytaj o przygotowanie rozmowy…'}
+          placeholder="Zapytaj o procedurę, przepisy albo przygotowanie rozmowy…"
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {

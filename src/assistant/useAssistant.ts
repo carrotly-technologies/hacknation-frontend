@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { askAssistant, type AssistantAnswer, type AssistantContext, type AssistantExchange, type AssistantMode } from '../api/assistant'
+import { askAssistant, type AssistantAnswer, type AssistantContext, type AssistantExchange } from '../api/assistant'
 
 export interface Msg {
   id: number
@@ -9,28 +9,23 @@ export interface Msg {
   pending?: boolean
 }
 
-export type Threads = Record<AssistantMode, Msg[]>
-
-/** One conversation per assistant (formal, conversation), with the tab that is open. */
+/** The one conversation with the AI assistant (rules and talk preparation in the same thread). */
 export interface AssistantChat {
-  mode: AssistantMode
-  setMode: (mode: AssistantMode) => void
-  threads: Threads
-  /** Asks in `mode` (default: the open tab); ignored while that thread waits for an answer. */
-  ask: (question: string, context: AssistantContext, mode?: AssistantMode) => void
-  /** "Nowa rozmowa": empties the open tab's conversation, so the next question has no history. */
+  msgs: Msg[]
+  /** Asks the question; ignored while the conversation waits for an answer. */
+  ask: (question: string, context: AssistantContext) => void
+  /** "Nowa rozmowa": empties the conversation, so the next question has no history. */
   reset: () => void
 }
 
 /** A question asked from a screen, e.g. "Przygotuj pytania do rozmowy" in step 5. */
 export interface AssistantRequest {
-  mode: AssistantMode
   question: string
 }
 
 export interface AssistantState {
   isOpen: boolean
-  /** Opens the popup; with a request, also switches to its assistant and asks the question. */
+  /** Opens the popup; with a request, also asks the question. */
   open: (request?: AssistantRequest) => void
   close: () => void
   toggle: () => void
@@ -50,7 +45,7 @@ const OFF: AssistantState = {
   toggle: () => {},
   context: {},
   setContext: () => {},
-  chat: { mode: 'FORMAL', setMode: () => {}, threads: { FORMAL: [], CONVERSATION: [] }, ask: () => {}, reset: () => {} },
+  chat: { msgs: [], ask: () => {}, reset: () => {} },
 }
 
 /** The assistant of the signed-in session (AssistantProvider); does nothing outside it. */
@@ -87,34 +82,25 @@ export function historyOf(msgs: Msg[]): AssistantExchange[] {
 
 /** Conversation state and asking: the popup keeps one in AssistantProvider, the "Baza wiedzy" page its own. */
 export function useAssistantChat(): AssistantChat {
-  const [mode, setMode] = useState<AssistantMode>('FORMAL')
-  const [threads, setThreads] = useState<Threads>({ FORMAL: [], CONVERSATION: [] })
-  // Mirror of `threads` updated synchronously, so two asks in a row see each other (and the pending check works).
-  const ref = useRef(threads)
-  const update = useCallback((fn: (t: Threads) => Threads) => {
+  const [msgs, setMsgs] = useState<Msg[]>([])
+  // Mirror of `msgs` updated synchronously, so two asks in a row see each other (and the pending check works).
+  const ref = useRef(msgs)
+  const update = useCallback((fn: (m: Msg[]) => Msg[]) => {
     ref.current = fn(ref.current)
-    setThreads(ref.current)
-  }, [])
-
-  const modeRef = useRef(mode)
-  const changeMode = useCallback((m: AssistantMode) => {
-    modeRef.current = m
-    setMode(m)
+    setMsgs(ref.current)
   }, [])
 
   const ask = useCallback(
-    (question: string, context: AssistantContext, m?: AssistantMode) => {
-      const target = m ?? modeRef.current
+    (question: string, context: AssistantContext) => {
       const q = question.trim()
-      const before = ref.current[target]
+      const before = ref.current
       if (!q || before.some((x) => x.pending)) return
       const userMsg: Msg = { id: ++seq, role: 'user', text: q }
       const pending: Msg = { id: ++seq, role: 'assistant', text: '', pending: true }
-      update((t) => ({ ...t, [target]: [...t[target], userMsg, pending] }))
+      update((m) => [...m, userMsg, pending])
       const settle = (patch: Partial<Msg>) =>
-        update((t) => ({ ...t, [target]: t[target].map((x) => (x.id === pending.id ? { ...x, pending: false, ...patch } : x)) }))
+        update((m) => m.map((x) => (x.id === pending.id ? { ...x, pending: false, ...patch } : x)))
       askAssistant({
-        mode: target,
         question: q,
         context,
         history: historyOf(before),
@@ -127,10 +113,9 @@ export function useAssistantChat(): AssistantChat {
   )
 
   const reset = useCallback(() => {
-    const target = modeRef.current
-    if (ref.current[target].some((x) => x.pending)) return
-    update((t) => ({ ...t, [target]: [] }))
+    if (ref.current.some((x) => x.pending)) return
+    update(() => [])
   }, [update])
 
-  return useMemo(() => ({ mode, setMode: changeMode, threads, ask, reset }), [mode, changeMode, threads, ask, reset])
+  return useMemo(() => ({ msgs, ask, reset }), [msgs, ask, reset])
 }
