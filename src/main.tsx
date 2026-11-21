@@ -1,8 +1,10 @@
-// Open Sans, regular (400) for all text and semibold (600) as the only emphasis.
+// Open Sans: 400 for text, 600 for emphasis, 700 for page headings in forms (docs/DESIGN.md).
 import '@fontsource/open-sans/latin-400.css'
 import '@fontsource/open-sans/latin-ext-400.css'
 import '@fontsource/open-sans/latin-600.css'
 import '@fontsource/open-sans/latin-ext-600.css'
+import '@fontsource/open-sans/latin-700.css'
+import '@fontsource/open-sans/latin-ext-700.css'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/app.css'

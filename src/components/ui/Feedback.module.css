@@ -1,0 +1,210 @@
+/* ErrorSummary, InlineAlert, StatusBadge, Snackbar */
+.summary {
+  max-width: var(--form-max);
+  margin-bottom: var(--s-8);
+  padding: var(--s-4) var(--s-5);
+  border: var(--border-w-strong) solid var(--danger);
+  border-left-width: 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+}
+
+.summary:focus,
+.summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.summaryTitle {
+  margin-bottom: var(--s-2);
+  color: var(--text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.summaryList a {
+  color: var(--danger);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  text-decoration-color: currentColor;
+}
+
+.summaryList a:hover {
+  color: var(--danger-strong);
+}
+
+.summaryList a:focus-visible {
+  outline: none;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--focus-shadow);
+}
+
+/* Inline alert */
+.alert {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s-1) var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-w) solid var(--alert-border);
+  border-left: 4px solid var(--alert-fg);
+  border-radius: var(--radius-xs);
+  background: var(--alert-bg);
+  color: var(--text);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.alertIcon {
+  margin-top: var(--s-0);
+  color: var(--alert-fg);
+}
+
+.alertTitle {
+  font-weight: var(--weight-semibold);
+}
+
+.alertBody > * + * {
+  margin-top: var(--s-1);
+}
+
+.info {
+  --alert-fg: var(--info);
+  --alert-bg: var(--info-bg);
+  --alert-border: var(--info-border);
+}
+
+.success {
+  --alert-fg: var(--ok);
+  --alert-bg: var(--ok-bg);
+  --alert-border: var(--ok-border);
+}
+
+.warning {
+  --alert-fg: var(--warn);
+  --alert-bg: var(--warn-bg);
+  --alert-border: var(--warn-border);
+}
+
+.error {
+  --alert-fg: var(--danger);
+  --alert-bg: var(--danger-bg);
+  --alert-border: var(--danger-border);
+}
+
+.neutral {
+  --alert-fg: var(--text-secondary);
+  --alert-bg: var(--bg-muted);
+  --alert-border: var(--border);
+}
+
+/* Status badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  max-width: 100%;
+  min-height: 24px;
+  padding: var(--s-0) var(--s-2);
+  border: var(--border-w) solid var(--alert-border);
+  border-radius: var(--radius-pill);
+  background: var(--alert-bg);
+  color: var(--alert-fg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  white-space: nowrap;
+}
+
+.badge.neutral {
+  color: var(--text-secondary);
+}
+
+.badgeDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Snackbar */
+.snackbarRegion {
+  position: fixed;
+  right: var(--s-4);
+  bottom: var(--s-6);
+  left: var(--s-4);
+  z-index: var(--z-toast);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.snackbar {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  max-width: 560px;
+  min-height: var(--control-h);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  border-radius: var(--radius);
+  background: var(--text);
+  color: var(--bg-surface);
+  font-size: var(--text-md);
+  box-shadow: var(--shadow-pop);
+  pointer-events: auto;
+}
+
+.snackbarStatic {
+  position: static;
+}
+
+.snackbarAction,
+.snackbarClose {
+  flex: none;
+  min-height: var(--tap);
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: none;
+  color: inherit;
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.snackbarClose {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--tap);
+  padding: 0;
+  justify-content: center;
+}
+
+.snackbarAction {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.snackbarAction:hover,
+.snackbarClose:hover {
+  background: color-mix(in srgb, var(--bg-surface) 15%, transparent);
+}
+
+.snackbarAction:focus-visible,
+.snackbarClose:focus-visible {
+  outline: var(--border-w-strong) solid var(--bg-surface);
+  outline-offset: -4px;
+}
+
+@media (max-width: 767px) {
+  .snackbarRegion {
+    /* above the bottom navigation */
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+}

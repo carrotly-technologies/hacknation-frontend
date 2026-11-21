@@ -1,0 +1,71 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+  max-width: var(--form-max);
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.invalid {
+  padding-left: var(--s-4);
+  border-left: 4px solid var(--danger);
+}
+
+.label {
+  color: var(--text);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+/* Page-heading label: one question per page */
+.labelLarge {
+  margin-bottom: var(--s-2);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--s-1);
+}
+
+.optional {
+  color: var(--text-secondary);
+  font-weight: var(--weight-regular);
+}
+
+.hint {
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-1);
+  color: var(--danger);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading);
+}
+
+.error svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.control {
+  margin-top: var(--s-1);
+}
+
+@media (max-width: 767px) {
+  .labelLarge {
+    font-size: var(--text-2xl);
+  }
+}

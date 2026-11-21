@@ -1,0 +1,89 @@
+.input,
+.select {
+  display: block;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--border-input);
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading);
+  transition: border-color var(--duration);
+}
+
+.textarea {
+  min-height: calc(var(--control-h) * 2.5);
+  resize: vertical;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:hover:not(:disabled),
+.select:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.input[data-force='focus'],
+.select[data-force='focus'] {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: var(--focus-shadow);
+}
+
+.input[aria-invalid='true'],
+.select[aria-invalid='true'] {
+  border-color: var(--danger);
+  border-width: var(--border-w-strong);
+}
+
+.input:disabled,
+.select:disabled {
+  border-color: var(--border-strong);
+  background: var(--bg-muted);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.input:read-only:not(:disabled) {
+  background: var(--bg-subtle);
+}
+
+/* Fixed widths for short answers (PESEL, postcode), like gov forms */
+.w-5 {
+  max-width: 8ch;
+}
+
+.w-10 {
+  max-width: 16ch;
+}
+
+.w-20 {
+  max-width: 28ch;
+}
+
+.selectWrap {
+  position: relative;
+  max-width: 100%;
+}
+
+.select {
+  padding-right: var(--s-10);
+  appearance: none;
+  cursor: pointer;
+}
+
+.chevron {
+  position: absolute;
+  top: 50%;
+  right: var(--s-3);
+  color: var(--text-secondary);
+  transform: translateY(-50%);
+  pointer-events: none;
+}

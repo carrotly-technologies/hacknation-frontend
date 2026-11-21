@@ -340,13 +340,13 @@ a:hover {
 .tag--solid-ok {
   border-color: var(--ok);
   background: var(--ok);
-  color: #fff;
+  color: var(--on-ok);
 }
 
 .tag--solid-danger {
   border-color: var(--danger);
   background: var(--danger);
-  color: #fff;
+  color: var(--on-danger);
 }
 
 /* ---------- Panels & tables ---------- */

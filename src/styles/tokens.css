@@ -1,9 +1,15 @@
 /* Design tokens — Kompas Kompetencji.
-   Clean public-service look: white cards on a light grey canvas, one blue accent,
-   red only for errors/alerts, and a single diverging palette for the 1–3–5–7–9 scale.
-   Inspired by the readability of public e-service apps; no official branding. */
-:root {
-  /* Neutrals: white surfaces on a light grey canvas */
+   Public-service look (gov.pl web palette + the token scale of the public e-service app):
+   white cards on a light grey canvas, one blue accent, red only for errors/alerts, and a
+   single diverging palette for the 1–3–5–7–9 scale. Only the style is borrowed: no official
+   logos, emblems or names. Dark mode follows the system (prefers-color-scheme).
+   Catalogue and rules: docs/DESIGN.md. Components (src/components/ui) use only these variables. */
+:root,
+.theme-light {
+  color-scheme: light;
+
+  /* ---------- Primitives (light) ---------- */
+  /* Neutrals */
   --gray-0: #ffffff;
   --gray-25: #f8f9fb;
   --gray-50: #f2f4f7;
@@ -16,20 +22,192 @@
   --gray-700: #343b47;
   --gray-900: #1b1f26;
 
-  /* Accent: one blue (public-service style, not any official brand) */
-  --blue-900: #083a78;
-  --blue-800: #0b4ea2;
-  --blue-700: #1d63bd;
+  /* Blue (gov.pl primary #0052A5, link/hover #006CD7, focus #0452A8) */
+  --blue-900: #003d7a;
+  --blue-800: #0052a5;
+  --blue-700: #006cd7;
   --blue-200: #bcd0ee;
   --blue-100: #e1ebf8;
   --blue-50: #f0f5fc;
 
-  /* Semantic roles */
+  /* ---------- Semantic roles ---------- */
   --bg-app: var(--gray-50);
   --bg-surface: var(--gray-0);
   --bg-subtle: var(--gray-25);
   --bg-muted: var(--gray-100);
   --bg-hover: #f0f4fa;
+  --bg-overlay: rgb(16 24 40 / 0.45);
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --border-input: #8a919c; /* ≥ 3:1 against the surface (WCAG 1.4.11) */
+  --text: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
+  --text-faint: var(--gray-400);
+  --accent: var(--blue-800);
+  --accent-hover: var(--blue-900);
+  --accent-subtle: var(--blue-100);
+  --accent-border: var(--blue-200);
+  --accent-faint: var(--blue-50);
+  --on-accent: #ffffff;
+  --link: var(--blue-800);
+  --link-hover: var(--blue-700);
+  --focus: #0452a8;
+  --focus-inner: #ffffff;
+  --focus-ring: rgb(4 82 168 / 0.25);
+
+  /* Status (deadlines, results, alerts, badges) */
+  --ok: #2f6b2a;
+  --ok-bg: #eefae1;
+  --ok-border: #b5dba0;
+  --on-ok: #ffffff;
+  --warn: #8a5300;
+  --warn-bg: #fcf1dc;
+  --warn-border: #efd29a;
+  --on-warn: #ffffff;
+  --danger: #c41e38; /* gov.pl #D5233F darkened to reach 4.5:1 on light tints */
+  --danger-bg: #fdecee;
+  --danger-border: #f3c2c8;
+  --danger-strong: #900e1d;
+  --on-danger: #ffffff;
+  --info: var(--accent);
+  --info-bg: var(--accent-faint);
+  --info-border: var(--accent-border);
+  --highlight: #fdf3d4;
+  --highlight-strong: #f6dd8f;
+
+  /* Score scale 1–3–5–7–9 (diverging: red → neutral → blue); fills carry white text */
+  --score-1: #c0161d;
+  --score-1-bg: #fdecec;
+  --score-3: #a85a17;
+  --score-3-bg: #fbeedf;
+  --score-5: #4f5866;
+  --score-5-bg: #eceef2;
+  --score-7: #2a66b8;
+  --score-7-bg: #e4edf9;
+  --score-9: #0b4ea2;
+  --score-9-bg: #d6e4f6;
+  --on-score: #ffffff;
+
+  /* Elevation */
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-pop: 0 6px 20px rgb(16 24 40 / 0.12), 0 0 0 1px rgb(16 24 40 / 0.05);
+  --shadow-dialog: 0 16px 48px rgb(16 24 40 / 0.22);
+}
+
+/* ---------- Dark mode (automatic, from the system setting) ----------
+   The same block is repeated for `.theme-dark`, which the /ui showcase uses to show both modes. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --gray-0: #181b21;
+    --gray-25: #1d2027;
+    --gray-50: #111318;
+    --gray-100: #262a32;
+    --gray-200: #30353f;
+    --gray-300: #474e5a;
+    --gray-400: #7c8595;
+    --gray-500: #a3abb8;
+    --gray-600: #bcc3ce;
+    --gray-700: #d6dbe3;
+    --gray-900: #eceef2;
+    --blue-900: #b7d2fb;
+    --blue-800: #8ab8f8;
+    --blue-700: #a9cbfa;
+    --blue-200: #2d4a75;
+    --blue-100: #1d2e48;
+    --blue-50: #172234;
+    --bg-hover: #222936;
+    --bg-overlay: rgb(0 0 0 / 0.6);
+    --border-input: #7c8595;
+    --on-accent: #0b1626;
+    --focus: #8ab8f8;
+    --focus-inner: #111318;
+    --focus-ring: rgb(138 184 248 / 0.35);
+    --ok: #8fd28a;
+    --ok-bg: #16281a;
+    --ok-border: #2e5a2e;
+    --on-ok: #0c1f0d;
+    --warn: #f1c46c;
+    --warn-bg: #2d2410;
+    --warn-border: #6a5019;
+    --on-warn: #241a05;
+    --danger: #ff8f9c;
+    --danger-bg: #36161b;
+    --danger-border: #7a2b36;
+    --danger-strong: #ffb3bc;
+    --on-danger: #2a070c;
+    --highlight: #3d3413;
+    --highlight-strong: #5f4f14;
+    --score-1-bg: #3a1a1c;
+    --score-3-bg: #35251a;
+    --score-5-bg: #262a32;
+    --score-7-bg: #1b2a42;
+    --score-9-bg: #18284a;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-pop: 0 6px 20px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.06);
+    --shadow-dialog: 0 16px 48px rgb(0 0 0 / 0.6);
+  }
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --gray-0: #181b21;
+  --gray-25: #1d2027;
+  --gray-50: #111318;
+  --gray-100: #262a32;
+  --gray-200: #30353f;
+  --gray-300: #474e5a;
+  --gray-400: #7c8595;
+  --gray-500: #a3abb8;
+  --gray-600: #bcc3ce;
+  --gray-700: #d6dbe3;
+  --gray-900: #eceef2;
+  --blue-900: #b7d2fb;
+  --blue-800: #8ab8f8;
+  --blue-700: #a9cbfa;
+  --blue-200: #2d4a75;
+  --blue-100: #1d2e48;
+  --blue-50: #172234;
+  --bg-hover: #222936;
+  --bg-overlay: rgb(0 0 0 / 0.6);
+  --border-input: #7c8595;
+  --on-accent: #0b1626;
+  --focus: #8ab8f8;
+  --focus-inner: #111318;
+  --focus-ring: rgb(138 184 248 / 0.35);
+  --ok: #8fd28a;
+  --ok-bg: #16281a;
+  --ok-border: #2e5a2e;
+  --on-ok: #0c1f0d;
+  --warn: #f1c46c;
+  --warn-bg: #2d2410;
+  --warn-border: #6a5019;
+  --on-warn: #241a05;
+  --danger: #ff8f9c;
+  --danger-bg: #36161b;
+  --danger-border: #7a2b36;
+  --danger-strong: #ffb3bc;
+  --on-danger: #2a070c;
+  --highlight: #3d3413;
+  --highlight-strong: #5f4f14;
+  --score-1-bg: #3a1a1c;
+  --score-3-bg: #35251a;
+  --score-5-bg: #262a32;
+  --score-7-bg: #1b2a42;
+  --score-9-bg: #18284a;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 6px 20px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --shadow-dialog: 0 16px 48px rgb(0 0 0 / 0.6);
+}
+
+/* Theme wrappers re-resolve the semantic aliases, so nested light/dark previews work. */
+.theme-light,
+.theme-dark {
+  --bg-app: var(--gray-50);
+  --bg-surface: var(--gray-0);
+  --bg-subtle: var(--gray-25);
+  --bg-muted: var(--gray-100);
   --border: var(--gray-200);
   --border-strong: var(--gray-300);
   --text: var(--gray-900);
@@ -41,51 +219,38 @@
   --accent-subtle: var(--blue-100);
   --accent-border: var(--blue-200);
   --accent-faint: var(--blue-50);
-  --on-accent: #ffffff;
-  --focus: #1d63bd;
-  --focus-ring: rgb(29 99 189 / 0.25);
+  --link: var(--blue-800);
+  --link-hover: var(--blue-700);
+  --info: var(--accent);
+  --info-bg: var(--accent-faint);
+  --info-border: var(--accent-border);
+  background: var(--bg-app);
+  color: var(--text);
+}
 
-  /* Status (only for deadlines / results) */
-  --ok: #1e6b43;
-  --ok-bg: #e6f2eb;
-  --ok-border: #b9dbc7;
-  --warn: #8a5300;
-  --warn-bg: #fcf1dc;
-  --warn-border: #efd29a;
-  --danger: #c0161d;
-  --danger-bg: #fdecec;
-  --danger-border: #f3c2c3;
-
-  /* Score scale 1–3–5–7–9 (diverging: red → neutral → blue) */
-  --score-1: #c0161d;
-  --score-1-bg: #fdecec;
-  --score-3: #a85a17;
-  --score-3-bg: #fbeedf;
-  --score-5: #4f5866;
-  --score-5-bg: #eceef2;
-  --score-7: #2a66b8;
-  --score-7-bg: #e4edf9;
-  --score-9: #0b4ea2;
-  --score-9-bg: #d6e4f6;
-
-  /* Typography */
+:root {
+  /* ---------- Typography (Open Sans 400 / 600 / 700) ---------- */
   --font-sans: 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --text-xs: 12px;
   --text-sm: 13px;
   --text-base: 14px;
   --text-md: 15px;
+  --text-body: 16px; /* forms and long-form reading */
   --text-lg: 18px;
   --text-xl: 22px;
   --text-2xl: 26px;
+  --text-3xl: 32px;
   --leading-tight: 1.25;
   --leading: 1.5;
   --leading-loose: 1.6;
   --weight-regular: 400;
-  --weight-medium: 400; /* Open Sans ships 400 + 600 only; emphasis is 600 */
+  --weight-medium: 400; /* emphasis in running text is 600 */
   --weight-semibold: 600;
+  --weight-bold: 700;
 
-  /* Spacing (4px grid) */
+  /* ---------- Spacing (app scale 2…56; --s-N = N × 4px) ---------- */
+  --s-0: 2px;
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
@@ -95,18 +260,42 @@
   --s-8: 32px;
   --s-10: 40px;
   --s-12: 48px;
+  --s-14: 56px;
 
-  /* Shape */
+  /* ---------- Shape ---------- */
+  --radius-xs: 4px; /* fields, checkboxes, alerts (gov.pl) */
   --radius-sm: 6px;
   --radius: 8px;
-  --radius-lg: 12px;
-  --radius-pill: 999px;
-  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
-  --shadow-pop: 0 6px 20px rgb(16 24 40 / 0.12), 0 0 0 1px rgb(16 24 40 / 0.05);
+  --radius-lg: 12px; /* cards */
+  --radius-xl: 16px; /* dialogs, sheets */
+  --radius-2xl: 24px;
+  --radius-pill: 999px; /* buttons, badges, switches */
+  --border-w: 1px;
+  --border-w-strong: 2px;
 
-  /* Layout */
+  /* ---------- Focus (gov.pl triple ring) ---------- */
+  --focus-shadow: 0 0 0 2px var(--focus), 0 0 0 4px var(--focus-inner), 0 0 0 6px var(--focus);
+
+  /* ---------- Sizes & motion ---------- */
+  --control-h: 48px;
+  --control-h-sm: 36px;
+  --tap: 44px; /* minimum touch target */
+  --duration: 0.15s;
+  --content-max: 1200px;
+  --form-max: 640px;
+  --z-sticky: 10;
+  --z-overlay: 100;
+  --z-toast: 200;
+
+  /* ---------- Layout ---------- */
   --topbar-h: 56px;
   --nav-w: 92px;
   --rail-w: 248px;
   --assistant-w: 360px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration: 0s;
+  }
 }

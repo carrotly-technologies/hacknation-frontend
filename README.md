@@ -30,11 +30,13 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   (OSP analysis, opening talk, observations, rubric assessment with system suggestion and supervisor
   decision, justification/IPRZ with formal check, document), docked assistant panel;
 - `/teczka/:id/arkusz` — official sheet preview (parts I/II/III); print it to get the PDF;
-- `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant.
+- `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant;
+- `/ui` — design-system catalogue, `/wniosek-demo` — step-by-step form pattern, `/wiecej`, `/uslugi`.
 
 API contract: `notatki/api-kontrakt-v1.md` and `api-kontrakt-v2.md` (+ `availableActions` extension).
 The assistant is a stub: wire `askAssistant()` in `src/api/assistant.ts`. Data fetching uses TanStack
-Query, routing react-router; design tokens live in `src/styles/tokens.css`.
+Query, routing react-router; design tokens live in `src/styles/tokens.css`,
+components in `src/components/ui/`; see `docs/DESIGN.md`.
 
 Without a backend you can use a dev-only mock (off by default, never bundled):
 

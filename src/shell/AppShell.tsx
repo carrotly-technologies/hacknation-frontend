@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpen, Compass, RotateCcw, TableProperties, Users } from 'lucide-react'
+import { BookOpen, Compass, Ellipsis, RotateCcw, TableProperties, Users } from 'lucide-react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { getMe, resetDemo } from '../api/cases'
 import { ApiStatus } from '../components/ApiStatus'
@@ -40,6 +40,9 @@ export function AppShell() {
 
   return (
     <div className="shell">
+      <a className="skip-link" href="#main">
+        Przejdź do treści
+      </a>
       <header className="topbar">
         <div className="topbar__brand">
           <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
@@ -97,6 +100,12 @@ export function AppShell() {
               <span title="Baza wiedzy">Baza wiedzy</span>
             </NavLink>
           </li>
+          <li>
+            <NavLink to="/wiecej" className={() => navCls(MORE_PATHS.some((p) => location.pathname.startsWith(p)))}>
+              <Ellipsis size={20} strokeWidth={1.75} aria-hidden="true" />
+              <span title="Więcej">Więcej</span>
+            </NavLink>
+          </li>
         </ul>
         <div className="sidenav__foot">
           <button type="button" className="sidenav__tool" onClick={onReset} title="Przywróć dane demonstracyjne">
@@ -107,12 +116,14 @@ export function AppShell() {
         </div>
       </nav>
 
-      <main className="main" id="main">
+      <main className="main" id="main" tabIndex={-1}>
         <Outlet />
       </main>
     </div>
   )
 }
+
+const MORE_PATHS = ['/wiecej', '/uslugi', '/ui', '/wniosek-demo']
 
 const navCls = (active: boolean) => `sidenav__link ${active ? 'is-active' : ''}`
 
