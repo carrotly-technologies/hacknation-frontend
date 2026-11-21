@@ -35,7 +35,8 @@ const asLabel = (line: string) => line.trim().replace(/[,;.]+$/, '')
 const shorten = (text: string, max = 80) => (text.length <= max ? text : `${text.slice(0, text.lastIndexOf(' ', max))}…`)
 
 /** Part I: office, assessed person and evaluator (read only), the opening talk, expectations and the due date. */
-export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { onNext: () => void }) {
+/** `notice`: why the user was sent back here ("Dalej" in part III while part I is not confirmed), shown in the error summary. */
+export function SheetPartI({ detail, model, criteria, onNext, notice }: StageProps & { onNext: () => void; notice?: string }) {
   const patch = usePatchCase(detail.id)
   const act = useCaseAction(detail.id)
   const confirmed = !!detail.partI.confirmedByEvaluatorOn
@@ -50,12 +51,14 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
     Object.fromEntries(criteria.all.map((c) => [c, detail.partI.expectations[c] ?? ''])),
   )
   const [due, setDue] = useState(detail.partI.assessmentDue ?? '')
-  const [errors, setErrors] = useState<FormError[]>([])
-  const errorFor = (id: string) => errors.find((e) => e.id === id)?.message
 
   // "Potwierdzamy: – …; – …" from the sheet template (GET /api/sheets). Ticking is kept only here: the record of the
   // confirmation is the existing action with its date (CONFIRM_PART_I, EMPLOYEE_ACK_PART_I).
   const confirmLines = (criteria.sheet?.template?.partIConfirmation ?? []).map(asLabel)
+  const [errors, setErrors] = useState<FormError[]>(() =>
+    notice ? [{ id: confirmLines.length ? confirmId(0) : ACK_ID, message: notice }] : [],
+  )
+  const errorFor = (id: string) => errors.find((e) => e.id === id)?.message
   const [ticked, setTicked] = useState<boolean[]>(() => confirmLines.map(() => false))
   const [ackTicked, setAckTicked] = useState(false)
   // "Dalej" is the acceptance: while part I is open it confirms it and records the assessed person's acknowledgement;

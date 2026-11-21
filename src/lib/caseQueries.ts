@@ -91,8 +91,10 @@ export function useCaseAction(id: string) {
       const prev = qc.getQueryData<CaseDetail>(caseKey(id))
       qc.setQueryData(caseKey(id), data)
       // Only when the new stage has its own view: e.g. OPENING_TALK → OBSERVATION stays in the sheet wizard (?czesc=…).
-      if (prev && viewStage(data.stages, prev.currentStage) !== viewStage(data.stages, data.currentStage)) {
-        navigate(caseUrl(id, viewStage(data.stages, data.currentStage)))
+      // Not when the view is already open, e.g. step 4 opening its own form: no second history entry.
+      const target = caseUrl(id, viewStage(data.stages, data.currentStage))
+      if (prev && viewStage(data.stages, prev.currentStage) !== viewStage(data.stages, data.currentStage) && window.location.pathname !== target) {
+        navigate(target)
       }
       qc.invalidateQueries({ queryKey: ['team'] })
       qc.invalidateQueries({ queryKey: ['hr'] })

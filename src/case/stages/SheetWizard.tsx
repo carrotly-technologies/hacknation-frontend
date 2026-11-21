@@ -1,9 +1,10 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import type { CaseDetail, StageId } from '../../api/cases'
+import type { CaseDetail } from '../../api/cases'
 import { FormProgress, InfoList, InfoRow, InlineAlert } from '../../components/ui'
+import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
-import { caseUrl, viewStage } from '../../lib/stages'
+import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetPartI } from './SheetPartI'
 import { SheetPartII } from './SheetPartII'
@@ -18,6 +19,9 @@ const SHEET_PARTS = [
 ] as const
 
 const TOTAL = SHEET_PARTS.length
+
+/** Shown in part I when "Dalej" in part III cannot go on to step 4 yet. */
+const CONFIRM_PART_I_FIRST = 'Zatwierdź część I: zaznacz potwierdzenia i przejdź dalej'
 
 function readPart(raw: string | null): number | null {
   const n = Number(raw)
@@ -63,6 +67,8 @@ export function SheetWizard(props: StageProps) {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const part = readPart(params.get('czesc')) ?? 1
+  const act = useCaseAction(detail.id)
+  const [partINotice, setPartINotice] = useState(false)
 
   useEffect(() => {
     if (readPart(params.get('czesc')) === null) {
@@ -75,15 +81,27 @@ export function SheetWizard(props: StageProps) {
     document.querySelector('.case-work')?.scrollTo({ top: 0 })
   }
 
-  // After part III: the stage the case is at now when it is further on, otherwise the next stage of the file.
-  // Stages shown in this same view (the assessment period) are skipped, so "Dalej" never reopens part I.
-  const finish = () => {
-    const ids = detail.stages.map((x) => x.id)
-    const elsewhere = (id: StageId) => viewStage(detail.stages, id) !== stage
-    const here = ids.indexOf(stage)
-    const current = ids.indexOf(detail.currentStage)
-    const target = current > here && elsewhere(detail.currentStage) ? detail.currentStage : ids.slice(here + 1).find(elsewhere)
-    if (target) navigate(caseUrl(detail.id, target))
+  // "Dalej" after part III goes straight to step 4, "Formularz oceny kompetencji". The assessment period has no
+  // screen of its own, so the case is moved on here: the assessed person's acknowledgement of part I (when only
+  // that is missing) and the opening of the form. Part I not confirmed yet → back to part I with the reason.
+  // A failed action keeps the user in part III, with the message under the form.
+  const finish = async () => {
+    if (act.isPending) return
+    if (!detail.partI.confirmedByEvaluatorOn) {
+      setPartINotice(true)
+      goTo(1)
+      return
+    }
+    const target = caseUrl(detail.id, 'ASSESSMENT')
+    try {
+      let current = detail
+      if (current.currentStage === 'OPENING_TALK') current = await act.mutateAsync('EMPLOYEE_ACK_PART_I')
+      if (current.currentStage === 'OBSERVATION') await act.mutateAsync('START_ASSESSMENT')
+      // useCaseAction already follows the case to step 4 when the stage changes; no second history entry.
+      if (window.location.pathname !== target) navigate(target)
+    } catch {
+      // shown by StageError in part III
+    }
   }
 
   const title = `Ocena okresowa pracownika – ${detail.sheetId ? `Arkusz ${detail.sheetId}` : 'arkusz nieustalony'}`
@@ -99,9 +117,26 @@ export function SheetWizard(props: StageProps) {
         })}
       />
 
-      {part === 1 && <SheetPartI {...props} onNext={() => goTo(2)} />}
+      {part === 1 && (
+        <SheetPartI
+          {...props}
+          notice={partINotice && !detail.partI.confirmedByEvaluatorOn ? CONFIRM_PART_I_FIRST : undefined}
+          onNext={() => {
+            setPartINotice(false)
+            goTo(2)
+          }}
+        />
+      )}
       {part === 2 && <SheetPartII {...props} onBack={() => goTo(1)} onNext={() => goTo(3)} />}
-      {part === 3 && <SheetPartIII {...props} onBack={() => goTo(2)} onNext={finish} />}
+      {part === 3 && (
+        <SheetPartIII
+          {...props}
+          onBack={() => goTo(2)}
+          onNext={() => void finish()}
+          nextPending={act.isPending}
+          nextError={act.error}
+        />
+      )}
     </StageLayout>
   )
 }

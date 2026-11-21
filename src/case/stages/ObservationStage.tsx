@@ -181,16 +181,16 @@ export function ObservationStage({ detail, model, criteria, stage }: StageProps)
           </ul>
           {thin.length > 0 && (
             <p className="notice notice--warn" style={{ marginTop: 12 }}>
-              {thin.length > 3 ? `Mniej niż 2 obserwacje w ${thin.length} z ${criteria.all.length} kryteriów.` : `Mało dowodów: ${thin.map((c) => competencyName(model, c)).join(', ')}.`} Bez przykładów ocena opiera się na ogólnym wrażeniu — zbieraj je przed rozmową oceniającą.
+              {thin.length > 3 ? `Mniej niż 2 obserwacje w ${thin.length} z ${criteria.all.length} kryteriów.` : `Mało dowodów: ${thin.map((c) => competencyName(model, c)).join(', ')}.`} Bez przykładów ocena opiera się na ogólnym wrażeniu — zbieraj je przed wypełnieniem formularza oceny kompetencji.
             </p>
           )}
 
           {!done && (
             <div className="side-cta">
-              <h3 className="h-sub">Rozmowa oceniająca</h3>
-              <p className="small muted">Przeprowadź ją przed sporządzeniem oceny na piśmie (§10 rozp. 2016). Rubryka otworzy się z obserwacjami przy wskaźnikach.</p>
+              <h3 className="h-sub">Formularz oceny kompetencji</h3>
+              <p className="small muted">Rubryka otworzy się z obserwacjami przy wskaźnikach.</p>
               <button type="button" className="btn btn--primary" disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')} onClick={start}>
-                Rozpocznij rozmowę oceniającą
+                Przejdź do formularza oceny kompetencji
               </button>
               <MutationError error={act.error} />
             </div>
