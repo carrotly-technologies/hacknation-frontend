@@ -89,20 +89,19 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
 
   return (
     <form noValidate onSubmit={onSubmit} className={s.form}>
-      <InlineAlert
-        tone={confirmed ? 'success' : 'info'}
-        title={confirmed ? 'Część I jest zatwierdzona' : 'Część I nie jest jeszcze zatwierdzona'}
-      >
-        <InfoList>
-          <InfoRow label="Oceniający potwierdza przeprowadzenie rozmowy i ustalenia" value={confirmed ? fmtDate(detail.partI.confirmedByEvaluatorOn) : 'Nie potwierdzono'} />
-          <InfoRow
-            label="Oceniany potwierdza zapoznanie z kryteriami i terminem (od tej daty biegnie okres oceny)"
-            value={acked ? fmtDate(detail.partI.acknowledgedByEmployeeOn) : 'Nie potwierdzono'}
-          />
-        </InfoList>
-        {confirmed && <p>Pola są tylko do odczytu. Zmiana jest możliwa tylko w trybie korekty błędów przez administratora.</p>}
-        {editable && <p>Uzupełnij pola poniżej i zatwierdź część I przyciskiem na dole strony.</p>}
-      </InlineAlert>
+      {/* The status alert appears only once part I is confirmed; until then the form starts with the fields. */}
+      {confirmed && (
+        <InlineAlert tone="success" title="Część I jest zatwierdzona">
+          <InfoList>
+            <InfoRow label="Oceniający potwierdza przeprowadzenie rozmowy i ustalenia" value={fmtDate(detail.partI.confirmedByEvaluatorOn)} />
+            <InfoRow
+              label="Oceniany potwierdza zapoznanie z kryteriami i terminem (od tej daty biegnie okres oceny)"
+              value={acked ? fmtDate(detail.partI.acknowledgedByEmployeeOn) : 'Nie potwierdzono'}
+            />
+          </InfoList>
+          <p>Pola są tylko do odczytu. Zmiana jest możliwa tylko w trybie korekty błędów przez administratora.</p>
+        </InlineAlert>
+      )}
       {afterNegative && (
         <InlineAlert tone="warning" title="Ponowna ocena po ocenie negatywnej">
           Rozmowę rozpoczynającą przeprowadza się w ciągu 7 dni od sporządzenia oceny (§7 pkt 2 rozp. 2016), a ocenę po 6 miesiącach od
