@@ -1,0 +1,18 @@
+.mark {
+  display: block;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.tile {
+  fill: var(--accent);
+}
+
+.needle {
+  fill: var(--on-accent);
+}
+
+.tail {
+  opacity: 0.55;
+}

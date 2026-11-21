@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Compass } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router'
 import { confirmAck, getAck, type AckDone, type AckPending } from '../api/ack'
@@ -9,7 +8,7 @@ import { Button, Checkbox, ErrorSummary, InlineAlert, type FormError } from '../
 import { fmtDate } from '../lib/format'
 import { caseCriteria } from '../lib/model'
 import { SheetDocument } from '../sheet/SheetDocument'
-import { BrandLogo } from '../branding/BrandLogo'
+import { BrandMark } from '../components/BrandMark'
 import s from './AckPage.module.css'
 
 const CONFIRM_ID = 'ack-confirm'
@@ -61,16 +60,8 @@ export function AckPage() {
     <main className={s.root} id="main">
       <div className={s.inner}>
         <div className={s.brand}>
-          <BrandLogo
-            name="Kompas Kompetencji"
-            layout="stacked"
-            fallback={
-              <>
-                <Compass size={24} strokeWidth={1.75} aria-hidden="true" />
-                <span>Kompas Kompetencji</span>
-              </>
-            }
-          />
+          <BrandMark />
+          <span>Kompas Kompetencji</span>
         </div>
         {body}
       </div>

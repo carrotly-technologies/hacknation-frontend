@@ -84,10 +84,6 @@ export function apiPatch<T>(path: string, body: unknown, signal?: AbortSignal): 
   return request<T>(path, withBody('PATCH', body, signal))
 }
 
-export function apiPut<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
-  return request<T>(path, withBody('PUT', body, signal))
-}
-
 export function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err)
 }
