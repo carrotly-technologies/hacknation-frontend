@@ -1,13 +1,15 @@
-import { useQueryClient } from '@tanstack/react-query'
-import { BookOpen, Compass, Ellipsis, LogOut, RotateCcw, TableProperties, UserCog, Users } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { BookOpen, ChevronDown, Compass, Ellipsis, RotateCcw, TableProperties, UserCog, Users } from 'lucide-react'
+import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { resetDemo } from '../api/cases'
+import { errorMessage } from '../api/client'
+import { getDemoUsers } from '../api/users'
 import { ApiStatus } from '../components/ApiStatus'
-import { ROLE_LABEL, useAuth, useMe } from '../lib/useAuth'
+import { demoUsersQueryKey, ROLE_LABEL, useAuth, useMe } from '../lib/useAuth'
 
 export function AppShell() {
   const me = useMe()
-  const { signOut } = useAuth()
   const location = useLocation()
   const qc = useQueryClient()
 
@@ -16,12 +18,10 @@ export function AppShell() {
     try {
       await resetDemo()
     } finally {
-      // keep the signed-in user, refetch the rest
+      // keep the current account, refetch the rest
       qc.invalidateQueries({ predicate: (q) => q.queryKey[0] !== 'me' })
     }
   }
-
-  const userRole = `${ROLE_LABEL[me.role]} · ${me.position}`
 
   return (
     <div className="shell">
@@ -36,14 +36,7 @@ export function AppShell() {
           <span className="topbar__office" title={officeLabel(me.officeName)}>{officeLabel(me.officeName)}</span>
         </div>
         <div className="topbar__right">
-          <div className="topbar__user">
-            <span className="topbar__user-name" title={me.name}>{me.name}</span>
-            <span className="topbar__user-role" title={userRole}>{userRole}</span>
-          </div>
-          <button type="button" className="topbar__logout" onClick={() => void signOut()}>
-            <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
-            <span>Wyloguj</span>
-          </button>
+          <AccountSwitcher />
         </div>
       </header>
 
@@ -98,6 +91,63 @@ export function AppShell() {
       <main className="main" id="main" tabIndex={-1}>
         <Outlet />
       </main>
+    </div>
+  )
+}
+
+/** Demo accounts instead of sign-in: pick whose eyes the app shows (X-User-Id). */
+function AccountSwitcher() {
+  const me = useMe()
+  const { switchUser } = useAuth()
+  const accounts = useQuery({ queryKey: demoUsersQueryKey, queryFn: ({ signal }) => getDemoUsers(signal) })
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const list = accounts.data ?? []
+  const options = list.some((u) => u.id === me.id) ? list : [{ id: me.id, name: me.name, role: me.role }, ...list]
+
+  const onChange = async (id: string) => {
+    if (id === me.id) return
+    setBusy(true)
+    setError(null)
+    try {
+      await switchUser(id)
+    } catch (err) {
+      setError(`Nie udało się przełączyć konta: ${errorMessage(err)}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="topbar__account">
+      <label className="topbar__account-label" htmlFor="account-switch">
+        Konto demo
+      </label>
+      <div className="topbar__account-field">
+        <select
+          id="account-switch"
+          className="topbar__account-select"
+          value={me.id}
+          disabled={busy}
+          title={`${me.name} · ${ROLE_LABEL[me.role]} · ${me.position}`}
+          aria-describedby={error ? 'account-switch-error' : undefined}
+          onFocus={() => void accounts.refetch()}
+          onChange={(e) => void onChange(e.target.value)}
+        >
+          {options.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.name} · {ROLE_LABEL[u.role]}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="topbar__account-chevron" size={16} strokeWidth={1.75} aria-hidden="true" />
+      </div>
+      {error && (
+        <span id="account-switch-error" className="topbar__account-error" role="alert">
+          {error}
+        </span>
+      )}
     </div>
   )
 }

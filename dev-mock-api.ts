@@ -226,7 +226,8 @@ export function devMockApi(): Plugin {
           }
 
           const body = req.method === 'GET' ? {} : await readBody(req)
-          const out = v2(req.method ?? 'GET', url, body)
+          const userId = req.headers['x-user-id']
+          const out = v2(req.method ?? 'GET', url, body, typeof userId === 'string' ? userId : undefined)
           if (out) return send(res, out.status, out.body)
           return send(res, 404, { message: 'Nie znaleziono (mock).' })
         } catch (e) {

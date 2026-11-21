@@ -691,25 +691,18 @@ export function createV2(model: { competencies: { id: string; name: string; indi
 
   type MockUser = { id: string; login: string; name: string; firstName: string; lastName: string; role: 'SUPERVISOR' | 'HR' | 'ADMIN'; position: string; unit: string }
   const MOCK_USERS: MockUser[] = [
-    { id: 'u-kowalczyk', login: 'j.kaminska', name: 'Joanna Kowalczyk', firstName: 'Joanna', lastName: 'Kowalczyk', role: 'SUPERVISOR', position: 'naczelnik wydziału', unit: UNIT },
+    { id: 'u-kaminska', login: 'j.kaminska', name: 'Joanna Kowalczyk', firstName: 'Joanna', lastName: 'Kowalczyk', role: 'SUPERVISOR', position: 'naczelnik wydziału', unit: UNIT },
     { id: 'u-lis', login: 'a.lis', name: 'Agnieszka Lis', firstName: 'Agnieszka', lastName: 'Lis', role: 'HR', position: 'Specjalistka ds. kadr', unit: 'Biuro Dyrektora Generalnego' },
     { id: 'u-admin', login: 'admin', name: 'Marek Zając', firstName: 'Marek', lastName: 'Zając', role: 'ADMIN', position: 'Administrator systemu', unit: 'Biuro Informatyki' },
   ]
-  let mockUserId = MOCK_USERS[0].id
 
   /** Returns null when the route is not a v2 route. */
-  return function handle(method: string, url: string, body: Json): { status: number; body: unknown } | null {
+  return function handle(method: string, url: string, body: Json, userId?: string): { status: number; body: unknown } | null {
     const path = url.split('?')[0]
-    // Auth is not enforced in the mock: any password works, the login picks the role.
-    if (method === 'POST' && path === '/api/auth/login') {
-      const login = String((body as { login?: unknown }).login ?? '')
-      const user = MOCK_USERS.find((u) => u.login === login) ?? MOCK_USERS[0]
-      mockUserId = user.id
-      return ok({ accessToken: `mock-${user.id}`, tokenType: 'Bearer', expiresIn: 28800, user })
-    }
-    if (method === 'POST' && path === '/api/auth/logout') return { status: 204, body: undefined }
+    // No sign-in: X-User-Id picks the account; an unknown or missing id acts as the first one.
+    if (method === 'GET' && path === '/api/users/demo') return ok(MOCK_USERS)
     if (method === 'GET' && path === '/api/me') {
-      const u = MOCK_USERS.find((x) => x.id === mockUserId) ?? MOCK_USERS[0]
+      const u = MOCK_USERS.find((x) => x.id === userId) ?? MOCK_USERS[0]
       return ok({ id: u.id, login: u.login, name: u.name, role: u.role, position: u.position, unit: u.unit, officeName: OFFICE })
     }
     if (method === 'GET' && path === '/api/admin/users') return ok(MOCK_USERS)

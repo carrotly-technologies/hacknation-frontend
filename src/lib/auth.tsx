@@ -1,74 +1,78 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { useLocation, useNavigate } from 'react-router'
-import { login as apiLogin, logout as apiLogout } from '../api/auth'
-import { getMe } from '../api/cases'
-import { AuthCtx, LOGIN_PATH, meQueryKey, type AuthState } from './useAuth'
-import { getToken, onUnauthorized, setToken } from './session'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
+import { useNavigate } from 'react-router'
+import { getMe, type Me } from '../api/cases'
+import { ApiError } from '../api/client'
+import { ErrorState, LoadingState } from '../components/QueryState'
+import { DEFAULT_USER_ID, getUserId, setUserId } from './session'
+import { AuthCtx, HOME_BY_ROLE, meQueryKey, type AuthState } from './useAuth'
 
+/** Queries that do not depend on the account (or are keyed by it, like 'me'): kept when switching. */
+const SHARED_QUERIES = new Set(['config', 'users', 'me'])
+
+/**
+ * No sign-in: the app acts as the demo account picked in the header (X-User-Id),
+ * a supervisor by default. Renders its children once that account is loaded.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient()
   const navigate = useNavigate()
-  const location = useLocation()
-  const [token, setTokenState] = useState(getToken)
+  const [userId, setUserIdState] = useState(getUserId)
 
   const me = useQuery({
-    queryKey: meQueryKey,
-    queryFn: ({ signal }) => getMe(signal),
-    enabled: !!token,
+    queryKey: meQueryKey(userId),
+    queryFn: ({ signal }) => loadMe(signal),
     staleTime: Infinity,
     retry: false,
   })
 
-  const clear = useCallback(() => {
-    setToken(null)
-    setTokenState(null)
-    qc.clear()
-  }, [qc])
-
-  // An expired or rejected token: back to sign-in, then back to the same page.
-  useEffect(
-    () =>
-      onUnauthorized(() => {
-        clear()
-        if (location.pathname !== LOGIN_PATH) {
-          navigate(`${LOGIN_PATH}?next=${encodeURIComponent(location.pathname + location.search)}`, { replace: true })
-        }
-      }),
-    [clear, navigate, location.pathname, location.search],
-  )
-
-  const signIn = useCallback(
-    async (login: string, password: string) => {
-      const res = await apiLogin(login, password)
-      qc.clear()
-      setToken(res.accessToken)
-      setTokenState(res.accessToken)
-      const user = await qc.fetchQuery({ queryKey: meQueryKey, queryFn: ({ signal }) => getMe(signal), staleTime: Infinity })
-      return user
+  const switchUser = useCallback(
+    async (id: string) => {
+      const previous = getUserId()
+      setUserId(id)
+      let user: Me
+      try {
+        user = await qc.fetchQuery({ queryKey: meQueryKey(id), queryFn: ({ signal }) => getMe(signal) })
+      } catch (err) {
+        setUserId(previous)
+        throw err
+      }
+      // Leave the old account's page first, so it does not refetch as the new one.
+      flushSync(() => {
+        navigate(HOME_BY_ROLE[user.role])
+        setUserIdState(id)
+      })
+      // Another account sees other data: drop the old one's, refetch what is on screen.
+      await qc.resetQueries({ predicate: (q) => !SHARED_QUERIES.has(String(q.queryKey[0])) })
     },
-    [qc],
+    [qc, navigate],
   )
 
-  const signOut = useCallback(async () => {
-    try {
-      await apiLogout()
-    } catch {
-      // stateless tokens: signing out is dropping the token
-    }
-    // Leave first, so the sign-in page doesn't offer to come back here.
-    navigate(LOGIN_PATH, { replace: true })
-    clear()
-  }, [clear, navigate])
+  const user = me.data
+  const value = useMemo<AuthState | null>(() => (user ? { user, switchUser } : null), [user, switchUser])
 
-  const value = useMemo<AuthState>(
-    () => ({
-      user: !token ? null : me.data,
-      meError: me.error,
-      signIn,
-      signOut,
-    }),
-    [token, me.data, me.error, signIn, signOut],
-  )
+  if (!value) {
+    return (
+      <div className="page">
+        {me.isError ? (
+          <ErrorState error={me.error} what="dane konta demonstracyjnego" onRetry={() => void me.refetch()} />
+        ) : (
+          <LoadingState />
+        )}
+      </div>
+    )
+  }
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
+}
+
+/** The current account; a stored id the API no longer knows (400) falls back to the default one. */
+async function loadMe(signal: AbortSignal) {
+  try {
+    return await getMe(signal)
+  } catch (err) {
+    if (!(err instanceof ApiError && err.status === 400) || getUserId() === DEFAULT_USER_ID) throw err
+    setUserId(DEFAULT_USER_ID)
+    return getMe(signal)
+  }
 }

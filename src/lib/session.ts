@@ -1,35 +1,25 @@
-// Bearer token of the signed-in user. sessionStorage: it ends with the tab, never shared across tabs.
-const KEY = 'kompas.token'
+// The demo account the app acts as (no sign-in): its id goes with every API call as X-User-Id.
+// localStorage keeps only that id (no personal data), so the choice survives a reload.
+const KEY = 'kompas.userId'
 
-let memoryToken: string | null = null
+/** Used when nothing was chosen yet: a supervisor (backend default too). */
+export const DEFAULT_USER_ID = 'u-kaminska'
 
-export function getToken(): string | null {
+let memoryUserId: string | null = null
+
+export function getUserId(): string {
   try {
-    return sessionStorage.getItem(KEY)
+    return localStorage.getItem(KEY) || DEFAULT_USER_ID
   } catch {
-    return memoryToken
+    return memoryUserId ?? DEFAULT_USER_ID
   }
 }
 
-export function setToken(token: string | null): void {
-  memoryToken = token
+export function setUserId(id: string): void {
+  memoryUserId = id
   try {
-    if (token) sessionStorage.setItem(KEY, token)
-    else sessionStorage.removeItem(KEY)
+    localStorage.setItem(KEY, id)
   } catch {
-    // storage unavailable: the token lives only in memory
+    // storage unavailable: the choice lives only in memory
   }
-}
-
-type Listener = () => void
-const listeners = new Set<Listener>()
-
-/** Called when the API answers 401 to a signed-in request (expired or revoked token). */
-export function onUnauthorized(listener: Listener): () => void {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-export function notifyUnauthorized(): void {
-  for (const l of listeners) l()
 }
