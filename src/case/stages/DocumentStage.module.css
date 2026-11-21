@@ -1,0 +1,57 @@
+/* "Ocena końcowa" (last step) */
+.stack {
+  display: grid;
+  gap: var(--s-4);
+  min-width: 0;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.done {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.check {
+  flex: none;
+  color: var(--ok);
+}
+
+.legal {
+  margin-top: var(--s-3);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* The A4 sheet, scaled down; it scrolls inside the card on narrow screens, never the page. */
+.paper {
+  max-width: 100%;
+  padding: var(--s-4);
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  background: var(--bg-muted);
+}
+
+.paper :global(.doc) {
+  zoom: 0.78;
+}
+
+@media (max-width: 767px) {
+  .paper {
+    padding: var(--s-2);
+  }
+
+  .paper :global(.doc) {
+    zoom: 0.5;
+  }
+
+  .buttons > * {
+    flex: 1 1 100%;
+  }
+}

@@ -1,4 +1,4 @@
-import { apiGet, apiPatch, apiPost } from './client'
+import { apiGet, apiGetFile, apiPatch, apiPost, saveFile } from './client'
 import type { EvaluateResponse, SheetId } from './kompas'
 
 // Types follow notatki/api-kontrakt-v2.md.
@@ -243,6 +243,18 @@ export interface HrOverview {
 export interface ReminderResponse {
   sent: number
   log: { caseId: string; date: string; text: string }[]
+}
+
+export type SheetFormat = 'pdf' | 'docx'
+
+/**
+ * GET /api/cases/:id/sheet.pdf|docx: the filled periodic sheet as a file, saved under the name from the server
+ * ("Arkusz-C-Nowak-Anna-2026-11-21.pdf"; "-wersja-robocza" before the evaluator signs). Returns that name.
+ */
+export async function downloadSheet(caseId: string, format: SheetFormat): Promise<string> {
+  const { blob, fileName } = await apiGetFile(`/cases/${encodeURIComponent(caseId)}/sheet.${format}`, `Arkusz.${format}`)
+  saveFile(blob, fileName)
+  return fileName
 }
 
 export const getMe = (signal?: AbortSignal) => apiGet<Me>('/me', signal)
