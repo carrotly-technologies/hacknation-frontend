@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { PartI } from '../../api/cases'
-import { Button, Checkbox, ErrorSummary, Field, Fieldset, InfoList, InfoRow, InlineAlert, TextArea, TextInput, type FormError } from '../../components/ui'
+import { Checkbox, ErrorSummary, Field, Fieldset, InfoList, InfoRow, InlineAlert, TextArea, TextInput, type FormError } from '../../components/ui'
 import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
 import { competencyName } from '../../lib/model'
@@ -58,9 +58,11 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
   const confirmLines = (criteria.sheet?.template?.partIConfirmation ?? []).map(asLabel)
   const [ticked, setTicked] = useState<boolean[]>(() => confirmLines.map(() => false))
   const [ackTicked, setAckTicked] = useState(false)
-  const allTicked = confirmLines.every((_, i) => ticked[i])
+  // "Dalej" is the acceptance: while part I is open it confirms it and records the assessed person's acknowledgement;
+  // when only the acknowledgement is missing, it records that one. There are no separate confirm buttons.
   const canConfirm = editable && allows(detail, 'CONFIRM_PART_I')
-  const canAck = confirmed && !acked && allows(detail, 'EMPLOYEE_ACK_PART_I')
+  const ackLeft = confirmed && !acked && allows(detail, 'EMPLOYEE_ACK_PART_I')
+  const canAck = canConfirm || ackLeft
   const clearError = (id: string) => setErrors((v) => (v.some((e) => e.id === id) ? v.filter((e) => e.id !== id) : v))
   const tick = (i: number, on: boolean) => {
     setTicked((v) => confirmLines.map((_, j) => (j === i ? on : !!v[j])))
@@ -68,8 +70,9 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
   }
   const confirmErrors = (): FormError[] =>
     confirmLines.flatMap((l, i) => (ticked[i] ? [] : [{ id: confirmId(i), message: `Zaznacz potwierdzenie „${shorten(l)}”` }]))
+  const ackError = (): FormError[] => (ackTicked ? [] : [{ id: ACK_ID, message: `Zaznacz potwierdzenie ocenianego „${EMPLOYEE_ACK_LABEL}”` }])
   const confirmGroupError = confirmLines.some((_, i) => errorFor(confirmId(i)))
-    ? 'Zaznacz wszystkie potwierdzenia, zanim zatwierdzisz część I'
+    ? 'Zaznacz wszystkie potwierdzenia oceniającego, zanim przejdziesz dalej'
     : undefined
 
   const validate = (): FormError[] => {
@@ -84,35 +87,27 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
     return e
   }
 
-  /** Validates and saves part I; false when something is missing or the save failed. */
-  const save = async (): Promise<boolean> => {
-    const e = validate()
-    setErrors(e)
-    if (e.length) return false
-    try {
-      await patch.mutateAsync({ partI: { topics, expectations: expect, assessmentDue: due } })
-      return true
-    } catch {
-      return false
-    }
-  }
-
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault()
-    if (!editable) return onNext()
-    if (await save()) onNext()
-  }
-
-  const confirm = async () => {
-    const missing = confirmErrors()
-    if (missing.length) return setErrors([...validate(), ...missing])
-    if (await save()) act.mutate('CONFIRM_PART_I')
-  }
-
-  const acknowledge = () => {
-    if (!ackTicked) return setErrors([{ id: ACK_ID, message: `Zaznacz pole „${EMPLOYEE_ACK_LABEL}”` }])
-    setErrors([])
-    act.mutate('EMPLOYEE_ACK_PART_I')
+    // Errors of a mutation are shown by StageError under the form, and the user stays in part I.
+    try {
+      if (editable) {
+        const e = [...validate(), ...(canConfirm ? [...confirmErrors(), ...ackError()] : [])]
+        setErrors(e)
+        if (e.length) return
+        await patch.mutateAsync({ partI: { topics, expectations: expect, assessmentDue: due } })
+        if (canConfirm) {
+          const after = await act.mutateAsync('CONFIRM_PART_I')
+          if (allows(after, 'EMPLOYEE_ACK_PART_I')) await act.mutateAsync('EMPLOYEE_ACK_PART_I')
+        }
+      } else if (ackLeft && ackTicked) {
+        setErrors([])
+        await act.mutateAsync('EMPLOYEE_ACK_PART_I')
+      }
+      onNext()
+    } catch {
+      // shown by StageError
+    }
   }
 
   return (
@@ -205,13 +200,13 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
         </div>
       </PartSection>
 
-      {/* Each confirmation is a checkbox that has to be ticked before the action; once done it stays ticked, locked, with the date. */}
+      {/* Each confirmation is a checkbox ticked before "Dalej"; once recorded it stays ticked, locked, with the date. */}
       <PartSection title="Potwierdzenie części I" hint="Oceniający i oceniany potwierdzają rozmowę oraz zapoznanie z kryteriami i terminem oceny.">
         {confirmLines.length > 0 && (
           <Fieldset
             id="confirm-part-i"
             legend="Potwierdzenie oceniającego"
-            hint={canConfirm ? 'Zaznacz wszystkie potwierdzenia. Bez tego nie zatwierdzisz części I.' : undefined}
+            hint={canConfirm ? 'Zaznacz wszystkie potwierdzenia. „Dalej” zapisze i zatwierdzi część I, a kryteria i termin oceny zostaną zablokowane.' : undefined}
             error={confirmGroupError}
           >
             {confirmLines.map((l, i) => (
@@ -228,27 +223,11 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
             ))}
           </Fieldset>
         )}
-        {!confirmed && !editable && <p className={layout.muted}>Oceniający jeszcze nie potwierdził części I.</p>}
-        {!confirmed && editable && (
-          <div className={s.inlineActions}>
-            <Button
-              variant="secondary"
-              loading={act.isPending}
-              disabled={patch.isPending || !canConfirm}
-              aria-disabled={!allTicked || undefined}
-              onClick={confirm}
-            >
-              Zatwierdź część I
-            </Button>
-            <p className={layout.muted}>Zatwierdzenie zapisuje część I i blokuje kryteria oraz termin oceny.</p>
-          </div>
-        )}
-
         <Fieldset
           id="employee-ack"
           legend="Potwierdzenie ocenianego"
-          hint={confirmed ? undefined : 'Oceniany potwierdza zapoznanie po zatwierdzeniu części I przez oceniającego.'}
-          error={errorFor(ACK_ID) ? 'Zaznacz pole, zanim potwierdzisz zapoznanie ocenianego' : undefined}
+          hint={canAck ? 'W wersji demonstracyjnej zaznaczasz w imieniu ocenianego; „Dalej” zapisze potwierdzenie z dzisiejszą datą.' : undefined}
+          error={errorFor(ACK_ID) ? 'Zaznacz potwierdzenie ocenianego, zanim przejdziesz dalej' : undefined}
         >
           <Checkbox
             id={ACK_ID}
@@ -263,24 +242,10 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
             }}
           />
         </Fieldset>
-        {confirmed && !acked && (
-          <div className={s.inlineActions}>
-            <Button
-              variant="secondary"
-              loading={act.isPending}
-              disabled={!allows(detail, 'EMPLOYEE_ACK_PART_I')}
-              aria-disabled={!ackTicked || undefined}
-              onClick={acknowledge}
-            >
-              Oceniany potwierdził zapoznanie
-            </Button>
-            <p className={layout.muted}>W wersji demonstracyjnej podpis ocenianego symulujemy przyciskiem (data = dziś).</p>
-          </div>
-        )}
       </PartSection>
 
       <StageError error={patch.error ?? act.error} />
-      <WizardActions loading={patch.isPending && !act.isPending} />
+      <WizardActions loading={patch.isPending || act.isPending} />
     </form>
   )
 }

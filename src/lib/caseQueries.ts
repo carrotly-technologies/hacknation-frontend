@@ -10,7 +10,7 @@ import {
   type CasePatch,
   type Observation,
 } from '../api/cases'
-import { caseUrl } from './stages'
+import { caseUrl, viewStage } from './stages'
 
 export const caseKey = (id: string) => ['case', id] as const
 
@@ -90,7 +90,10 @@ export function useCaseAction(id: string) {
     onSuccess: (data) => {
       const prev = qc.getQueryData<CaseDetail>(caseKey(id))
       qc.setQueryData(caseKey(id), data)
-      if (prev && prev.currentStage !== data.currentStage) navigate(caseUrl(id, data.currentStage))
+      // Only when the new stage has its own view: e.g. OPENING_TALK → OBSERVATION stays in the sheet wizard (?czesc=…).
+      if (prev && viewStage(data.stages, prev.currentStage) !== viewStage(data.stages, data.currentStage)) {
+        navigate(caseUrl(id, viewStage(data.stages, data.currentStage)))
+      }
       qc.invalidateQueries({ queryKey: ['team'] })
       qc.invalidateQueries({ queryKey: ['hr'] })
     },

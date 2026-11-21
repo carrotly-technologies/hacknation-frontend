@@ -135,13 +135,6 @@
   font-weight: var(--weight-semibold);
 }
 
-.inlineActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-2) var(--s-4);
-}
-
 .legal {
   white-space: nowrap;
 }
@@ -164,11 +157,6 @@
 
   .legal {
     white-space: normal;
-  }
-
-  .inlineActions {
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .actions {
