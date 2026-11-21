@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import {
   addObservation,
+  downloadSheet,
   getCase,
   patchCase,
   runCaseAction,
@@ -11,6 +12,7 @@ import {
   type CaseDetail,
   type CasePatch,
   type Observation,
+  type SheetFormat,
 } from '../api/cases'
 import { allows, caseUrl, viewStage } from './stages'
 
@@ -128,4 +130,13 @@ export function useAddObservation(id: string) {
     mutationFn: (o: Omit<Observation, 'id'>) => addObservation(id, o),
     onSuccess: (data) => qc.setQueryData(caseKey(id), data),
   })
+}
+
+/**
+ * Downloads the filled sheet (PDF or DOCX) of a periodic case. `pending` is the format being generated, so only
+ * that button shows a spinner; `error` holds the Polish message of a failed download.
+ */
+export function useSheetDownload(id: string) {
+  const m = useMutation({ mutationFn: (format: SheetFormat) => downloadSheet(id, format) })
+  return { download: m.mutate, pending: m.isPending ? m.variables : undefined, error: m.error, reset: m.reset }
 }

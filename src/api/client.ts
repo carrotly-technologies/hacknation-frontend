@@ -22,7 +22,8 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit): Promise<T> {
+/** Sends a request with the sign-in token; throws ApiError (Polish message) for a network error or a non-2xx answer. */
+async function send(path: string, init: RequestInit): Promise<Response> {
   const token = getToken()
   const headers = new Headers(init.headers)
   if (token) headers.set('Authorization', `Bearer ${token}`)
@@ -42,6 +43,11 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
     }
     throw new ApiError(await readErrorMessage(res), res.status)
   }
+  return res
+}
+
+async function request<T>(path: string, init: RequestInit): Promise<T> {
+  const res = await send(path, init)
 
   if (res.status === 204) return undefined as T
   const type = res.headers.get('content-type') ?? ''
@@ -82,6 +88,39 @@ export function apiPost<T>(path: string, body: unknown, signal?: AbortSignal): P
 
 export function apiPatch<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
   return request<T>(path, withBody('PATCH', body, signal))
+}
+
+/** A file from the API (e.g. the sheet as PDF) with the name the server gave it in `Content-Disposition`. */
+export async function apiGetFile(path: string, fallbackName: string, signal?: AbortSignal): Promise<{ blob: Blob; fileName: string }> {
+  const res = await send(path, { signal })
+  return { blob: await res.blob(), fileName: fileNameFrom(res.headers.get('content-disposition')) ?? fallbackName }
+}
+
+/** `filename*=UTF-8''…` (Polish letters) first, then the plain `filename="…"`. */
+export function fileNameFrom(disposition: string | null): string | null {
+  if (!disposition) return null
+  const utf8 = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(disposition)
+  if (utf8) {
+    try {
+      return decodeURIComponent(utf8[1].trim())
+    } catch {
+      // malformed: fall back to the plain name
+    }
+  }
+  const plain = /filename\s*=\s*"([^"]+)"/i.exec(disposition) ?? /filename\s*=\s*([^;]+)/i.exec(disposition)
+  return plain ? plain[1].trim() : null
+}
+
+/** Saves a Blob through a temporary `download` link (works in every current browser). */
+export function saveFile(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 export function errorMessage(err: unknown): string {
