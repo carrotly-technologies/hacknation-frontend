@@ -1,11 +1,15 @@
 import { Check, X } from 'lucide-react'
-import type { CaseAction, CaseDetail, FormalCheckItem } from '../../api/cases'
-import { InlineAlert } from '../../components/ui'
-import { SCALE_LABELS } from '../../lib/scale'
+import { useId } from 'react'
+import { Link } from 'react-router'
+import type { CaseAction, CaseDetail, FormalCheckItem, StageId } from '../../api/cases'
+import { Accordion, Button, InlineAlert } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
-import { BlockedReason, MutationError } from './common'
-import { allows } from '../../lib/stages'
+import type { CaseCriteria } from '../../lib/model'
+import { SCALE_LABELS } from '../../lib/scale'
+import { allows, caseUrl } from '../../lib/stages'
+import { MutationError } from './common'
+import s from './FormalCheck.module.css'
 
 /** Stage status once the evaluator has signed; the stage passes it to `StageHeader status` (shown under the title). */
 export function SignedStatus({ detail }: { detail: CaseDetail }) {
@@ -16,50 +20,177 @@ export function SignedStatus({ detail }: { detail: CaseDetail }) {
   )
 }
 
-/** ✓/✗ list from the backend + the signing action, blocked while any item fails. The signed status is not shown here. */
-export function FormalCheck({ detail, action = 'SIGN_ASSESSMENT', label }: { detail: CaseDetail; action?: CaseAction; label: string }) {
+/** DOM ids of the fields on the same screen; "Popraw" moves focus to them instead of opening another step. */
+export interface FormalCheckFields {
+  justification?: string
+  iprz?: string
+  /** First-assessment conditions (the first exam radio). */
+  conditions?: string
+}
+
+type Props = {
+  detail: CaseDetail
+  /** Criteria of the case: "Popraw" at a partial score opens step 4 on the competency to fix (`?k=`). */
+  criteria?: Pick<CaseCriteria, 'all' | 'scale'>
+  fields?: FormalCheckFields
+  action?: CaseAction
+  label: string
+}
+
+/**
+ * Formal check before signing: one summary alert, the items to fix (always open, each with its legal basis and a
+ * "Popraw" link where the item belongs to a field or step) and the met ones collapsed. The items and the rules
+ * come from the backend; signing stays blocked while any item fails. The signed status is not shown here.
+ */
+export function FormalCheck({ detail, criteria, fields = {}, action = 'SIGN_ASSESSMENT', label }: Props) {
   const act = useCaseAction(detail.id)
+  const uid = useId()
   const items = [...detail.formalCheck, ...localChecks(detail)]
   const errors = items.filter((i) => !i.ok)
+  const passed = items.filter((i) => i.ok)
   const signed = !!detail.signedByEvaluatorOn
+  const headingId = `${uid}-h`
+  const summaryId = `${uid}-summary`
   return (
-    <section className="formal" aria-labelledby="formal-h">
-      <div className="formal__head">
-        <h3 id="formal-h" className="h-section">Kontrola formalna</h3>
-        <span className={`tag ${errors.length ? 'tag--danger' : 'tag--ok'}`}>
-          {errors.length ? `${errors.length} do poprawy` : 'bez uwag'}
-        </span>
+    <section className={s.root} aria-labelledby={headingId}>
+      <h3 id={headingId} className={s.title}>
+        Kontrola formalna
+      </h3>
+      <div id={summaryId}>
+        {errors.length > 0 ? (
+          <InlineAlert tone="error" title={`Do poprawy przed podpisem: ${errors.length}`} />
+        ) : (
+          <InlineAlert tone="success" title="Kontrola formalna bez uwag" />
+        )}
       </div>
-      <ul className="formal__list">
-        {items.map((i) => (
-          <li key={i.id} className={`formal__item ${i.ok ? 'is-ok' : 'is-err'}`}>
-            <span className="formal__icon" aria-label={i.ok ? 'spełnione' : 'niespełnione'}>
-              {i.ok ? <Check size={13} strokeWidth={2.5} /> : <X size={13} strokeWidth={2.5} />}
-            </span>
-            <span className="formal__msg">{i.message}</span>
-            {i.legalBasis && <span className="legal">{i.legalBasis}</span>}
-          </li>
-        ))}
-      </ul>
+
+      {errors.length > 0 && (
+        <div className={s.group}>
+          <h4 className={s.groupTitle}>Do poprawy ({errors.length})</h4>
+          <ul className={s.list}>
+            {errors.map((i) => (
+              <CheckRow key={i.id} item={i} uid={uid} fix={fixFor(i, detail, criteria, fields)} />
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {passed.length > 0 && (
+        <div className={s.passed}>
+          <Accordion
+            items={[
+              {
+                title: `Spełnione (${passed.length})`,
+                content: (
+                  <ul className={s.list}>
+                    {passed.map((i) => (
+                      <CheckRow key={i.id} item={i} uid={uid} />
+                    ))}
+                  </ul>
+                ),
+              },
+            ]}
+          />
+        </div>
+      )}
+
       {(!signed || !!act.error) && (
-        <div className="formal__foot">
+        <div className={s.actions}>
           {!signed && (
-            <>
-              <button type="button" className="btn btn--primary" disabled={errors.length > 0 || act.isPending || !allows(detail, action)} onClick={() => act.mutate(action)}>
-                {label}
-              </button>
-              {errors.length > 0 && (
-                <BlockedReason>
-                  Zatwierdzenie jest zablokowane, dopóki lista zawiera błędy. Popraw: {errors.map((e) => e.message.replace(/\.$/, '')).join('; ')}.
-                </BlockedReason>
-              )}
-            </>
+            <Button
+              disabled={errors.length > 0 || !allows(detail, action)}
+              loading={act.isPending}
+              aria-describedby={errors.length > 0 ? summaryId : undefined}
+              onClick={() => act.mutate(action)}
+            >
+              {label}
+            </Button>
           )}
           <MutationError error={act.error} />
         </div>
       )}
     </section>
   )
+}
+
+type Fix = { field: string } | { to: string }
+
+function CheckRow({ item, uid, fix }: { item: FormalCheckItem; uid: string; fix?: Fix | null }) {
+  const Icon = item.ok ? Check : X
+  const msgId = `${uid}-${item.id}`
+  return (
+    <li className={s.item}>
+      <Icon className={item.ok ? s.iconOk : s.iconErr} size={20} strokeWidth={2.5} aria-hidden="true" />
+      <div className={s.body}>
+        <p id={msgId} className={s.message}>
+          <span className="visually-hidden">{item.ok ? 'Spełnione: ' : 'Niespełnione: '}</span>
+          {item.message}
+        </p>
+        {item.legalBasis && <p className={s.legal}>{item.legalBasis}</p>}
+      </div>
+      {fix && 'to' in fix && (
+        <Link className={s.fix} to={fix.to} aria-describedby={msgId}>
+          Popraw
+        </Link>
+      )}
+      {fix && 'field' in fix && (
+        <a
+          className={s.fix}
+          href={`#${fix.field}`}
+          aria-describedby={msgId}
+          onClick={(ev) => {
+            const el = document.getElementById(fix.field)
+            if (!el) return
+            ev.preventDefault()
+            el.focus()
+            el.scrollIntoView({ block: 'center' })
+          }}
+        >
+          Popraw
+        </a>
+      )}
+    </li>
+  )
+}
+
+/**
+ * Where "Popraw" leads for a check item, by the item `id` from the backend (formal-check.rules.ts): a field on the
+ * same screen when the stage passes its id, else the step (and part or competency) where it is filled in.
+ * Unknown ids and items nobody can fix in the app (the first-assessment window) get no link.
+ */
+function fixFor(item: FormalCheckItem, detail: CaseDetail, criteria: Props['criteria'], fields: FormalCheckFields): Fix | null {
+  const first = detail.path === 'FIRST'
+  const has = (stage: StageId) => detail.stages.some((x) => x.id === stage)
+  const step = (stage: StageId, query?: Record<string, string>): Fix | null =>
+    has(stage) ? { to: `${caseUrl(detail.id, stage)}${query ? `?${new URLSearchParams(query)}` : ''}` } : null
+  const field = (id: string | undefined, fallback: Fix | null): Fix | null => (id ? { field: id } : fallback)
+  const sheetPart = (n: number) => step('OPENING_TALK', { czesc: String(n) })
+  const assessment = (k: string | undefined) => step(first ? 'FIRST_ASSESSMENT' : 'ASSESSMENT', k ? { k } : undefined)
+
+  if (/LEVEL_TEXT/i.test(item.id)) return field(fields.justification, first ? step('FIRST_CONDITIONS') : sheetPart(2))
+  switch (item.id) {
+    case 'SHEET_SELECTED':
+      return step('OSP_ANALYSIS')
+    case 'PART_I_CONFIRMED':
+    case 'ADDITIONAL_CRITERIA_CONSISTENT':
+      return sheetPart(1)
+    case 'ALL_CRITERIA_DECIDED':
+      return assessment(criteria?.all.find((c) => detail.decisions[c] == null))
+    case 'POINTS_IN_SCALE':
+      return assessment(Object.keys(detail.decisions).find((c) => criteria && !criteria.scale.includes(detail.decisions[c])))
+    case 'JUSTIFICATION_IF_NEGATIVE':
+      return field(fields.justification, first ? step('FIRST_CONDITIONS') : sheetPart(2))
+    case 'IPRZ_REQUIRED':
+    case 'DEVELOPMENT_ONLY_IF_POSITIVE':
+      return field(fields.iprz, first ? step('FIRST_CONDITIONS') : sheetPart(2))
+    case 'FIRST_CONDITIONS_FILLED':
+      return field(fields.conditions, step('FIRST_CONDITIONS'))
+    case 'PROMOTION_REQUEST':
+      // The YES/NO answer is in part II; the request itself, once attached, in part III.
+      return sheetPart(detail.promotionRequest.attached === 'YES' ? 3 : 2)
+    default:
+      return null
+  }
 }
 
 /**
