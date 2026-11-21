@@ -135,14 +135,7 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
               id={decisionId(c)}
               name={decisionId(c)}
               inline
-              legend={
-                <>
-                  {competencyName(model, c)}{' '}
-                  <span className={`${layout.tag} ${criteria.additional.includes(c) ? layout.tagAccent : ''}`}>
-                    {criteria.additional.includes(c) ? 'dodatkowe' : 'obowiązkowe'}
-                  </span>
-                </>
-              }
+              legend={competencyName(model, c)}
               hint={detail.partI.expectations[c] ? `Oczekiwania z części I: ${detail.partI.expectations[c]}` : undefined}
               error={errorFor(decisionId(c))}
               options={options}

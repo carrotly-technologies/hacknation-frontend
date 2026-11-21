@@ -11,8 +11,9 @@ import s from './StageLayout.module.css'
 /**
  * "Analiza opisu stanowiska" (design frame 1): the job description in three cards (description,
  * the employee's tasks, competencies) and one action. The system's proposal is not shown here: accepting
- * saves the suggested sheet and additional criteria as the draft, and "Proponowany formularz" shows it for
- * review. When no sheet can be suggested, a sheet picker sits above the action.
+ * saves the suggested sheet as the draft (mandatory criteria only; additional criteria are the supervisor's
+ * own choice), and "Proponowany formularz" shows it for review. When no sheet can be suggested, a sheet
+ * picker sits above the action.
  */
 export function OspAnalysisStage({ detail, model, stage }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
@@ -24,17 +25,12 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
   const suggested = detail.ospAnalysis?.suggestedSheet ?? null
   const [chosen, setChosen] = useState<SheetId | ''>(detail.sheetId ?? '')
   const sheetId = detail.sheetId ?? suggested?.sheetId ?? (chosen || null)
-  const sheet = sheets.data?.find((x) => x.id === sheetId)
-  const mandatory = sheet?.mandatoryCriteria ?? []
-  const candidates = (detail.ospAnalysis?.additionalCandidates ?? []).filter((c) => !mandatory.includes(c.criterionId))
 
   const accept = async () => {
     if (!sheetId) return
-    // The proposal becomes the draft sheet: suggested sheet + suggested additional criteria (within the sheet's limit).
-    const draft = detail.partI.additionalCriteria.length > 0
-      ? detail.partI.additionalCriteria
-      : candidates.slice(0, sheet?.maxAdditionalCriteria ?? 0).map((c) => c.criterionId)
-    await patch.mutateAsync({ sheetId, partI: { additionalCriteria: draft } })
+    // The proposal becomes the draft sheet with its mandatory criteria only: no additional criteria are
+    // picked for the supervisor, they add them by hand in "Proponowany formularz" if they want any.
+    await patch.mutateAsync({ sheetId })
     act.mutate('ACCEPT_OSP_ANALYSIS')
   }
 

@@ -57,13 +57,11 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
             <ol className={s.list}>
               {criteria.all.map((id, i) => {
                 const indicators = findCompetency(model, id)?.indicators ?? []
-                const extra = criteria.additional.includes(id)
                 return (
                   <li key={id} className={s.item}>
                     <p className={s.itemHead}>
                       <span className={s.num} aria-hidden="true">{i + 1}</span>
                       <span className={s.itemName}>{competencyName(model, id)}</span>
-                      <span className={`${layout.tag} ${extra ? layout.tagAccent : ''}`}>{extra ? 'dodatkowe' : 'obowiązkowe'}</span>
                     </p>
                     {indicators.length > 0 && (
                       <ul className={s.indicators}>

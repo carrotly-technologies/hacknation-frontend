@@ -170,14 +170,7 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
             <Field
               key={c}
               id={expectId(c)}
-              label={
-                <>
-                  {competencyName(model, c)}{' '}
-                  <span className={`${layout.tag} ${criteria.additional.includes(c) ? layout.tagAccent : ''}`}>
-                    {criteria.additional.includes(c) ? 'dodatkowe' : 'obowiązkowe'}
-                  </span>
-                </>
-              }
+              label={competencyName(model, c)}
               error={errorFor(expectId(c))}
             >
               {(p) => (

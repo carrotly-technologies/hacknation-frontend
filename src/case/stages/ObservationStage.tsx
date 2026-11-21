@@ -95,7 +95,7 @@ export function ObservationStage({ detail, model, criteria, stage }: StageProps)
                 </fieldset>
               </div>
               <label className="field">
-                <span className="field__label">Wskaźnik <span className="faint">(opcjonalnie)</span></span>
+                <span className="field__label">Wskaźnik <span className="faint">(opcjonalne)</span></span>
                 <select className="select" value={form.indicatorId ?? ''} onChange={(e) => setForm({ ...form, indicatorId: e.target.value || null })}>
                   <option value="">Dotyczy całego kryterium</option>
                   {comp?.indicators.map((i, n) => (

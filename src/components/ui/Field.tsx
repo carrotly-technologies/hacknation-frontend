@@ -33,7 +33,7 @@ export function Field({ label, hint, error, optional, asHeading, id, className, 
   const labelEl = (
     <label htmlFor={controlId} className={cx(s.label, asHeading && s.labelLarge)}>
       {label}
-      {optional && <span className={s.optional}> (opcjonalnie)</span>}
+      {optional && <span className={s.optional}> (opcjonalne)</span>}
     </label>
   )
   return (

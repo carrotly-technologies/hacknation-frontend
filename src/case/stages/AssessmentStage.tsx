@@ -86,7 +86,6 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
   }
 
   const generalObs = detail.observations.filter((o) => o.criterionId === selected && !o.indicatorId)
-  const extra = criteria.additional.includes(selected)
   const expectation = detail.path === 'PERIODIC' ? detail.partI.expectations[selected] : undefined
 
   return (
@@ -105,9 +104,6 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
           <section className={s.competency} aria-labelledby="kompetencja-h">
             <div className={s.head}>
               <h3 id="kompetencja-h" className={s.name}>{competencyName(model, selected)}</h3>
-              <span className={`${layout.tag} ${extra ? layout.tagAccent : ''}`}>
-                {extra ? 'dodatkowe' : isFirst ? 'element oceny' : 'obowiązkowe'}
-              </span>
             </div>
             {expectation && (
               <p className={s.expectation}>

@@ -74,13 +74,15 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
 
         <div className="field" style={{ marginTop: 20 }}>
           <label className="field__label" htmlFor="just1">
-            Uzasadnienie {negative ? <span className="tag tag--danger">obowiązkowe</span> : <span className="tag">fakultatywne</span>}
+            Uzasadnienie
+            {!negative && <span className="field__optional"> (opcjonalne)</span>}
           </label>
           <textarea id="just1" className="textarea textarea--doc" rows={6} readOnly={locked} value={just.value} onChange={(e) => just.change(e.target.value)} onBlur={just.flush} />
         </div>
         <div className="field" style={{ marginTop: 16 }}>
           <label className="field__label" htmlFor="dev1">
-            Wnioski dotyczące rozwoju zawodowego <span className="tag">fakultatywne, tylko przy pozytywnej</span>
+            Wnioski dotyczące rozwoju zawodowego
+            {!negative && <span className="field__optional"> (opcjonalne)</span>}
           </label>
           <textarea
             id="dev1"

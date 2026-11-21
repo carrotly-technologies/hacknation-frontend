@@ -49,8 +49,8 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
 
           <div className="field">
             <label className="field__label" htmlFor="just">
-              Uzasadnienie przyznanej oceny okresowej{' '}
-              {negative ? <span className="tag tag--danger">obowiązkowe</span> : <span className="tag">fakultatywne</span>}
+              Uzasadnienie przyznanej oceny okresowej
+              {!negative && <span className="field__optional"> (opcjonalne)</span>}
             </label>
             <p className="field__hint">
               Odnieś się do kryteriów po nazwie i do przyznanego poziomu. Przy ocenach innych niż 5 pkt podaj 1–2 konkretne przykłady. §11 ust. 3–4 rozp. PRM z 4.04.2016.
@@ -69,7 +69,7 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
 
           <div className="field" style={{ marginTop: 20 }}>
             <label className="field__label" htmlFor="iprz">
-              Wnioski dotyczące indywidualnego programu rozwoju zawodowego <span className="tag tag--accent">wymagane</span>
+              Wnioski dotyczące indywidualnego programu rozwoju zawodowego
             </label>
             <p className="field__hint">Obszar → forma rozwoju → termin lub sposób monitorowania → oczekiwany efekt. Art. 108 ustawy o służbie cywilnej.</p>
             <textarea

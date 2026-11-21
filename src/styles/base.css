@@ -254,6 +254,12 @@ a:hover {
   font-weight: var(--weight-semibold);
 }
 
+/* "(opcjonalne)" after a label: plain text, not a badge. */
+.field__optional {
+  color: var(--text-secondary);
+  font-weight: var(--weight-regular);
+}
+
 .field__hint {
   font-size: var(--text-xs);
   color: var(--text-muted);
