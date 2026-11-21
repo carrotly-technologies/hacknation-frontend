@@ -2741,6 +2741,11 @@
   align-items: start;
 }
 
+/* Assistant feature flag off: only the sources list, at a readable width */
+.knowledge--sources-only {
+  grid-template-columns: minmax(0, 720px);
+}
+
 .sources li {
   display: flex;
   flex-direction: column;

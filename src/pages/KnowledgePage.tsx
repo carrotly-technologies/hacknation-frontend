@@ -1,5 +1,6 @@
 import { FileText } from 'lucide-react'
 import { AssistantPanel } from '../assistant/AssistantPanel'
+import { useFeatures } from '../lib/features'
 
 const SOURCES = [
   ['Ustawa z 21.11.2008 o służbie cywilnej', 'art. 35–38 (pierwsza ocena), art. 81–83 (ocena okresowa, sprzeciw), art. 89, art. 108'],
@@ -11,16 +12,20 @@ const SOURCES = [
 ]
 
 export function KnowledgePage() {
+  const { assistant } = useFeatures()
+  const meta = assistant
+    ? 'Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki'
+    : 'Akty prawne, model kompetencji i poradniki, na których opiera się Kompas'
   return (
     <div className="page page--knowledge">
       <header className="page-head">
         <div>
           <h1 className="h-page">Baza wiedzy</h1>
-          <p className="page-head__meta" title="Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki">Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki</p>
+          <p className="page-head__meta" title={meta}>{meta}</p>
         </div>
       </header>
-      <div className="knowledge">
-        <AssistantPanel context={{}} variant="page" />
+      <div className={`knowledge ${assistant ? '' : 'knowledge--sources-only'}`}>
+        {assistant && <AssistantPanel context={{}} variant="page" />}
         <aside className="knowledge__sources panel">
           <div className="panel__head">
             <h2 className="h-section">Źródła asystenta</h2>

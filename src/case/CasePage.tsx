@@ -5,6 +5,7 @@ import type { CaseDetail, StageId } from '../api/cases'
 import { AssistantPanel } from '../assistant/AssistantPanel'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { useCase } from '../lib/caseQueries'
+import { useFeatures } from '../lib/features'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
 import { canOpenStage, caseUrl, CASE_STATUS_LABEL, stageFromSlug, STAGE_SHORT } from '../lib/stages'
 import type { CompetencyModel } from '../api/kompas'
@@ -41,7 +42,9 @@ export function CasePage() {
   const q = useCase(id)
   const model = useModel()
   const sheets = useSheets()
-  const [assistantOpen, setAssistantOpen] = useState(readAssistantPref)
+  const features = useFeatures()
+  const [assistantPref, setAssistantOpen] = useState(readAssistantPref)
+  const assistantOpen = features.assistant && assistantPref
   const workRef = useRef<HTMLElement>(null)
   useEffect(() => {
     workRef.current?.scrollTo({ top: 0 })
@@ -99,10 +102,12 @@ export function CasePage() {
             <Printer size={15} strokeWidth={1.75} aria-hidden="true" />
             Pobierz PDF
           </Link>
-          <button type="button" className={`btn ${assistantOpen ? 'btn--pressed' : ''}`} aria-pressed={assistantOpen} onClick={toggleAssistant}>
-            <MessageSquareText size={15} strokeWidth={1.75} aria-hidden="true" />
-            Asystent
-          </button>
+          {features.assistant && (
+            <button type="button" className={`btn ${assistantOpen ? 'btn--pressed' : ''}`} aria-pressed={assistantOpen} onClick={toggleAssistant}>
+              <MessageSquareText size={15} strokeWidth={1.75} aria-hidden="true" />
+              Asystent
+            </button>
+          )}
         </div>
       </header>
 
