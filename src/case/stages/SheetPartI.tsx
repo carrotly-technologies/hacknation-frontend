@@ -89,21 +89,29 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
 
   return (
     <form noValidate onSubmit={onSubmit} className={s.form}>
-      <PartHeading roman="I">Kryteria oceny i termin sporządzenia oceny</PartHeading>
-      <ErrorSummary errors={errors} />
-
-      {confirmed && (
-        <InlineAlert tone="info" title="Część I jest zatwierdzona">
-          Oceniający zatwierdził ją {fmtDate(detail.partI.confirmedByEvaluatorOn)}, więc pola są tylko do odczytu. Zmiana jest możliwa
-          tylko w trybie korekty błędów przez administratora.
-        </InlineAlert>
-      )}
+      <InlineAlert
+        tone={confirmed ? 'success' : 'info'}
+        title={confirmed ? 'Część I jest zatwierdzona' : 'Część I nie jest jeszcze zatwierdzona'}
+      >
+        <InfoList>
+          <InfoRow label="Oceniający potwierdza przeprowadzenie rozmowy i ustalenia" value={confirmed ? fmtDate(detail.partI.confirmedByEvaluatorOn) : 'Nie potwierdzono'} />
+          <InfoRow
+            label="Oceniany potwierdza zapoznanie z kryteriami i terminem (od tej daty biegnie okres oceny)"
+            value={acked ? fmtDate(detail.partI.acknowledgedByEmployeeOn) : 'Nie potwierdzono'}
+          />
+        </InfoList>
+        {confirmed && <p>Pola są tylko do odczytu. Zmiana jest możliwa tylko w trybie korekty błędów przez administratora.</p>}
+        {editable && <p>Uzupełnij pola poniżej i zatwierdź część I przyciskiem na dole strony.</p>}
+      </InlineAlert>
       {afterNegative && (
         <InlineAlert tone="warning" title="Ponowna ocena po ocenie negatywnej">
           Rozmowę rozpoczynającą przeprowadza się w ciągu 7 dni od sporządzenia oceny (§7 pkt 2 rozp. 2016), a ocenę po 6 miesiącach od
           zapoznania (art. 81 ust. 9 ustawy).
         </InlineAlert>
       )}
+
+      <PartHeading roman="I">Kryteria oceny i termin sporządzenia oceny</PartHeading>
+      <ErrorSummary errors={errors} />
 
       <PartSection title="Nazwa urzędu i dane" hint="Uzupełnione automatycznie z teczki. Nie można ich tu zmienić.">
         <InfoList>
@@ -189,31 +197,27 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
         {(p) => <TextInput {...p} type="date" width={20} readOnly={!editable} value={due} onChange={(e) => setDue(e.target.value)} />}
       </Field>
 
-      <PartSection title="Potwierdzenie części I" hint="Oceniający i oceniany potwierdzają rozmowę oraz zapoznanie z kryteriami i terminem oceny.">
-        <InfoList>
-          <InfoRow label="Oceniający potwierdza przeprowadzenie rozmowy i ustalenia" value={confirmed ? fmtDate(detail.partI.confirmedByEvaluatorOn) : 'Nie potwierdzono'} />
-          <InfoRow
-            label="Oceniany potwierdza zapoznanie z kryteriami i terminem (od tej daty biegnie okres oceny)"
-            value={acked ? fmtDate(detail.partI.acknowledgedByEmployeeOn) : 'Nie potwierdzono'}
-          />
-        </InfoList>
-        {!confirmed && editable && (
-          <div className={s.inlineActions}>
-            <Button variant="secondary" loading={act.isPending} disabled={patch.isPending || !allows(detail, 'CONFIRM_PART_I')} onClick={confirm}>
-              Zatwierdź część I
-            </Button>
-            <p className={layout.muted}>Zatwierdzenie zapisuje część I i blokuje kryteria oraz termin oceny.</p>
-          </div>
-        )}
-        {confirmed && !acked && (
-          <div className={s.inlineActions}>
-            <Button variant="secondary" loading={act.isPending} disabled={!allows(detail, 'EMPLOYEE_ACK_PART_I')} onClick={() => act.mutate('EMPLOYEE_ACK_PART_I')}>
-              Oceniany potwierdził zapoznanie
-            </Button>
-            <p className={layout.muted}>W wersji demonstracyjnej podpis ocenianego symulujemy przyciskiem (data = dziś).</p>
-          </div>
-        )}
-      </PartSection>
+      {/* Only the actions stay here; the confirmation status is shown at the top of part I. */}
+      {((!confirmed && editable) || (confirmed && !acked)) && (
+        <PartSection title="Potwierdzenie części I" hint="Oceniający i oceniany potwierdzają rozmowę oraz zapoznanie z kryteriami i terminem oceny.">
+          {!confirmed && editable && (
+            <div className={s.inlineActions}>
+              <Button variant="secondary" loading={act.isPending} disabled={patch.isPending || !allows(detail, 'CONFIRM_PART_I')} onClick={confirm}>
+                Zatwierdź część I
+              </Button>
+              <p className={layout.muted}>Zatwierdzenie zapisuje część I i blokuje kryteria oraz termin oceny.</p>
+            </div>
+          )}
+          {confirmed && !acked && (
+            <div className={s.inlineActions}>
+              <Button variant="secondary" loading={act.isPending} disabled={!allows(detail, 'EMPLOYEE_ACK_PART_I')} onClick={() => act.mutate('EMPLOYEE_ACK_PART_I')}>
+                Oceniany potwierdził zapoznanie
+              </Button>
+              <p className={layout.muted}>W wersji demonstracyjnej podpis ocenianego symulujemy przyciskiem (data = dziś).</p>
+            </div>
+          )}
+        </PartSection>
+      )}
 
       <StageError error={patch.error ?? act.error} />
       <WizardActions loading={patch.isPending && !act.isPending} />
