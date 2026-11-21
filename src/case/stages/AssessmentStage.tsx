@@ -1,346 +1,241 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronRight } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { ChevronDown } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 import type { CaseDetail, Observation, Points } from '../../api/cases'
 import { suggestLevel, type CompetencyModel, type Indicator, type LevelKey } from '../../api/kompas'
-import { ScoreChip } from '../../components/Score'
+import { Button, ErrorSummary, Field, InlineAlert, RadioGroup, Stepper, TextArea, type FormError } from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate } from '../../lib/format'
-import { competencyName, findCompetency, type CaseCriteria } from '../../lib/model'
-import { SCALE_LABELS, SCALE_SHORT, scoreClass } from '../../lib/scale'
+import { competencyName, findCompetency } from '../../lib/model'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
-import { MutationError, StageHeader } from './common'
-import c from './CriteriaNav.module.css'
+import s from './AssessmentStage.module.css'
 import { ResultBar } from './ResultBar'
+import { StageError, StageLayout } from './StageLayout'
+import layout from './StageLayout.module.css'
 
+/** Radio value of "no grounds to assess" (the API stores it as null). */
+const SKIP = 'brak'
+const DECISION_ID = 'ocena-czastkowa'
+const indicatorFieldId = (i: number) => `wskaznik-${i + 1}`
+
+/** Scale labels come from the competency model sent by the API (the legal scale lives in the backend). */
+const scaleLabel = (model: CompetencyModel, p: number) => model.scale.find((l) => l.points === p)?.label ?? ''
+
+/**
+ * "Formularz oceny kompetencji": one competency per page, in the order of the "Proponowany formularz"
+ * questions. Every indicator is a question with the behaviours of the competency model as answers; the
+ * system suggests a partial score and the evaluator decides it. The current competency stays in `?k=`.
+ */
 export function AssessmentStage({ detail, model, criteria, stage }: StageProps) {
   const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
   const all = criteria.all
   const firstOpen = all.find((c) => detail.decisions[c] == null) ?? all[0]
-  const selected = params.get('k') && all.includes(params.get('k')!) ? params.get('k')! : firstOpen
+  const k = params.get('k')
+  const selected = k && all.includes(k) ? k : firstOpen
   const idx = all.indexOf(selected)
   const competency = findCompetency(model, selected)
   const patch = usePatchCase(detail.id)
   const locked = !!detail.signedByEvaluatorOn
-  const info = detail.stages.find((s) => s.id === stage)!
+  const info = detail.stages.find((x) => x.id === stage)!
   const isFirst = detail.path === 'FIRST'
   const scale = criteria.scale
+  // Errors belong to the competency they were raised on, so they disappear when it changes.
+  const [shown, setShown] = useState<{ k: string; errors: FormError[] }>({ k: '', errors: [] })
+  const errors = shown.k === selected ? shown.errors : []
 
-  // Pin the selected criterion in the URL so a decision never moves the user to another criterion.
+  // Pin the competency in the URL so a decision never moves the user to another competency.
   useEffect(() => {
-    if (!params.get('k') && selected) setParams((p) => { p.set('k', selected); return p }, { replace: true })
-  }, [params, selected, setParams])
+    if (!k && selected) setParams((p) => { p.set('k', selected); return p }, { replace: true })
+  }, [k, selected, setParams])
+
+  if (!competency) {
+    return (
+      <StageLayout info={info}>
+        <p className={layout.muted}>Brak kompetencji do oceny. Najpierw ustal arkusz i kryteria w kroku „Proponowany formularz”.</p>
+      </StageLayout>
+    )
+  }
 
   const go = (id: string) => {
     setParams((p) => { p.set('k', id); return p }, { replace: true })
     document.querySelector('.case-work')?.scrollTo({ top: 0 })
   }
 
-  if (!competency) {
-    return (
-      <div className="stage">
-        <StageHeader title={info.name} />
-        <p className="stage-pad muted">Brak kryteriów do oceny — najpierw ustal arkusz i kryteria w części I.</p>
-      </div>
-    )
-  }
-
   const ratings = detail.ratings[selected] ?? {}
-  // The API merges ratings per indicator and has no "unset" — a choice can only be replaced.
+  // The API merges ratings per indicator and has no "unset": a choice can only be replaced.
   const setRating = (indicatorId: string, points: Points | null) => {
     patch.mutate({ ratings: { [selected]: { [indicatorId]: points } } })
   }
+  const decision = detail.decisions[selected]
+  const missing = (ind: Indicator) => !(ind.id in ratings)
+
+  const next = () => {
+    if (!locked) {
+      const errs: FormError[] = competency.indicators.flatMap((ind, i) =>
+        missing(ind) ? [{ id: indicatorFieldId(i), message: `Wskaźnik ${i + 1}: zaznacz jedną odpowiedź` }] : [],
+      )
+      if (decision == null) errs.push({ id: DECISION_ID, message: 'Wybierz ocenę cząstkową kompetencji' })
+      setShown({ k: selected, errors: errs })
+      if (errs.length) return
+    }
+    if (idx < all.length - 1) go(all[idx + 1])
+    else navigate(caseUrl(detail.id, isFirst ? 'FIRST_CONDITIONS' : 'JUSTIFICATION'))
+  }
 
   const generalObs = detail.observations.filter((o) => o.criterionId === selected && !o.indicatorId)
+  const extra = criteria.additional.includes(selected)
+  const expectation = detail.path === 'PERIODIC' ? detail.partI.expectations[selected] : undefined
 
   return (
-    <div className="stage stage--assess">
-      <StageHeader title={info.name} />
-
-      <CriteriaNav detail={detail} model={model} criteria={criteria} selected={selected} onPick={go} />
-
-      <div className="assess">
-        <div className="assess__main">
-          <div className="crit-head">
-            <div>
-              <p className="crit-head__kicker">
-                Kryterium {idx + 1} z {all.length} · {criteria.additional.includes(selected) ? 'dodatkowe' : isFirst ? 'element oceny' : 'obowiązkowe'}
-              </p>
-              <h3 className="crit-head__title">{competencyName(model, selected)}</h3>
-            </div>
-            <div className="btn-row">
-              <button type="button" className="btn btn--sm btn--ghost" disabled={idx === 0} onClick={() => go(all[idx - 1])}>
-                <ArrowLeft size={14} aria-hidden="true" /> Poprzednie
-              </button>
-              <button type="button" className="btn btn--sm btn--ghost" disabled={idx === all.length - 1} onClick={() => go(all[idx + 1])}>
-                Następne <ArrowRight size={14} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-
-          {detail.path === 'PERIODIC' && detail.partI.expectations[selected] && (
-            <p className="expect-line">
-              <span className="h-sub">Oczekiwania z części I</span> {detail.partI.expectations[selected]}
-            </p>
-          )}
-
-          {generalObs.length > 0 && (
-            <div className="obs-general">
-              <p className="h-sub">Obserwacje do kryterium (bez wskazanego wskaźnika)</p>
-              <ObsList items={generalObs} />
-            </div>
-          )}
+    <>
+      <StageLayout info={info}>
+        <div className={s.form}>
+          <Stepper unit={isFirst ? 'Element' : 'Kompetencja'} current={idx + 1} total={all.length} />
+          <ErrorSummary errors={errors} />
 
           {locked && (
-            <p className="notice notice--info" style={{ marginBottom: 12 }}>
-              Ocena została podpisana {fmtDate(detail.signedByEvaluatorOn)} — rubryka jest tylko do odczytu.
-            </p>
+            <InlineAlert tone="info" title="Formularz jest tylko do odczytu">
+              Ocena została podpisana {fmtDate(detail.signedByEvaluatorOn)}.
+            </InlineAlert>
           )}
 
-          <Rubric
-            indicators={competency.indicators}
-            scale={scale}
-            ratings={ratings}
-            observations={detail.observations.filter((o) => o.criterionId === selected)}
-            disabled={locked}
-            onRate={setRating}
-          />
-          <MutationError error={patch.error} />
-        </div>
+          <section className={s.competency} aria-labelledby="kompetencja-h">
+            <div className={s.head}>
+              <h3 id="kompetencja-h" className={s.name}>{competencyName(model, selected)}</h3>
+              <span className={`${layout.tag} ${extra ? layout.tagAccent : ''}`}>
+                {extra ? 'dodatkowe' : isFirst ? 'element oceny' : 'obowiązkowe'}
+              </span>
+            </div>
+            {expectation && (
+              <p className={s.expectation}>
+                <strong>Oczekiwania z części I:</strong> {expectation}
+              </p>
+            )}
+            {generalObs.length > 0 && <ObsDetails title="Obserwacje do kompetencji" items={generalObs} />}
 
-        <Verdict key={selected} detail={detail} criterionId={selected} indicators={competency.indicators} scale={scale} locked={locked} onNext={() => {
-          const nextOpen = all.slice(idx + 1).find((c) => detail.decisions[c] == null) ?? all.find((c) => c !== selected && detail.decisions[c] == null)
-          if (nextOpen) go(nextOpen)
-        }} nextLabel={(() => {
-          const nextOpen = all.slice(idx + 1).find((c) => detail.decisions[c] == null) ?? all.find((c) => c !== selected && detail.decisions[c] == null)
-          return nextOpen ? competencyName(model, nextOpen) : null
-        })()} finishHref={caseUrl(detail.id, isFirst ? 'FIRST_CONDITIONS' : 'JUSTIFICATION')} finishLabel={isFirst ? 'Przejdź do warunków i wyniku' : 'Przejdź do uzasadnienia i IPRZ'} />
-      </div>
-
-      <ResultBar detail={detail} criteria={all} model={model} onPick={go} active={selected} />
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-
-/** All criteria of the sheet in one row at the top of the stage, with the decided points (or progress) of each. */
-function CriteriaNav({
-  detail,
-  model,
-  criteria,
-  selected,
-  onPick,
-}: {
-  detail: CaseDetail
-  model: CompetencyModel
-  criteria: CaseCriteria
-  selected: string
-  onPick: (id: string) => void
-}) {
-  const listRef = useRef<HTMLOListElement>(null)
-  // Keep the selected criterion visible when the row scrolls sideways (phones, many criteria).
-  useEffect(() => {
-    const list = listRef.current
-    const item = list?.querySelector<HTMLElement>('[aria-current="true"]')
-    if (!list || !item) return
-    const left = item.offsetLeft
-    const right = left + item.offsetWidth
-    if (left < list.scrollLeft || right > list.scrollLeft + list.clientWidth) list.scrollLeft = left - 16
-  }, [selected])
-
-  return (
-    <nav className={c.root} aria-label="Kryteria oceny">
-      <ol ref={listRef} className={c.list}>
-        {criteria.all.map((id) => {
-          const decided = detail.decisions[id]
-          const touched = Object.keys(detail.ratings[id] ?? {}).length > 0
-          const state = decided != null ? 'decided' : touched ? 'progress' : 'todo'
-          const active = id === selected
-          return (
-            <li key={id}>
-              <button
-                type="button"
-                className={`${c.item} ${state === 'progress' ? c.progress : ''} ${active ? c.active : ''}`}
-                aria-current={active ? 'true' : undefined}
-                onClick={() => onPick(id)}
-              >
-                <span className={c.name}>
-                  <span>{competencyName(model, id)}</span>
-                  {criteria.additional.includes(id) && <span className={c.extra}>dodatkowe</span>}
-                </span>
-                {state === 'decided' ? (
-                  <ScoreChip points={decided} size="sm" />
-                ) : (
-                  <span className={c.state} title={state === 'progress' ? 'w toku' : 'nieocenione'}>
-                    <span className="visually-hidden">{state === 'progress' ? 'w toku' : 'nieocenione'}</span>
-                  </span>
-                )}
-              </button>
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-
-function Rubric({
-  indicators,
-  scale,
-  ratings,
-  observations,
-  disabled,
-  onRate,
-}: {
-  indicators: Indicator[]
-  scale: number[]
-  ratings: Record<string, Points | null>
-  observations: Observation[]
-  disabled: boolean
-  onRate: (indicatorId: string, points: Points | null) => void
-}) {
-  const [openObs, setOpenObs] = useState<Record<string, boolean>>({})
-  return (
-    <table className="rubric" style={{ ['--cols' as string]: scale.length }}>
-      <colgroup>
-        {scale.map((p) => (
-          <col key={p} className={p === 5 ? 'is-standard' : ''} />
-        ))}
-      </colgroup>
-      <thead>
-        <tr>
-          {scale.map((p) => (
-            <th key={p} scope="col" className={`rubric__colhead ${p === 5 ? 'is-standard' : ''}`}>
-              <span className={`rubric__pts ${scoreClass(p)}`}>{p} pkt</span>
-              <span className="rubric__lvl">{SCALE_SHORT[p]}</span>
-              {p === 5 && <span className="rubric__std">standard</span>}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      {indicators.map((ind, i) => {
-        const value = ratings[ind.id]
-        const skipped = value === null
-        const obs = observations.filter((o) => o.indicatorId === ind.id)
-        const open = openObs[ind.id] ?? false
-        return (
-          <tbody key={ind.id} className={`rubric__group ${skipped ? 'is-skipped' : ''}`}>
-            <tr className="rubric__indrow">
-              <th scope="rowgroup" colSpan={scale.length}>
-                <div className="rubric__ind">
-                  <span className="rubric__indnum num">{i + 1}.</span>
-                  <span className="rubric__indname">{ind.name}</span>
-                  <span className="rubric__tools">
-                    {obs.length > 0 ? (
-                      <button type="button" className="rubric__tool" aria-expanded={open} onClick={() => setOpenObs((s) => ({ ...s, [ind.id]: !open }))}>
-                        {open ? <ChevronDown size={13} aria-hidden="true" /> : <ChevronRight size={13} aria-hidden="true" />}
-                        Obserwacje ({obs.length})
-                      </button>
-                    ) : (
-                      <span className="rubric__tool rubric__tool--none">Brak obserwacji</span>
-                    )}
-                    <button
-                      type="button"
-                      className={`rubric__skip ${skipped ? 'is-on' : ''}`}
-                      aria-pressed={skipped}
-                      disabled={disabled}
-                      title="Nie było okazji zaobserwować tego zachowania — wskaźnik nie wejdzie do sugestii"
-                      onClick={() => onRate(ind.id, null)}
-                    >
-                      <span className="rubric__skipbox" aria-hidden="true">{skipped && <Check size={10} strokeWidth={3} />}</span>
-                      Brak podstaw do oceny
-                    </button>
-                  </span>
-                </div>
-                {open && obs.length > 0 && (
-                  <div className="rubric__obs">
-                    <ObsList items={obs} />
-                  </div>
-                )}
-              </th>
-            </tr>
-            <tr className="rubric__cells">
-              {scale.map((p) => {
-                const on = value === p
-                const text = ind.levels[String(p) as LevelKey]
+            <ol className={s.questions}>
+              {competency.indicators.map((ind, i) => {
+                const value = ratings[ind.id]
+                const obs = detail.observations.filter((o) => o.criterionId === selected && o.indicatorId === ind.id)
+                const fieldId = indicatorFieldId(i)
                 return (
-                  <td key={p} className={p === 5 ? 'is-standard' : ''}>
-                    <button
-                      type="button"
-                      className={`rubric__cell ${on ? `is-selected ${scoreClass(p)}` : ''}`}
-                      aria-pressed={on}
-                      aria-label={`${p} pkt, ${SCALE_LABELS[p]}: ${text}`}
-                      disabled={disabled}
-                      onClick={() => !on && onRate(ind.id, p as Points)}
-                    >
-                      {on && (
-                        <span className="rubric__check" aria-hidden="true">
-                          <Check size={11} strokeWidth={3} />
-                        </span>
-                      )}
-                      {text}
-                    </button>
-                  </td>
+                  <li key={ind.id} className={s.question}>
+                    <RadioGroup
+                      id={fieldId}
+                      name={`${selected}-${ind.id}`}
+                      legend={
+                        <>
+                          <span className={s.qnum}>{i + 1}.</span> {ind.name}
+                        </>
+                      }
+                      hint="Wybierz zachowanie, które najlepiej opisuje to, co obserwowałeś."
+                      error={errors.some((e) => e.id === fieldId) && missing(ind) ? 'Zaznacz jedną odpowiedź' : undefined}
+                      value={value === undefined ? '' : value === null ? SKIP : String(value)}
+                      onChange={(v) => setRating(ind.id, v === SKIP ? null : (Number(v) as Points))}
+                      options={[
+                        ...scale.map((p) => ({
+                          value: String(p),
+                          label: ind.levels[String(p) as LevelKey],
+                          hint: `${p} pkt · ${scaleLabel(model, p)}${p === 5 ? ' (standard)' : ''}`,
+                          disabled: locked,
+                        })),
+                        {
+                          value: SKIP,
+                          label: 'Brak podstaw do oceny',
+                          hint: 'Nie było okazji zaobserwować tego zachowania. Wskaźnik nie wejdzie do sugestii.',
+                          disabled: locked,
+                        },
+                      ]}
+                    />
+                    {obs.length > 0 && <ObsDetails title="Obserwacje przy tym wskaźniku" items={obs} />}
+                  </li>
                 )
               })}
-            </tr>
-          </tbody>
-        )
-      })}
-    </table>
-  )
-}
+            </ol>
+          </section>
 
-function ObsList({ items }: { items: Observation[] }) {
-  return (
-    <ul className="obs-list">
-      {items.map((o) => (
-        <li key={o.id} className="obs-item">
-          <div className="obs-item__head">
-            <span className="num faint">{fmtDate(o.date)}</span>
-            <span className={`tag ${o.kind === 'STRENGTH' ? 'tag--ok' : 'tag--warn'}`}>{o.kind === 'STRENGTH' ? 'mocna strona' : 'do rozwoju'}</span>
+          <Decision
+            key={selected}
+            detail={detail}
+            model={model}
+            criterionId={selected}
+            indicators={competency.indicators}
+            scale={scale}
+            locked={locked}
+            error={errors.some((e) => e.id === DECISION_ID) && decision == null ? 'Wybierz ocenę cząstkową' : undefined}
+          />
+          <StageError error={patch.error} />
+
+          <div className={s.actions}>
+            <Button onClick={next}>Dalej</Button>
+            {idx > 0 && (
+              <Button variant="text" onClick={() => go(all[idx - 1])}>
+                Wstecz
+              </Button>
+            )}
           </div>
-          <dl className="sdr">
-            <dt>Sytuacja</dt>
-            <dd>{o.situation}</dd>
-            <dt>Działanie</dt>
-            <dd>{o.action}</dd>
-            <dt>Rezultat</dt>
-            <dd>{o.result}</dd>
-          </dl>
-        </li>
-      ))}
-    </ul>
+        </div>
+      </StageLayout>
+
+      <ResultBar detail={detail} criteria={all} model={model} onPick={go} active={selected} />
+    </>
   )
 }
 
 /* ------------------------------------------------------------------ */
 
-function Verdict({
+function ObsDetails({ title, items }: { title: string; items: Observation[] }) {
+  return (
+    <details className={s.obs}>
+      <summary className={s.obsSummary}>
+        <span>
+          {title} ({items.length})
+        </span>
+        <ChevronDown className={s.obsIcon} size={18} aria-hidden="true" />
+      </summary>
+      <ul className={s.obsList}>
+        {items.map((o) => (
+          <li key={o.id} className={s.obsItem}>
+            <p className={s.obsMeta}>
+              {fmtDate(o.date)} · <strong>{o.kind === 'STRENGTH' ? 'mocna strona' : 'do rozwoju'}</strong>
+            </p>
+            <dl className={s.sdr}>
+              <dt>Sytuacja</dt>
+              <dd>{o.situation}</dd>
+              <dt>Działanie</dt>
+              <dd>{o.action}</dd>
+              <dt>Rezultat</dt>
+              <dd>{o.result}</dd>
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+/** System suggestion (advisory only) and the evaluator's partial score of the competency. */
+function Decision({
   detail,
+  model,
   criterionId,
   indicators,
   scale,
   locked,
-  onNext,
-  nextLabel,
-  finishHref,
-  finishLabel,
+  error,
 }: {
   detail: CaseDetail
+  model: CompetencyModel
   criterionId: string
   indicators: Indicator[]
   scale: number[]
   locked: boolean
-  onNext: () => void
-  nextLabel: string | null
-  finishHref: string
-  finishLabel: string
+  error?: string
 }) {
   const patch = usePatchCase(detail.id)
   const ratings = detail.ratings[criterionId] ?? {}
@@ -352,109 +247,92 @@ function Verdict({
     enabled: indicatorRatings.length > 0,
     placeholderData: keepPreviousData,
   })
-  const s = indicatorRatings.length > 0 ? suggestion.data : undefined
+  const sug = indicatorRatings.length > 0 ? suggestion.data : undefined
   const decision = detail.decisions[criterionId]
-  const suggested = s?.suggestedPoints ?? null
+  const suggested = sug?.suggestedPoints ?? null
   const deviates = decision != null && suggested != null && decision !== suggested
   const [note, setNote] = useState(detail.deviationNotes[criterionId] ?? '')
+  const unrated = indicators.filter((i) => !(i.id in ratings)).length
 
   const decide = (p: number) => patch.mutate({ decisions: { ...detail.decisions, [criterionId]: p } })
-  const unrated = indicators.filter((i) => !(i.id in ratings)).length
-  const allDecided = Object.keys(detail.decisions).length > 0 && nextLabel === null && decision != null
 
   return (
-    <aside className="verdict" aria-label="Werdykt kryterium">
-      <section className="verdict__block">
-        <h4 className="h-sub">Sugestia systemu</h4>
+    <section className={s.decision} aria-labelledby="decyzja-h">
+      <h3 id="decyzja-h" className={s.decisionTitle}>Ocena cząstkowa kompetencji</h3>
+
+      <div className={s.suggestion} aria-live="polite">
+        <p className={s.suggestionLabel}>Sugestia systemu</p>
         {indicatorRatings.length === 0 ? (
-          <p className="verdict__empty">Oceń co najmniej jeden wskaźnik, a system zaproponuje poziom kryterium.</p>
-        ) : !s ? (
-          <p className="verdict__empty">Liczenie…</p>
+          <p className={layout.muted}>Zaznacz odpowiedź przy co najmniej jednym wskaźniku, a system zaproponuje poziom.</p>
+        ) : !sug ? (
+          <p className={layout.muted}>Liczenie…</p>
         ) : (
           <>
-            <div className="verdict__suggest">
-              <ScoreChip points={s.suggestedPoints} />
-              <span className="verdict__suggest-label">{s.suggestedLabel ?? 'brak sugestii'}</span>
-            </div>
-            <div className="calc" aria-label="Wyliczenie sugestii">
-              <div className="calc__row">
-                {indicators.map((ind, i) => (
-                  <span key={ind.id} className="calc__cell" title={ind.name}>
-                    <span className="calc__w">W{i + 1}</span>
-                    {ind.id in ratings ? (
-                      ratings[ind.id] === null ? <span className="calc__skip">b.p.</span> : <ScoreChip points={ratings[ind.id]} size="sm" />
-                    ) : (
-                      <span className="calc__skip">—</span>
-                    )}
-                  </span>
-                ))}
-              </div>
-              <p className="calc__line num">
-                średnia {fmtAvg(s.mean)} → najbliższa wartość skali: <strong>{s.suggestedPoints ?? '—'} pkt</strong>
-              </p>
-              <p className="calc__meta">
-                Ocenione wskaźniki: {s.ratedCount} z {indicators.length}
-                {s.skippedCount > 0 && ` · bez podstaw: ${s.skippedCount}`}
-                {unrated > 0 && ` · nieocenione: ${unrated}`}
-              </p>
-            </div>
-            <details className="verdict__rule">
+            <p className={s.suggestionValue}>
+              {sug.suggestedPoints != null ? `${sug.suggestedPoints} pkt · ${sug.suggestedLabel ?? scaleLabel(model, sug.suggestedPoints)}` : 'Brak sugestii'}
+            </p>
+            <ul className={s.calc} aria-label="Odpowiedzi przy wskaźnikach">
+              {indicators.map((ind, i) => (
+                <li key={ind.id} title={ind.name}>
+                  W{i + 1}: {!(ind.id in ratings) ? '—' : ratings[ind.id] === null ? 'b.p.' : `${ratings[ind.id]} pkt`}
+                </li>
+              ))}
+            </ul>
+            <p className={s.calcLine}>
+              Średnia {fmtAvg(sug.mean)} → najbliższa wartość skali: <strong>{sug.suggestedPoints ?? '—'} pkt</strong>
+            </p>
+            <p className={layout.muted}>
+              Ocenione wskaźniki: {sug.ratedCount} z {indicators.length}
+              {sug.skippedCount > 0 && ` · bez podstaw: ${sug.skippedCount}`}
+              {unrated > 0 && ` · bez odpowiedzi: ${unrated}`}
+            </p>
+            <details className={s.rule}>
               <summary>Jak to liczymy</summary>
-              <p>{s.rationale}</p>
+              <p>{sug.rationale}</p>
             </details>
-            {s.warnings.map((w) => (
-              <p key={w} className="notice notice--warn verdict__warn">{w}</p>
+            {sug.warnings.map((w) => (
+              <InlineAlert key={w} tone="warning">
+                {w}
+              </InlineAlert>
             ))}
           </>
         )}
-      </section>
-
-      <section className="verdict__block verdict__block--decision">
-        <h4 className="h-sub">Decyzja przełożonego</h4>
-        <p className="verdict__hint">Ocenę cząstkową wybierasz Ty. Sugestia jest tylko pomocą.</p>
-        <div className="seg" role="radiogroup" aria-label="Ocena cząstkowa kryterium">
-          {scale.map((p) => (
-            <button
-              key={p}
-              type="button"
-              role="radio"
-              aria-checked={decision === p}
-              className={`seg__opt ${decision === p ? `is-on ${scoreClass(p)}` : ''} ${suggested === p ? 'is-suggested' : ''}`}
-              disabled={locked}
-              title={SCALE_LABELS[p]}
-              onClick={() => decide(p)}
-            >
-              <span className="num">{p}</span>
-            </button>
-          ))}
-        </div>
-        <p className="seg__caption">
-          {decision != null ? (
-            <>
-              <strong>{decision} pkt</strong> · {SCALE_LABELS[decision]}
-            </>
-          ) : suggested != null ? (
-            <span className="faint">Kropka pod przyciskiem oznacza sugestię systemu.</span>
-          ) : (
-            <span className="faint">Nie podjęto decyzji.</span>
-          )}
-        </p>
         {suggested != null && decision !== suggested && !locked && (
-          <button type="button" className="btn btn--sm" onClick={() => decide(suggested)}>
-            Przyjmij sugestię ({suggested} pkt)
-          </button>
+          <div>
+            <Button variant="secondary" size="small" onClick={() => decide(suggested)}>
+              Przyjmij sugestię ({suggested} pkt)
+            </Button>
+          </div>
         )}
-        {decision === 1 && detail.path === 'PERIODIC' && (
-          <p className="notice notice--danger verdict__warn">Ocena 1 pkt w którymkolwiek kryterium oznacza ocenę okresową negatywną (§11 ust. 1 pkt 4 rozp. 2016).</p>
-        )}
-        {deviates && (
-          <div className="field verdict__why">
-            <label className="field__label" htmlFor={`why-${criterionId}`}>
-              Dlaczego decyzja różni się od sugestii? <span className="faint">(opcjonalnie)</span>
-            </label>
-            <textarea
-              id={`why-${criterionId}`}
-              className="textarea"
+      </div>
+
+      <RadioGroup
+        id={DECISION_ID}
+        name={`${DECISION_ID}-${criterionId}`}
+        legend="Twoja decyzja"
+        hint="Ocenę cząstkową wybierasz Ty. Sugestia systemu jest tylko pomocą."
+        error={error}
+        value={decision == null ? '' : String(decision)}
+        onChange={(v) => decide(Number(v))}
+        options={scale.map((p) => ({
+          value: String(p),
+          label: `${p} pkt · ${scaleLabel(model, p)}`,
+          hint: suggested === p ? 'Sugestia systemu' : undefined,
+          disabled: locked,
+        }))}
+      />
+
+      {decision === 1 && detail.path === 'PERIODIC' && (
+        <InlineAlert tone="error">
+          Ocena 1 pkt w którymkolwiek kryterium oznacza ocenę okresową negatywną (§11 ust. 1 pkt 4 rozp. 2016).
+        </InlineAlert>
+      )}
+
+      {deviates && (
+        <Field label="Dlaczego decyzja różni się od sugestii?" optional>
+          {(control) => (
+            <TextArea
+              {...control}
               rows={3}
               value={note}
               disabled={locked}
@@ -465,23 +343,10 @@ function Verdict({
                   patch.mutate({ deviationNotes: { ...detail.deviationNotes, [criterionId]: note } })
               }}
             />
-          </div>
-        )}
-        <MutationError error={patch.error} />
-      </section>
-
-      <div className="verdict__next">
-        {nextLabel ? (
-          <button type="button" className="btn btn--primary" disabled={decision == null} onClick={onNext}>
-            Następne: {nextLabel} <ArrowRight size={14} aria-hidden="true" />
-          </button>
-        ) : allDecided ? (
-          <Link className="btn btn--primary" to={finishHref}>
-            {finishLabel} <ArrowRight size={14} aria-hidden="true" />
-          </Link>
-        ) : null}
-        {decision == null && nextLabel && <p className="blocked-reason">Wybierz ocenę cząstkową, aby przejść dalej.</p>}
-      </div>
-    </aside>
+          )}
+        </Field>
+      )}
+      <StageError error={patch.error} />
+    </section>
   )
 }

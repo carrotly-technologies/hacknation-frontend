@@ -6,7 +6,7 @@ export const STAGE_SLUG: Record<StageId, string> = {
   SHEET_PROPOSAL: 'proponowany-formularz',
   OPENING_TALK: 'rozmowa-rozpoczynajaca',
   OBSERVATION: 'obserwacje',
-  ASSESSMENT: 'ocena',
+  ASSESSMENT: 'formularz-kompetencji',
   JUSTIFICATION: 'uzasadnienie',
   DOCUMENT: 'dokument',
   INTRO_TALK: 'rozmowa-wstepna',
@@ -19,6 +19,7 @@ export const STAGE_SLUG: Record<StageId, string> = {
 /** Old slugs still accepted in links; CasePage redirects them to the current slug. */
 const LEGACY_SLUG: Record<string, StageId> = {
   'wstepny-formularz': 'SHEET_PROPOSAL',
+  ocena: 'ASSESSMENT',
 }
 
 export function stageFromSlug(slug: string | undefined): StageId | null {
@@ -36,7 +37,7 @@ export const STAGE_SHORT: Record<StageId, string> = {
   SHEET_PROPOSAL: 'Proponowany formularz',
   OPENING_TALK: 'Rozmowa rozpoczynająca',
   OBSERVATION: 'Okres oceny',
-  ASSESSMENT: 'Ocena',
+  ASSESSMENT: 'Formularz oceny kompetencji',
   JUSTIFICATION: 'Uzasadnienie i IPRZ',
   DOCUMENT: 'Dokument',
   INTRO_TALK: 'Rozmowa wstępna',
@@ -49,6 +50,7 @@ export const STAGE_SHORT: Record<StageId, string> = {
 /** Stage headings the UI names differently than the API (the backend label is kept for the legal record). */
 const STAGE_TITLE: Partial<Record<StageId, string>> = {
   SHEET_PROPOSAL: 'Proponowany formularz',
+  ASSESSMENT: 'Formularz oceny kompetencji',
 }
 
 export const stageTitle = (info: Pick<StageInfo, 'id' | 'name'>) => STAGE_TITLE[info.id] ?? info.name
@@ -103,7 +105,7 @@ const PERIODIC_STEPS: { key: string; label: string; stages: StageId[] }[] = [
   { key: 'analiza', label: 'Analiza opisu stanowiska', stages: ['OSP_ANALYSIS'] },
   { key: 'proponowany', label: 'Proponowany formularz', stages: ['SHEET_PROPOSAL'] },
   { key: 'formularz', label: 'Formularz oceny', stages: ['OPENING_TALK', 'OBSERVATION'] },
-  { key: 'rozmowa', label: 'Rozmowa z pracownikiem', stages: ['ASSESSMENT'] },
+  { key: 'kompetencje', label: 'Formularz oceny kompetencji', stages: ['ASSESSMENT'] },
   { key: 'weryfikacja', label: 'Weryfikacja formularza', stages: ['JUSTIFICATION'] },
   { key: 'koncowa', label: 'Ocena końcowa', stages: ['DOCUMENT'] },
 ]
