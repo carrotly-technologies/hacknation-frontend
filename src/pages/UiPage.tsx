@@ -14,6 +14,7 @@ import {
   InfoRow,
   InlineAlert,
   RadioGroup,
+  RadioMatrix,
   SearchBar,
   Select,
   Snackbar,
@@ -26,6 +27,8 @@ import {
   TextInput,
   UserMenu,
   type ButtonVariant,
+  type RadioMatrixColumn,
+  type RadioMatrixGroup,
   type StageStep,
 } from '../components/ui'
 import s from './UiPage.module.css'
@@ -46,10 +49,30 @@ function demoSteps(current: number): StageStep[] {
     to: '#etapy',
   }))
 }
+/* Demo scale for RadioMatrix only. The real assessment scale (points and labels) comes from the API. */
+const MATRIX_COLUMNS: RadioMatrixColumn[] = [
+  { value: '1', label: 'Nigdy', sublabel: '1 z 5' },
+  { value: '2', label: 'Rzadko', sublabel: '2 z 5' },
+  { value: '3', label: 'Czasem', sublabel: '3 z 5' },
+  { value: '4', label: 'Często', sublabel: '4 z 5' },
+  { value: '5', label: 'Zawsze', sublabel: '5 z 5' },
+]
+const MATRIX_GROUPS: RadioMatrixGroup[] = [
+  {
+    heading: 'Pytania główne',
+    rows: [
+      { id: 'termin', label: 'Odpowiedź w terminie' },
+      { id: 'jezyk', label: 'Prosty język pisma' },
+    ],
+  },
+  { heading: 'Pytania dodatkowe', rows: [{ id: 'kontakt', label: 'Kontakt telefoniczny' }] },
+]
+
 const SECTIONS = [
   ['przyciski', 'Przyciski'],
   ['pola', 'Pola formularza'],
   ['wybor', 'Pola wyboru'],
+  ['macierz', 'Macierz wyboru'],
   ['komunikaty', 'Komunikaty'],
   ['karty', 'Karty i wiersze'],
   ['nawigacja', 'Wyszukiwarka i postęp'],
@@ -239,6 +262,8 @@ export function UiPage() {
           </div>
         </div>
       </Section>
+
+      <RadioMatrixDemo />
 
       <Section id="komunikaty" title="Komunikaty" note="Kolor nigdy nie jest jedyną informacją: zawsze ikona i tekst.">
         <ErrorSummaryDemo />
@@ -461,5 +486,55 @@ function ErrorSummaryDemo() {
         </Button>
       )}
     </div>
+  )
+}
+
+function RadioMatrixDemo() {
+  const [value, setValue] = useState<Record<string, string>>({ termin: '4' })
+  const set = (row: string, v: string) => setValue((x) => ({ ...x, [row]: v }))
+  return (
+    <Section
+      id="macierz"
+      title="Macierz wyboru"
+      note="Kilka pytań z tą samą skalą (np. oceny cząstkowe). Od 768 px tabela: wiersze to pytania, kolumny to wartości, cała komórka jest klikalna. Na telefonie każde pytanie ma wartości w jednej linii, a pod nimi opis wybranej. Strzałki zmieniają wartość w wierszu."
+    >
+      <div className={s.block}>
+        <h3 className={s.h3}>Domyślny (tabela na komputerze, wiersze na telefonie)</h3>
+        <RadioMatrix id="ui-matrix" label="Jak często urząd…" rowHeader="Pytanie" columns={MATRIX_COLUMNS} groups={MATRIX_GROUPS} value={value} onChange={set} />
+      </div>
+      <div className={s.grid2}>
+        <div className={s.block}>
+          <h3 className={s.h3}>Telefon (wymuszony układ)</h3>
+          <RadioMatrix id="ui-matrix-phone" label="Jak często urząd… (telefon)" columns={MATRIX_COLUMNS} groups={MATRIX_GROUPS} value={value} onChange={set} layout="stacked" />
+        </div>
+        <div className={s.block}>
+          <h3 className={s.h3}>Błąd i tylko do odczytu</h3>
+          <div className={s.stack}>
+            <RadioMatrix
+              id="ui-matrix-err"
+              label="Jak często urząd… (błąd)"
+              rowHeader="Pytanie"
+              columns={MATRIX_COLUMNS}
+              rows={[{ id: 'termin', label: 'Odpowiedź w terminie', error: 'Wybierz, jak często urząd odpowiada w terminie' }]}
+              value={{}}
+              onChange={() => {}}
+            />
+            <RadioMatrix
+              id="ui-matrix-locked"
+              label="Jak często urząd… (tylko do odczytu)"
+              rowHeader="Pytanie"
+              columns={MATRIX_COLUMNS}
+              rows={[
+                { id: 'termin', label: 'Odpowiedź w terminie' },
+                { id: 'jezyk', label: 'Prosty język pisma' },
+              ]}
+              value={{ termin: '4', jezyk: '2' }}
+              onChange={() => {}}
+              readOnly
+            />
+          </div>
+        </div>
+      </div>
+    </Section>
   )
 }

@@ -1,18 +1,33 @@
 import { useState, type FormEvent } from 'react'
 import type { PreviousAssessment, PromotionAttached } from '../../api/cases'
-import { Checkbox, ErrorSummary, Field, InfoList, InfoRow, InlineAlert, RadioGroup, Select, TextArea, TextInput, type FormError } from '../../components/ui'
+import {
+  Checkbox,
+  ErrorSummary,
+  Field,
+  InfoList,
+  InfoRow,
+  InlineAlert,
+  RadioGroup,
+  RadioMatrix,
+  Select,
+  TextArea,
+  TextInput,
+  type FormError,
+  type RadioMatrixGroup,
+} from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
-import { fmtAvg, fmtDate } from '../../lib/format'
+import { fmtAvg, fmtDate, plPoints } from '../../lib/format'
 import { competencyName } from '../../lib/model'
 import { liveResult } from '../../lib/result'
-import { SCALE_LABELS } from '../../lib/scale'
 import type { StageProps } from '../CasePage'
 import { PartHeading, PartSection, WizardActions } from './SheetWizardCommon'
 import { StageError } from './StageLayout'
 import layout from './StageLayout.module.css'
 import s from './SheetWizard.module.css'
 
-const decisionId = (c: string) => `decision-${c}`
+const DECISION_ID = 'decision'
+/** DOM id of the first radio in a criterion's row of the RadioMatrix (ErrorSummary links to it). */
+const decisionId = (c: string) => `${DECISION_ID}-${c}`
 const JUST_ID = 'justification'
 const IPRZ_ID = 'iprz'
 const PREV_RESULT_ID = 'previous-result'
@@ -49,9 +64,14 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
   const conversationDate = detail.stages.find((x) => x.id === 'ASSESSMENT')?.completedOn ?? null
   const periodFrom = detail.partI.acknowledgedByEmployeeOn
   const periodTo = signed ?? detail.partI.assessmentDue
-  // Labels of the scale come from the competency model (API); the local table is only a fallback.
-  const scaleLabel = (p: number) => model.scale.find((x) => x.points === p)?.label ?? SCALE_LABELS[p] ?? ''
-  const options = criteria.scale.map((p) => ({ value: String(p), label: `${p} pkt · ${scaleLabel(p).toLowerCase()}`, disabled: !editable }))
+  // Points come from the sheet and their labels from the competency model (both from the API), as in the template.
+  const columns = criteria.scale.map((p) => ({ value: String(p), label: model.scale.find((x) => x.points === p)?.label ?? '', sublabel: plPoints(p) }))
+  const row = (c: string) => ({ id: c, label: competencyName(model, c), error: errorFor(decisionId(c)) })
+  const groups: RadioMatrixGroup[] = [
+    { heading: 'Kryteria obowiązkowe', rows: criteria.mandatory.map(row) },
+    ...(criteria.additional.length ? [{ heading: 'Kryteria dodatkowe wybrane przez oceniającego', rows: criteria.additional.map(row) }] : []),
+  ]
+  const scores = Object.fromEntries(criteria.all.map((c) => [c, detail.decisions[c] != null ? String(detail.decisions[c]) : '']))
 
   const decide = (c: string, v: string) => patch.mutate({ decisions: { [c]: Number(v) } })
 
@@ -122,22 +142,16 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       </PartSection>
 
       <PartSection title="Oceny cząstkowe" hint="Ocenę cząstkową każdego kryterium wybierasz Ty. Wybór zapisuje się od razu.">
-        <div className={s.fields}>
-          {criteria.all.map((c) => (
-            <RadioGroup
-              key={c}
-              id={decisionId(c)}
-              name={decisionId(c)}
-              inline
-              legend={competencyName(model, c)}
-              hint={detail.partI.expectations[c] ? `Oczekiwania z części I: ${detail.partI.expectations[c]}` : undefined}
-              error={errorFor(decisionId(c))}
-              options={options}
-              value={detail.decisions[c] != null ? String(detail.decisions[c]) : ''}
-              onChange={(v) => decide(c, v)}
-            />
-          ))}
-        </div>
+        <RadioMatrix
+          id={DECISION_ID}
+          label="Oceny cząstkowe"
+          rowHeader="Kryterium"
+          columns={columns}
+          groups={groups}
+          value={scores}
+          onChange={decide}
+          readOnly={!editable}
+        />
       </PartSection>
 
       <PartSection title="Przyznanie oceny" hint="Liczone przez system z ocen cząstkowych.">

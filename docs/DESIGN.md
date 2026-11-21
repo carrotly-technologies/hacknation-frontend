@@ -48,6 +48,7 @@ may scroll sideways (WCAG 1.4.4, 1.4.10); on phones buttons wrap their label.
 | `Fieldset` | the same for groups (radios, checkboxes). |
 | `TextInput`, `TextArea`, `Select` | native controls; `width={5 \| 10 \| 20}` for short answers. |
 | `Checkbox`, `RadioGroup`, `Switch` | 24px native inputs (1.5rem, grow with the text size); `RadioGroup` options take `conditional` (shown under the chosen option). Switch only for settings that apply at once. |
+| `RadioMatrix` | several questions on one scale (e.g. partial scores): from 768px a table (rows × columns, the whole cell clickable), below one row per question with the values as segments in one line and the chosen one spelled out; `groups` with headers, `readOnly`, `error` per row (linked from `ErrorSummary` via `${id}-${row.id}`), arrows move within a row. Columns come from the data, never hard-coded scales. |
 | `ErrorSummary` | errors at the top of the form, links to fields, takes focus after a failed submit. |
 | `InlineAlert` | info / success / warning / error, icon + text. |
 | `StatusBadge` | short status with a dot and text. |
