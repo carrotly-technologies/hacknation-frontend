@@ -9,8 +9,8 @@ import { ErrorState, LoadingState } from '../components/QueryState'
 import { BackLink, Snackbar, Spinner, StageStepper, StatusBadge } from '../components/ui'
 import { useCase, useSheetDownload } from '../lib/caseQueries'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
+import { personUrl } from '../lib/people'
 import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, viewStage } from '../lib/stages'
-import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
 import s from './CasePage.module.css'
 import { AssessmentStage } from './stages/AssessmentStage'
 import { DocumentStage } from './stages/DocumentStage'
@@ -42,7 +42,6 @@ const STATUS_TONE = {
 
 export function CasePage() {
   const { id = '', stage: slug } = useParams()
-  const me = useMe()
   const q = useCase(id)
   const model = useModel()
   const sheets = useSheets()
@@ -77,7 +76,7 @@ export function CasePage() {
     <div className={s.root}>
       <header className={s.head}>
         <div className={s.headTop}>
-          <BackLink to={HOME_BY_ROLE[me.role]} />
+          <BackLink to={personUrl(detail.person.id)} />
           <div className={s.actions}>
             <Link className="btn" to={`/teczka/${detail.id}/arkusz`}>
               <FileText size={15} strokeWidth={1.75} aria-hidden="true" />
