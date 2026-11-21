@@ -5,6 +5,7 @@ import { ApiError, errorMessage } from '../api/client'
 import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
 import { DEMO_ACCOUNTS, DEMO_ACCOUNTS_ENABLED, DEMO_PASSWORD } from '../lib/demoAccounts'
 import { HOME_BY_ROLE, LOGIN_PATH, ROLE_LABEL, useAuth } from '../lib/useAuth'
+import { BrandLogo } from '../branding/BrandLogo'
 import s from './LoginPage.module.css'
 
 /**
@@ -73,8 +74,16 @@ export function LoginPage() {
     <main className={s.root} id="main">
       <div className={s.card}>
         <div className={s.brand}>
-          <Compass size={24} strokeWidth={1.75} aria-hidden="true" />
-          <span>Kompas Kompetencji</span>
+          <BrandLogo
+            name="Kompas Kompetencji"
+            layout="stacked"
+            fallback={
+              <>
+                <Compass size={24} strokeWidth={1.75} aria-hidden="true" />
+                <span>Kompas Kompetencji</span>
+              </>
+            }
+          />
         </div>
         <h1 className={s.h1}>Zaloguj się</h1>
         <p className={s.lead}>Użyj loginu i hasła swojego konta. Uprawnienia wynikają z roli przypisanej do konta.</p>
