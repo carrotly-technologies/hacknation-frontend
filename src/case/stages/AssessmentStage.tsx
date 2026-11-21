@@ -22,7 +22,6 @@ import { allows, caseUrl, isPartIIDraft, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentStage.module.css'
 import { MutationError } from './common'
-import { ResultBar } from './ResultBar'
 import { StageError, StageLayout } from './StageLayout'
 import layout from './StageLayout.module.css'
 
@@ -220,8 +219,6 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
           </div>
         </div>
       </StageLayout>
-
-      <ResultBar detail={detail} criteria={all} model={model} onPick={go} active={selected} />
     </>
   )
 }
