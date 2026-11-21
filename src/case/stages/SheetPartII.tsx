@@ -127,6 +127,13 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       <PartHeading roman="II">Ocena okresowa</PartHeading>
       <ErrorSummary errors={errors} />
 
+      {template && (
+        <InlineAlert tone="info" title="Pouczenie">
+          <p>{template.objectionNotice}</p>
+          {template.objectionNoticeNote && <p className={layout.muted}>{template.objectionNoticeNote}</p>}
+        </InlineAlert>
+      )}
+
       <PartSection title="Rozmowa i okres oceny" hint="Uzupełniane automatycznie.">
         <InfoList>
           <InfoRow label="Data przeprowadzenia rozmowy oceniającej" value={conversationDate ? fmtDate(conversationDate) : 'Po rozmowie oceniającej'} />
@@ -284,13 +291,6 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
           readOnly
         />
       </PartSection>
-
-      {template && (
-        <InlineAlert tone="info" title="Pouczenie">
-          <p>{template.objectionNotice}</p>
-          {template.objectionNoticeNote && <p className={layout.muted}>{template.objectionNoticeNote}</p>}
-        </InlineAlert>
-      )}
 
       <StageError error={patch.error} />
       <WizardActions onBack={back} loading={patch.isPending} />
