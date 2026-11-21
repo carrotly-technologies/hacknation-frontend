@@ -22,13 +22,13 @@ type Props = {
 }
 
 const STATUS_TEXT: Record<StageStepStatus, string> = {
-  done: 'zakończony',
+  done: 'zakończono',
   current: 'w toku',
   todo: 'nierozpoczęty',
 }
 
 /**
- * Horizontal process stepper (chevrons). Done steps are dark with a check icon, the current step is
+ * Horizontal process stepper (chevrons). Done steps are light green with a check icon, the current step is
  * tinted, future steps are outlined; the step on screen carries aria-current="step". Each step is a
  * link, so the whole stepper works with Tab / Enter. Below 768px it turns into numbered dots plus the
  * name of the shown step, without horizontal scrolling.

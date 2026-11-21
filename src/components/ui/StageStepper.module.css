@@ -85,20 +85,20 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* done: dark slate fill, white text, check icon */
+/* done: light green fill, green border, text and check icon (--ok on --ok-bg >= 4.5:1, >= 7:1 in high contrast) */
 .done {
-  background: var(--gray-700);
-  color: var(--bg-surface);
+  background: var(--ok-border);
+  color: var(--ok);
 }
 
 .done::before {
-  background: var(--gray-700);
+  background: var(--ok-bg);
 }
 
 .done .marker {
   border-color: transparent;
-  background: var(--bg-surface);
-  color: var(--gray-700);
+  background: transparent;
+  color: var(--ok);
 }
 
 /* current: tinted accent */
@@ -214,7 +214,7 @@ a.step:visited .label {
   }
 
   .done::before {
-    border-color: var(--gray-700);
+    border-color: var(--ok);
   }
 
   .current::before {
