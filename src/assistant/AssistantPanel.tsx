@@ -1,44 +1,35 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowUp, ExternalLink, X } from 'lucide-react'
+import { ArrowUp, ExternalLink, Sparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { askAssistant, getSourceDocuments, type AssistantAnswer, type AssistantContext, type AssistantMode } from '../api/assistant'
+import { getSourceDocuments, type AssistantContext, type AssistantMode } from '../api/assistant'
 import { suggestedQuestions } from './suggestions'
-
-interface Msg {
-  id: number
-  role: 'user' | 'assistant'
-  text: string
-  answer?: AssistantAnswer
-  pending?: boolean
-}
+import { useAssistantChat, type AssistantChat } from './useAssistant'
 
 const TABS: { mode: AssistantMode; label: string; blurb: string }[] = [
   { mode: 'FORMAL', label: 'Asystent formalny', blurb: 'Procedura, terminy, przepisy i poprawność formalna.' },
   { mode: 'CONVERSATION', label: 'Asystent rozmowy', blurb: 'Przygotowanie do rozmowy, pytania, informacja zwrotna, plan rozwoju.' },
 ]
 
-let seq = 0
-
-/** A question asked from outside the panel (e.g. "Przygotuj pytania do rozmowy" in step 5); a new `id` asks again. */
-export interface AssistantRequest {
-  id: number
-  mode: AssistantMode
-  question: string
-}
-
+/**
+ * The chat with the formal and the conversation assistant. `page`: the "Baza wiedzy" screen, with its own
+ * conversation. `popup`: inside the AI assistant window (AssistantLauncher), with the session's conversation (`chat`
+ * from AssistantProvider), the "Asystent AI" heading (`titleId`) and the close button.
+ */
 export function AssistantPanel({
   context,
+  chat: shared,
   onClose,
-  variant = 'dock',
-  request,
+  variant = 'page',
+  titleId,
 }: {
   context: AssistantContext
+  chat?: AssistantChat
   onClose?: () => void
-  variant?: 'dock' | 'page'
-  request?: AssistantRequest | null
+  variant?: 'page' | 'popup'
+  titleId?: string
 }) {
-  const [mode, setMode] = useState<AssistantMode>('FORMAL')
-  const [threads, setThreads] = useState<Record<AssistantMode, Msg[]>>({ FORMAL: [], CONVERSATION: [] })
+  const own = useAssistantChat()
+  const { mode, setMode, threads, ask: askIn } = shared ?? own
   const [input, setInput] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
   const msgs = threads[mode]
@@ -46,40 +37,13 @@ export function AssistantPanel({
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
-  }, [msgs.length, busy])
+  }, [msgs.length, busy, mode])
 
-  const ask = async (question: string, m: AssistantMode = mode) => {
-    const q = question.trim()
-    if (!q || threads[m].some((x) => x.pending)) return
-    const userMsg: Msg = { id: ++seq, role: 'user', text: q }
-    const pending: Msg = { id: ++seq, role: 'assistant', text: '', pending: true }
-    setThreads((t) => ({ ...t, [m]: [...t[m], userMsg, pending] }))
+  const ask = (question: string) => {
+    if (!question.trim() || busy) return
+    askIn(question, context)
     setInput('')
-    try {
-      const answer = await askAssistant({
-        mode: m,
-        question: q,
-        context,
-        history: threads[m].map((x) => ({ role: x.role, text: x.text })),
-      })
-      setThreads((t) => ({ ...t, [m]: t[m].map((x) => (x.id === pending.id ? { ...x, pending: false, text: answer.answer, answer } : x)) }))
-    } catch {
-      setThreads((t) => ({ ...t, [m]: t[m].map((x) => (x.id === pending.id ? { ...x, pending: false, text: 'Nie udało się połączyć z asystentem. Spróbuj ponownie.' } : x)) }))
-    }
   }
-
-  // Latest `ask` for the effect below, so it runs once per request and not on every render.
-  const askRef = useRef(ask)
-  useEffect(() => {
-    askRef.current = ask
-  })
-  const handled = useRef<number | null>(null)
-  useEffect(() => {
-    if (!request || handled.current === request.id) return
-    handled.current = request.id
-    setMode(request.mode)
-    void askRef.current(request.question, request.mode)
-  }, [request])
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -89,19 +53,26 @@ export function AssistantPanel({
   const suggestions = suggestedQuestions(mode, context.stageId)
   const tab = TABS.find((t) => t.mode === mode)!
 
+  const Root = variant === 'popup' ? 'div' : 'aside'
   return (
-    <aside className={`assistant assistant--${variant}`} aria-label="Asystent">
+    <Root className={`assistant assistant--${variant}`} aria-label={variant === 'popup' ? undefined : 'Asystent'}>
+      {variant === 'popup' && (
+        <div className="assistant__head">
+          <Sparkles size={18} strokeWidth={1.75} aria-hidden="true" className="assistant__head-icon" />
+          <h2 id={titleId} className="assistant__title">Asystent AI</h2>
+          {onClose && (
+            <button type="button" className="assistant__close" onClick={onClose} aria-label="Zamknij asystenta" title="Zamknij (Esc)">
+              <X size={20} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      )}
       <div className="assistant__tabs" role="tablist" aria-label="Rodzaj asystenta">
         {TABS.map((t) => (
           <button key={t.mode} type="button" role="tab" aria-selected={mode === t.mode} className={`assistant__tab ${mode === t.mode ? 'is-on' : ''}`} onClick={() => setMode(t.mode)}>
             {t.label}
           </button>
         ))}
-        {onClose && (
-          <button type="button" className="assistant__close" onClick={onClose} aria-label="Zamknij panel asystenta">
-            <X size={16} aria-hidden="true" />
-          </button>
-        )}
       </div>
 
       <div className="assistant__ctx">
@@ -192,7 +163,7 @@ export function AssistantPanel({
         </button>
       </form>
       <p className="assistant__disclaimer">Asystent odpowiada na podstawie przepisów i poradników, podając źródło. Nie ocenia pracownika — decyzja należy do przełożonego.</p>
-    </aside>
+    </Root>
   )
 }
 

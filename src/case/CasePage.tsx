@@ -1,13 +1,13 @@
-import { FileDown, FileText, MessageSquareText, Printer } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { FileDown, FileText, Printer } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
+import type { AssistantContext } from '../api/assistant'
 import type { CaseDetail, StageId } from '../api/cases'
 import type { CompetencyModel } from '../api/kompas'
-import { AssistantPanel, type AssistantRequest } from '../assistant/AssistantPanel'
+import { useAssistant, useAssistantContext, type AssistantRequest } from '../assistant/useAssistant'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { BackLink, Snackbar, Spinner, StageStepper, StatusBadge } from '../components/ui'
 import { useCase, useSheetDownload } from '../lib/caseQueries'
-import { useFeatures } from '../lib/features'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
 import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, viewStage } from '../lib/stages'
 import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
@@ -29,18 +29,8 @@ export interface StageProps {
   model: CompetencyModel
   criteria: CaseCriteria
   stage: StageId
-  /** Opens the assistant panel and asks a question there; missing when the assistant is turned off (FEATURE_ASSISTANT). */
-  askAssistant?: (request: Omit<AssistantRequest, 'id'>) => void
-}
-
-function readAssistantPref(): boolean {
-  try {
-    const v = localStorage.getItem('kompas.assistant')
-    if (v !== null) return v === '1'
-  } catch {
-    // ignore
-  }
-  return window.innerWidth >= 1500
+  /** Opens the "Asystent AI" popup and asks the question there; missing when the assistant is turned off (FEATURE_ASSISTANT). */
+  askAssistant?: (request: AssistantRequest) => void
 }
 
 const STATUS_TONE = {
@@ -56,25 +46,13 @@ export function CasePage() {
   const q = useCase(id)
   const model = useModel()
   const sheets = useSheets()
-  const features = useFeatures()
-  const [assistantPref, setAssistantOpen] = useState(readAssistantPref)
-  const assistantOpen = features.assistant && assistantPref
-  const [assistantRequest, setAssistantRequest] = useState<AssistantRequest | null>(null)
+  const assistant = useAssistant()
+  // The assistant (popup in AppShell) knows the case and the stage on screen; only caseId and stageId go to the API.
+  useAssistantContext(assistantContext(q.data, stageFromSlug(slug)))
   const workRef = useRef<HTMLElement>(null)
   useEffect(() => {
     workRef.current?.scrollTo({ top: 0 })
   }, [slug])
-
-  const toggleAssistant = () => {
-    setAssistantOpen((v) => {
-      try {
-        localStorage.setItem('kompas.assistant', v ? '0' : '1')
-      } catch {
-        // ignore
-      }
-      return !v
-    })
-  }
 
   if (q.isPending || model.isPending || sheets.isPending) return <div className="page"><LoadingState /></div>
   if (q.isError) return <div className="page"><ErrorState error={q.error} what="teczka oceny" onRetry={() => q.refetch()} /></div>
@@ -89,20 +67,15 @@ export function CasePage() {
   if (slug !== STAGE_SLUG[stage]) return <Navigate to={caseUrl(detail.id, stage)} replace />
 
   const criteria = caseCriteria(detail, sheets.data)
-  const askAssistant = features.assistant
-    ? (req: Omit<AssistantRequest, 'id'>) => {
-        if (!assistantPref) toggleAssistant()
-        setAssistantRequest((prev) => ({ ...req, id: (prev?.id ?? 0) + 1 }))
-      }
-    : undefined
+  const askAssistant = assistant.enabled ? assistant.open : undefined
   const props: StageProps = { detail, model: model.data, criteria, stage, askAssistant }
   const name = `${detail.person.firstName} ${detail.person.lastName}`
-  const sheetLabel = detail.path === 'FIRST' ? 'Arkusz pierwszej oceny' : detail.sheetId ? `Arkusz ${detail.sheetId}` : 'Arkusz nieustalony'
+  const sheetLabel = sheetLabelOf(detail)
   const steps = caseSteps(detail)
   const activeStep = steps.find((st) => st.stages.some((x) => x.id === stage))
 
   return (
-    <div className={`${s.root} ${assistantOpen ? s.withAssistant : ''}`}>
+    <div className={s.root}>
       <header className={s.head}>
         <div className={s.headTop}>
           <BackLink to={HOME_BY_ROLE[me.role]} />
@@ -112,12 +85,6 @@ export function CasePage() {
               Podgląd arkusza
             </Link>
             <SheetPdfButton detail={detail} />
-            {features.assistant && (
-              <button type="button" className={`btn ${assistantOpen ? 'btn--pressed' : ''}`} aria-pressed={assistantOpen} onClick={toggleAssistant}>
-                <MessageSquareText size={15} strokeWidth={1.75} aria-hidden="true" />
-                Asystent
-              </button>
-            )}
           </div>
         </div>
         <div className={s.person}>
@@ -141,20 +108,19 @@ export function CasePage() {
         <section ref={workRef} className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
           {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
         </section>
-        {assistantOpen && (
-          <AssistantPanel
-            context={{
-              caseId: detail.id,
-              stageId: stage,
-              label: `${STAGE_SHORT[stage]} · ${name} · ${sheetLabel}`,
-            }}
-            onClose={toggleAssistant}
-            request={assistantRequest}
-          />
-        )}
       </div>
     </div>
   )
+}
+
+const sheetLabelOf = (detail: CaseDetail) =>
+  detail.path === 'FIRST' ? 'Arkusz pierwszej oceny' : detail.sheetId ? `Arkusz ${detail.sheetId}` : 'Arkusz nieustalony'
+
+/** What the assistant gets on this screen: the case and the stage; the label is only shown in the popup. */
+function assistantContext(detail: CaseDetail | undefined, stage: StageId | null | undefined): AssistantContext {
+  if (!detail || !stage || !detail.stages.some((st) => st.id === stage)) return {}
+  const name = `${detail.person.firstName} ${detail.person.lastName}`
+  return { caseId: detail.id, stageId: stage, label: `${STAGE_SHORT[stage]} · ${name} · ${sheetLabelOf(detail)}` }
 }
 
 function StageWorkspace(p: StageProps) {

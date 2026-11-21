@@ -1134,10 +1134,6 @@
   background: var(--bg-surface);
 }
 
-.assistant--dock {
-  border-left: 1px solid var(--border);
-}
-
 .assistant--page {
   height: calc(100vh - var(--topbar-h) - 140px);
   min-height: 480px;
@@ -1185,20 +1181,132 @@
   background: var(--accent);
 }
 
+.assistant--popup {
+  flex: 1;
+  height: 100%;
+}
+
+/* Popup header: "Asystent AI" and the close button */
+.assistant__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-1) var(--s-1) var(--s-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.assistant__head-icon {
+  flex: none;
+  color: var(--accent);
+}
+
+.assistant__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
 .assistant__close {
   display: grid;
+  flex: none;
   place-items: center;
-  width: 38px;
+  width: var(--tap);
+  height: var(--tap);
   border: 0;
-  border-left: 1px solid var(--border);
+  border-radius: var(--radius);
   background: none;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
 .assistant__close:hover {
   background: var(--bg-hover);
   color: var(--text);
+}
+
+/* "Asystent AI": floating button in the bottom right corner of every AppShell screen (AssistantLauncher) */
+.assistant-fab {
+  position: fixed;
+  right: calc(var(--fab-offset) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--fab-offset) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-overlay);
+  display: grid;
+  place-items: center;
+  width: var(--fab-size);
+  height: var(--fab-size);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-pop);
+  cursor: pointer;
+  transition: background var(--duration);
+}
+
+.assistant-fab:hover {
+  background: var(--accent-hover);
+}
+
+.assistant-fab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+/* Room at the end of every page, so the button does not cover "Dalej" / "Wstecz" at the bottom. The case file
+   scrolls inside its workspace on wide screens, so there the room is at the end of the workspace. */
+.shell[data-fab] .main:not(:has(.case-work))::after,
+.shell[data-fab] .case-work::after {
+  content: '';
+  display: block;
+  flex: none;
+  height: var(--fab-clearance);
+}
+
+/* The chat window: about 400×600 above the button (non-modal <dialog>); full screen below 600px (modal) */
+.assistant-popup {
+  position: fixed;
+  inset: auto;
+  right: calc(var(--fab-offset) + env(safe-area-inset-right, 0px));
+  bottom: calc(var(--fab-offset) + var(--fab-size) + var(--s-3) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-overlay);
+  width: min(25rem, calc(100vw - 2 * var(--fab-offset)));
+  height: min(37.5rem, calc(100dvh - var(--topbar-h) - var(--fab-size) - var(--fab-offset) - var(--s-3) - var(--s-4)));
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  color: var(--text);
+  box-shadow: var(--shadow-dialog);
+  overflow: hidden;
+}
+
+.assistant-popup[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 599px) {
+  .assistant-popup,
+  .assistant-popup:modal {
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+      env(safe-area-inset-left, 0px);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .assistant-fab {
+    right: calc(var(--s-4) + env(safe-area-inset-right, 0px));
+    bottom: calc(var(--s-4) + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .assistant__ctx {
@@ -1947,12 +2055,6 @@
 
   .case-work {
     overflow: visible;
-  }
-
-  .assistant--dock {
-    min-height: 480px;
-    border-top: 1px solid var(--border);
-    border-left: 0;
   }
 
   .stage-head {
