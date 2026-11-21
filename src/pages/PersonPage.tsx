@@ -7,7 +7,6 @@ import type { Person } from '../api/cases'
 import { getPerson, updatePerson, type HistoryItem, type PersonOsp, type PersonProfile, type UpdatePerson } from '../api/people'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import {
-  Accordion,
   BackLink,
   Button,
   ButtonLink,
@@ -88,19 +87,9 @@ export function PersonPage() {
           </InfoList>
           <EditPerson person={person} name={name} />
         </Card>
-        <Accordion
-          items={[
-            {
-              title: (
-                <span className={s.ospHead}>
-                  <span className="h-sub">Opis stanowiska</span>
-                  {profile.osp && <span className={s.ospHeadTitle}>{profile.osp.title}</span>}
-                </span>
-              ),
-              content: <JobDescription osp={profile.osp} />,
-            },
-          ]}
-        />
+        <Card collapsible title="Opis stanowiska" as="h2" subtitle={profile.osp?.title}>
+          <JobDescription osp={profile.osp} />
+        </Card>
         <Card title="Historia ocen" as="h2">
           <HistoryTable history={profile.history} name={name} />
         </Card>
