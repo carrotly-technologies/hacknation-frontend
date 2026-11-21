@@ -1,0 +1,90 @@
+/* FormProgress: bar + numbered parts above a multi-part form ("Formularz oceny", "Formularz oceny kompetencji") */
+.root {
+  display: grid;
+  gap: var(--s-3);
+  width: 100%;
+  min-width: 0;
+}
+
+/* the shared Stepper keeps its own bottom margin for one-question pages; here the grid gap spaces it */
+.root > :first-child {
+  margin-bottom: 0;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-2) var(--s-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* on wider screens the parts sit side by side, spread evenly across the full width */
+@media (min-width: 600px) {
+  .list {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+}
+
+.item {
+  display: flex;
+  min-width: 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+a.step {
+  border-radius: var(--radius-sm);
+}
+
+a.step:hover .name {
+  text-decoration: underline;
+}
+
+.mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: var(--border-w) solid var(--border-input);
+  border-radius: 50%;
+  background: var(--bg-surface);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+/* one line; the full name is in the title attribute */
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.current {
+  color: var(--text);
+  font-weight: var(--weight-semibold);
+}
+
+.current .mark {
+  border-color: var(--accent);
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.done .mark {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}

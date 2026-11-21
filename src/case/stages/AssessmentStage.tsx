@@ -4,7 +4,17 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import type { CaseDetail, Observation, Points } from '../../api/cases'
 import { suggestLevel, type CompetencyModel, type Indicator, type LevelKey } from '../../api/kompas'
-import { Button, ErrorSummary, Field, InlineAlert, RadioGroup, Stepper, TextArea, type FormError } from '../../components/ui'
+import {
+  Button,
+  ErrorSummary,
+  Field,
+  FormProgress,
+  InlineAlert,
+  RadioGroup,
+  TextArea,
+  type FormError,
+  type FormProgressStep,
+} from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate } from '../../lib/format'
 import { competencyName, findCompetency } from '../../lib/model'
@@ -51,6 +61,11 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
     if (!k && selected) setParams((p) => { p.set('k', selected); return p }, { replace: true })
   }, [k, selected, setParams])
 
+  // Every change of competency (the progress bar links, "Dalej", "Wstecz") starts at the top of the form.
+  useEffect(() => {
+    document.querySelector('.case-work')?.scrollTo({ top: 0 })
+  }, [selected])
+
   if (!competency) {
     return (
       <StageLayout info={info}>
@@ -61,8 +76,21 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 
   const go = (id: string) => {
     setParams((p) => { p.set('k', id); return p }, { replace: true })
-    document.querySelector('.case-work')?.scrollTo({ top: 0 })
   }
+
+  // The progress bar: a competency is done once all its indicators are answered or its partial score is chosen.
+  const linkTo = (id: string) => {
+    const p = new URLSearchParams(params)
+    p.set('k', id)
+    return `?${p.toString()}`
+  }
+  const steps: FormProgressStep[] = all.map((c) => {
+    const answers = detail.ratings[c] ?? {}
+    const indicators = findCompetency(model, c)?.indicators ?? []
+    const rated = indicators.length > 0 && indicators.every((ind) => ind.id in answers)
+    const done = rated || detail.decisions[c] != null
+    return { key: c, label: competencyName(model, c), state: c === selected ? 'current' : done ? 'done' : 'todo', to: linkTo(c) }
+  })
 
   const ratings = detail.ratings[selected] ?? {}
   // The API merges ratings per indicator and has no "unset": a choice can only be replaced.
@@ -100,8 +128,8 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
           )
         }
       >
+        <FormProgress unit={isFirst ? 'Element' : 'Kompetencja'} label={isFirst ? 'Elementy oceny' : 'Kompetencje'} steps={steps} />
         <div className={s.form}>
-          <Stepper unit={isFirst ? 'Element' : 'Kompetencja'} current={idx + 1} total={all.length} />
           <ErrorSummary errors={errors} />
 
           <section className={s.competency} aria-labelledby="kompetencja-h">

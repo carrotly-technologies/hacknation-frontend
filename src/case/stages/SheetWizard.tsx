@@ -1,8 +1,7 @@
-import { Check } from 'lucide-react'
 import { useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import type { CaseDetail, StageId } from '../../api/cases'
-import { InfoList, InfoRow, InlineAlert, Stepper } from '../../components/ui'
+import { FormProgress, InfoList, InfoRow, InlineAlert } from '../../components/ui'
 import { fmtDate } from '../../lib/format'
 import { caseUrl, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
@@ -10,7 +9,6 @@ import { SheetPartI } from './SheetPartI'
 import { SheetPartII } from './SheetPartII'
 import { SheetPartIII } from './SheetPartIII'
 import { StageLayout } from './StageLayout'
-import s from './SheetWizard.module.css'
 
 /** The three parts of the periodic assessment sheet (A, B, C), as in "Podgląd arkusza". */
 const SHEET_PARTS = [
@@ -92,27 +90,14 @@ export function SheetWizard(props: StageProps) {
 
   return (
     <StageLayout info={info} title={title} status={partStatus(detail, part)}>
-      <div className={s.progress}>
-        <Stepper unit="Część" current={part} total={TOTAL} name={SHEET_PARTS[part - 1].name} hideText />
-        <ol className={s.parts} aria-label="Części arkusza">
-          {SHEET_PARTS.map((p, i) => {
-            const n = i + 1
-            const state = n < part ? 'done' : n === part ? 'current' : 'todo'
-            return (
-              <li key={n} className={`${s.part} ${s[state]}`} aria-current={n === part ? 'step' : undefined}>
-                <span className={s.partMark} aria-hidden="true">
-                  {state === 'done' ? <Check size={14} strokeWidth={3} /> : n}
-                </span>
-                <span className={s.partName}>
-                  <span className="visually-hidden">Część {n}: </span>
-                  {p.name}
-                  {state === 'done' && <span className="visually-hidden"> (za Tobą)</span>}
-                </span>
-              </li>
-            )
-          })}
-        </ol>
-      </div>
+      <FormProgress
+        unit="Część"
+        label="Części arkusza"
+        steps={SHEET_PARTS.map((p, i) => {
+          const n = i + 1
+          return { key: String(n), label: p.name, state: n < part ? 'done' : n === part ? 'current' : 'todo' }
+        })}
+      />
 
       {part === 1 && <SheetPartI {...props} onNext={() => goTo(2)} />}
       {part === 2 && <SheetPartII {...props} onBack={() => goTo(1)} onNext={() => goTo(3)} />}
