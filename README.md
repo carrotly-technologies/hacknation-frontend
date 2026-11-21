@@ -51,6 +51,10 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   read only, the notice and the "zapoznałem(-łam) się" confirmation (`GET/POST /api/ack/:token`). The supervisor
   generates the link in part II of the sheet wizard ("Zapoznanie ocenianego z oceną"); the full address is built from
   this app's origin (`window.location.origin` + `ackLink` from the API);
+- `/prezentacja` — public project presentation (no sign-in, outside the app shell, not linked from the navigation):
+  at most 10 slides on a 16:9 canvas scaled to the window (upright phones get a 9:16 layout); ←/→, space,
+  PageUp/PageDown, Home/End, swipe and the dots change the slide, `#N` in the URL opens slide N, `F` toggles full
+  screen. Printing gives one slide per 1920×1080 page; the exported deck is `docs/prezentacja.pdf` (see "Presentation");
 - `/hr` — HR monitoring with counters, filters and (simulated) reminders; `/baza-wiedzy` — assistant and its sources;
 - "Asystent AI" — a floating button in the bottom right corner of every screen in the app shell (not on
   `/zapoznanie/:token` or the sheet print view) opens the chat in a popup (about 400×600 above the button; full screen
@@ -82,6 +86,21 @@ npm run lint      # oxlint
 npm run build     # type-check + production build to dist/
 npm run preview   # serve the production build
 ```
+
+## Presentation
+
+`/prezentacja` (`src/pages/PresentationPage.tsx`, illustrations and device frames in `src/pages/presentation/`) uses
+real screenshots of the app from `public/prezentacja/*.png` (demo seed only, fictional people) and SVG drawings.
+Both scripts use Playwright (devDependency, Apache-2.0); install its Chromium once with `npx playwright install chromium`.
+
+```bash
+npm run presentation:pdf      # docs/prezentacja.pdf, one 1920×1080 page per slide; starts its own Vite server
+                              # (APP_URL=http://localhost:5173 uses a running one); no backend needed
+npm run presentation:screens  # retakes public/prezentacja/*.png (2×, each < 400 kB); needs the backend and
+                              # `npm run dev` running (APP_URL, default http://localhost:5173); resets the demo data
+```
+
+Retake the screenshots when the screens they show change, then export the PDF again.
 
 ## Deploy
 
