@@ -35,7 +35,7 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   route for another role redirects to your start page (`src/lib/useAuth.ts`, `src/shell/RequireAuth.tsx`);
 - `/admin/uzytkownicy` — admin only: accounts and their roles;
 
-- `/zespol` — my team: deadline-driven to-do list and team table; a row opens the employee profile;
+- `/zespol` — my team: a table of people (name and position, hire date, current assessment step, nearest deadline; overdue first); a row opens the employee profile;
 - `/pracownik/:personId` — employee profile (`GET /api/people/:personId`, `src/api/people.ts`): name and position,
   the last completed assessment (signed / acknowledged dates), employee data, supervisor, assessment history with
   links to the sheets, and one button: „Kontynuuj ocenę okresową” / „Kontynuuj pierwszą ocenę” to the case at its
