@@ -1,4 +1,4 @@
-/* Employee profile: header with the main action, status, two data cards, history table. */
+/* Employee profile: header with the main action, status, then the cards in one column. */
 .head {
   display: flex;
   flex-wrap: wrap;
@@ -42,19 +42,29 @@
   margin-top: var(--s-5);
 }
 
-.grid {
+.sections {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-4);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
   margin-top: var(--s-5);
 }
 
-.grid dd {
+.sections dd {
   overflow-wrap: anywhere;
 }
 
-.history {
-  margin-top: var(--s-4);
+.osp {
+  display: grid;
+  gap: var(--s-3);
+  overflow-wrap: anywhere;
+}
+
+.ospTitle {
+  font-weight: var(--weight-semibold);
+}
+
+.osp h3 {
+  margin-top: var(--s-2);
 }
 
 .tableWrap {
@@ -102,10 +112,6 @@
 
   .action {
     align-items: stretch;
-  }
-
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { FileText } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { ApiError } from '../api/client'
-import { getPerson, type HistoryItem, type PersonProfile } from '../api/people'
+import { getPerson, type HistoryItem, type PersonOsp, type PersonProfile } from '../api/people'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { BackLink, Button, ButtonLink, Card, EmptyState, InfoList, InfoRow, InlineAlert, StatusBadge } from '../components/ui'
 import { fmtDate } from '../lib/format'
@@ -11,7 +11,7 @@ import { caseUrl } from '../lib/stages'
 import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
 import s from './PersonPage.module.css'
 
-/** Employee profile: data, supervisor and assessment history, with one button to the right assessment. */
+/** Employee profile: data, job description, supervisor and assessment history in one column, with one button to the right assessment. */
 export function PersonPage() {
   const { personId = '' } = useParams()
   const me = useMe()
@@ -51,7 +51,7 @@ export function PersonPage() {
         <LastAssessment history={profile.history} />
       </div>
 
-      <div className={s.grid}>
+      <div className={s.sections}>
         <Card title="Dane pracownika" as="h2">
           <InfoList>
             <InfoRow label="Komórka organizacyjna" value={person.unit} />
@@ -59,6 +59,9 @@ export function PersonPage() {
             <InfoRow label="Status" value={EMPLOYMENT_LABEL[person.employment]} />
             <InfoRow label="Data zatrudnienia" value={fmtDate(person.hiredOn)} />
           </InfoList>
+        </Card>
+        <Card title="Opis stanowiska" as="h2">
+          <JobDescription osp={profile.osp} />
         </Card>
         <Card title="Przełożony" as="h2">
           {supervisor ? (
@@ -71,11 +74,26 @@ export function PersonPage() {
             <p>Brak danych o przełożonym.</p>
           )}
         </Card>
+        <Card title="Historia ocen" as="h2">
+          <HistoryTable history={profile.history} name={`${person.firstName} ${person.lastName}`} />
+        </Card>
       </div>
+    </div>
+  )
+}
 
-      <Card title="Historia ocen" as="h2" className={s.history}>
-        <HistoryTable history={profile.history} name={`${person.firstName} ${person.lastName}`} />
-      </Card>
+function JobDescription({ osp }: { osp: PersonOsp | null }) {
+  if (!osp) return <p>Brak opisu stanowiska w systemie</p>
+  return (
+    <div className={s.osp}>
+      <p className={s.ospTitle}>{osp.title}</p>
+      <p>{osp.purpose}</p>
+      <h3 className="h-sub">Zadania pracownika</h3>
+      <ul className="bullets">
+        {osp.mainTasks.map((t, i) => (
+          <li key={i}>{t}</li>
+        ))}
+      </ul>
     </div>
   )
 }

@@ -36,9 +36,18 @@ export interface PersonSupervisor {
   unit: string
 }
 
+/** The job description (OSP) parts shown on the profile. */
+export interface PersonOsp {
+  title: string
+  purpose: string
+  mainTasks: string[]
+}
+
 export interface PersonProfile {
   person: Person
   supervisor: PersonSupervisor | null
+  /** From the current case, else the latest; null when it has no OSP. */
+  osp: PersonOsp | null
   /** Newest first; the external entry (if any) last. */
   history: HistoryItem[]
   currentCase: { id: string; path: Path; currentStage: StageId } | null
