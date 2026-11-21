@@ -75,19 +75,19 @@
    ========================================================= */
 .shell {
   display: grid;
-  grid-template-columns: var(--nav-w) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: var(--topbar-h) minmax(0, 1fr);
   height: 100vh;
 }
 
 .topbar {
-  grid-column: 1 / -1;
+  position: relative;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--s-4);
   min-width: 0;
-  padding: 0 var(--s-5) 0 calc((var(--nav-w) - 22px) / 2);
+  padding: 0 var(--s-5);
   border-bottom: 1px solid var(--border);
   background: var(--bg-surface);
   color: var(--text);
@@ -100,6 +100,7 @@
 
 .topbar__brand {
   display: flex;
+  flex: 0 1 auto;
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -116,97 +117,113 @@
 
 .topbar__right {
   display: flex;
-  flex: none;
+  flex: 0 1 auto;
   align-items: center;
   gap: var(--s-5);
   min-width: 0;
 }
 
-.sidenav {
+/* Main navigation in the top bar: brand | links … tools | user */
+.topbar__menu {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border-right: 1px solid var(--border);
-  background: var(--bg-surface);
+  flex: 1 0 auto;
+  align-items: center;
+  gap: var(--s-4);
+  min-width: 0;
+  height: 100%;
 }
 
-.sidenav__list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--s-3) 8px;
+.topbar__menu-btn {
+  display: none;
 }
 
-.sidenav__link {
+.topnav {
+  min-width: 0;
+  height: 100%;
+}
+
+.topnav__list {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s-1);
+  height: 100%;
+}
+
+.topnav__link {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 10px 2px 8px;
-  border-radius: var(--radius);
+  gap: 6px;
+  height: 100%;
+  min-height: 44px;
+  padding: 0 var(--s-3);
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  line-height: 1.15;
-  text-align: center;
   text-decoration: none;
-}
-
-.sidenav__link > span {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sidenav__link:hover {
+.topnav__link:hover {
   background: var(--bg-hover);
   color: var(--text);
 }
 
-.sidenav__link.is-active {
-  background: var(--accent-faint);
+.topnav__link:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--focus-shadow);
+}
+
+/* Active: accent colour plus a bar under the link, so it does not rely on colour alone */
+.topnav__link.is-active {
   color: var(--accent);
 }
 
-.sidenav__link.is-active::before {
+.topnav__link.is-active::after {
   content: '';
   position: absolute;
-  top: 8px;
-  bottom: 8px;
-  left: -8px;
-  width: 3px;
-  border-radius: 0 2px 2px 0;
+  left: var(--s-2);
+  right: var(--s-2);
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
   background: var(--accent);
 }
 
-.sidenav__foot {
+.topbar__tools {
   display: flex;
-  flex-direction: column;
+  flex: none;
   align-items: center;
-  gap: 6px;
-  padding: var(--s-3) 6px;
-  border-top: 1px solid var(--border);
+  gap: var(--s-1);
+  margin-left: auto;
 }
 
-.sidenav__tool {
+.topbar__tool {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 6px;
+  min-height: 44px;
+  padding: 0 var(--s-2);
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
   color: var(--text-muted);
-  font-size: 11px;
+  font: inherit;
+  font-size: var(--text-xs);
   white-space: nowrap;
   cursor: pointer;
 }
 
-.sidenav__tool:hover {
+.topbar__tool:hover {
   background: var(--bg-hover);
   color: var(--text);
+}
+
+.topbar__tools .api-status {
+  min-height: 44px;
+  padding: 0 var(--s-2);
+  font-size: var(--text-xs);
 }
 
 .api-status {
@@ -2579,16 +2596,106 @@
 }
 
 /* =========================================================
+   Top bar below 1024px: the links move under a "Menu" button
+   so nothing scrolls sideways
+   ========================================================= */
+@media (max-width: 1023px) {
+  /* Links, Reset and API status drop down from the "Menu" button */
+  .topbar__menu-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--s-1);
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 var(--s-3);
+    border: var(--border-w) solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+  }
+
+  .topbar__menu-btn:hover,
+  .topbar__menu-btn[aria-expanded='true'] {
+    background: var(--bg-hover);
+    color: var(--text);
+  }
+
+  .topbar__menu-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-shadow);
+  }
+
+  .topbar__menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    height: auto;
+    max-height: calc(100vh - var(--topbar-h));
+    overflow-y: auto;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-pop);
+  }
+
+  .topbar__menu.is-open {
+    display: flex;
+  }
+
+  .topnav {
+    height: auto;
+  }
+
+  .topnav__list {
+    flex-direction: column;
+    height: auto;
+    gap: 0;
+    padding: var(--s-2) 0;
+  }
+
+  .topnav__link {
+    height: auto;
+    padding: 0 var(--s-4);
+    font-size: var(--text-md);
+  }
+
+  .topnav__link.is-active {
+    background: var(--accent-faint);
+  }
+
+  .topnav__link.is-active::after {
+    top: var(--s-2);
+    bottom: var(--s-2);
+    left: 0;
+    right: auto;
+    width: 3px;
+    height: auto;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .topbar__tools {
+    justify-content: space-between;
+    margin-left: 0;
+    padding: var(--s-1) var(--s-2);
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* =========================================================
    Narrow screens (phones, ~375px): same screens, stacked; data rows still one line
    ========================================================= */
 @media (max-width: 767px) {
   :root {
     --topbar-h: 52px;
-  }
-
-  .shell {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--topbar-h) minmax(0, 1fr) auto;
   }
 
   .topbar {
@@ -2600,43 +2707,6 @@
     overflow: hidden;
     font-size: var(--text-md);
     text-overflow: ellipsis;
-  }
-
-  /* Same links, docked as a bottom tab bar */
-  .sidenav {
-    grid-row: 3;
-    flex-direction: row;
-    align-items: center;
-    border-top: 1px solid var(--border);
-    border-right: 0;
-  }
-
-  .sidenav__list {
-    flex: 1;
-    flex-direction: row;
-    padding: 4px 8px;
-  }
-
-  .sidenav__list > li {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .sidenav__link.is-active::before {
-    top: -4px;
-    bottom: auto;
-    left: 25%;
-    right: 25%;
-    width: auto;
-    height: 3px;
-    border-radius: 0 0 2px 2px;
-  }
-
-  .sidenav__foot {
-    flex-direction: row;
-    padding: 4px 8px;
-    border-top: 0;
-    border-left: 1px solid var(--border);
   }
 
   .page {

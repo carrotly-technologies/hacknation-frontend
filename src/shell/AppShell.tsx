@@ -1,7 +1,20 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { BookOpen, Compass, Ellipsis, LogOut, RotateCcw, TableProperties, UserCog, Users } from 'lucide-react'
-import { NavLink, Outlet, useLocation } from 'react-router'
-import { resetDemo } from '../api/cases'
+import {
+  BookOpen,
+  Compass,
+  Ellipsis,
+  LogOut,
+  type LucideIcon,
+  Menu,
+  RotateCcw,
+  TableProperties,
+  UserCog,
+  Users,
+  X,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, Outlet, useLocation } from 'react-router'
+import { resetDemo, type Role } from '../api/cases'
 import { ApiStatus } from '../components/ApiStatus'
 import { UserMenu } from '../components/ui'
 import { ROLE_LABEL, useAuth, useMe } from '../lib/useAuth'
@@ -11,6 +24,30 @@ export function AppShell() {
   const { signOut } = useAuth()
   const location = useLocation()
   const qc = useQueryClient()
+  // Below 1024px the links live under a "Menu" button (CSS hides the button on wider screens)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Escape closes and returns focus to "Menu"; a click outside the menu (and its button) closes
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setMenuOpen(false)
+      menuBtnRef.current?.focus()
+    }
+    const onPointer = (e: PointerEvent) => {
+      const t = e.target as Node
+      if (!menuRef.current?.contains(t) && !menuBtnRef.current?.contains(t)) setMenuOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onPointer)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onPointer)
+    }
+  }, [menuOpen])
 
   const onReset = async () => {
     if (!window.confirm('Przywrócić dane demonstracyjne do stanu początkowego?')) return
@@ -34,6 +71,56 @@ export function AppShell() {
           <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
           <span className="topbar__product">Kompas kompetencji</span>
         </div>
+
+        <button
+          type="button"
+          ref={menuBtnRef}
+          className="topbar__menu-btn"
+          aria-expanded={menuOpen}
+          aria-controls="topbar-menu"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          {menuOpen ? (
+            <X size={18} strokeWidth={1.75} aria-hidden="true" />
+          ) : (
+            <Menu size={18} strokeWidth={1.75} aria-hidden="true" />
+          )}
+          <span>Menu</span>
+        </button>
+
+        <div
+          id="topbar-menu"
+          ref={menuRef}
+          className={`topbar__menu ${menuOpen ? 'is-open' : ''}`}
+          // close the menu once a link is chosen
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('a')) setMenuOpen(false)
+          }}
+        >
+          <nav className="topnav" aria-label="Nawigacja główna">
+            <ul className="topnav__list">
+              {navItems(me.role).map(({ to, label, Icon, match }) => {
+                const active = match.some((p) => isUnder(location.pathname, p))
+                return (
+                  <li key={to}>
+                    <Link to={to} className={`topnav__link ${active ? 'is-active' : ''}`} aria-current={active ? 'page' : undefined}>
+                      <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+                      <span>{label}</span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+          <div className="topbar__tools">
+            <button type="button" className="topbar__tool" onClick={onReset} title="Przywróć dane demonstracyjne">
+              <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
+              <span>Reset</span>
+            </button>
+            <ApiStatus />
+          </div>
+        </div>
+
         <div className="topbar__right">
           <UserMenu
             name={me.name}
@@ -44,54 +131,6 @@ export function AppShell() {
         </div>
       </header>
 
-      <nav className="sidenav" aria-label="Nawigacja główna">
-        <ul className="sidenav__list">
-          {me.role === 'SUPERVISOR' && (
-            <li>
-              <NavLink to="/zespol" className={({ isActive }) => navCls(isActive || location.pathname.startsWith('/teczka'))}>
-                <Users size={20} strokeWidth={1.75} aria-hidden="true" />
-                <span title="Mój zespół">Mój zespół</span>
-              </NavLink>
-            </li>
-          )}
-          {me.role === 'HR' && (
-            <li>
-              <NavLink to="/hr" className={({ isActive }) => navCls(isActive)}>
-                <TableProperties size={20} strokeWidth={1.75} aria-hidden="true" />
-                <span title="Monitoring">Monitoring</span>
-              </NavLink>
-            </li>
-          )}
-          {me.role === 'ADMIN' && (
-            <li>
-              <NavLink to="/admin/uzytkownicy" className={({ isActive }) => navCls(isActive)}>
-                <UserCog size={20} strokeWidth={1.75} aria-hidden="true" />
-                <span title="Użytkownicy">Użytkownicy</span>
-              </NavLink>
-            </li>
-          )}
-          <li>
-            <NavLink to="/baza-wiedzy" className={({ isActive }) => navCls(isActive)}>
-              <BookOpen size={20} strokeWidth={1.75} aria-hidden="true" />
-              <span title="Baza wiedzy">Baza wiedzy</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/wiecej" className={() => navCls(MORE_PATHS.some((p) => location.pathname.startsWith(p)))}>
-              <Ellipsis size={20} strokeWidth={1.75} aria-hidden="true" />
-              <span title="Więcej">Więcej</span>
-            </NavLink>
-          </li>
-        </ul>
-        <div className="sidenav__foot">
-          <button type="button" className="sidenav__tool" onClick={onReset} title="Przywróć dane demonstracyjne">
-            <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
-            <span>Reset</span>
-          </button>
-          <ApiStatus />
-        </div>
-      </nav>
-
       <main className="main" id="main" tabIndex={-1}>
         <Outlet />
       </main>
@@ -101,7 +140,25 @@ export function AppShell() {
 
 const MORE_PATHS = ['/wiecej', '/uslugi', '/ui', '/wniosek-demo']
 
-const navCls = (active: boolean) => `sidenav__link ${active ? 'is-active' : ''}`
+type NavItem = { to: string; label: string; Icon: LucideIcon; match: string[] }
+
+/** Main links for a role; `match` lists the paths that highlight the link (a case file belongs to "Mój zespół"). */
+function navItems(role: Role): NavItem[] {
+  const byRole: Partial<Record<Role, NavItem>> = {
+    SUPERVISOR: { to: '/zespol', label: 'Mój zespół', Icon: Users, match: ['/zespol', '/teczka'] },
+    HR: { to: '/hr', label: 'Monitoring', Icon: TableProperties, match: ['/hr'] },
+    ADMIN: { to: '/admin/uzytkownicy', label: 'Użytkownicy', Icon: UserCog, match: ['/admin'] },
+  }
+  const own = byRole[role]
+  return [
+    ...(own ? [own] : []),
+    { to: '/baza-wiedzy', label: 'Baza wiedzy', Icon: BookOpen, match: ['/baza-wiedzy'] },
+    { to: '/wiecej', label: 'Więcej', Icon: Ellipsis, match: MORE_PATHS },
+  ]
+}
+
+/** `path` is `base` or below it (`/teczka/c-001` is under `/teczka`, `/uiX` is not under `/ui`). */
+const isUnder = (path: string, base: string) => path === base || path.startsWith(`${base}/`)
 
 function officeLabel(name: string | undefined) {
   const n = name ?? 'Ministerstwo Cyfryzacji'
