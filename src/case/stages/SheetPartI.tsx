@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import type { PartI } from '../../api/cases'
-import type { CompetencyModel } from '../../api/kompas'
 import { Button, ErrorSummary, Field, InfoList, InfoRow, InlineAlert, TextArea, TextInput, type FormError } from '../../components/ui'
 import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
-import { DEMO_TODAY, fmtDate } from '../../lib/format'
-import { competencyName, findCompetency } from '../../lib/model'
+import { fmtDate } from '../../lib/format'
+import { competencyName } from '../../lib/model'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { PartHeading, PartSection, WizardActions } from './SheetWizardCommon'
@@ -26,17 +25,6 @@ const topicId = (k: TopicKey) => `topic-${k}`
 const expectId = (c: string) => `expect-${c}`
 const DUE_ID = 'assessment-due'
 
-function defaultExpectation(model: CompetencyModel, id: string) {
-  const c = findCompetency(model, id)
-  return c ? c.indicators.map((i) => i.levels['5']).join(' ') : ''
-}
-
-function addMonthsIso(iso: string, n: number) {
-  const d = new Date(`${iso}T00:00:00Z`)
-  d.setUTCMonth(d.getUTCMonth() + n)
-  return d.toISOString().slice(0, 10)
-}
-
 /** Part I: office, assessed person and evaluator (read only), the opening talk, expectations and the due date. */
 export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { onNext: () => void }) {
   const patch = usePatchCase(detail.id)
@@ -48,10 +36,11 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
   const afterNegative = detail.cycleLabel.toLowerCase().includes('negatyw')
 
   const [topics, setTopics] = useState(detail.partI.topics)
+  // Every field the evaluator types starts empty; only what is already saved in the case is shown.
   const [expect, setExpect] = useState<Record<string, string>>(() =>
-    Object.fromEntries(criteria.all.map((c) => [c, detail.partI.expectations[c] ?? defaultExpectation(model, c)])),
+    Object.fromEntries(criteria.all.map((c) => [c, detail.partI.expectations[c] ?? ''])),
   )
-  const [due, setDue] = useState(detail.partI.assessmentDue ?? addMonthsIso(DEMO_TODAY, afterNegative ? 6 : 24))
+  const [due, setDue] = useState(detail.partI.assessmentDue ?? '')
   const [errors, setErrors] = useState<FormError[]>([])
   const errorFor = (id: string) => errors.find((e) => e.id === id)?.message
 
@@ -60,6 +49,9 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
       id: topicId(t.key),
       message: `Wpisz notatkę do zagadnienia „${t.title}”`,
     }))
+    for (const c of criteria.all) {
+      if (!expect[c]?.trim()) e.push({ id: expectId(c), message: `Wpisz oczekiwania do kryterium „${competencyName(model, c)}”` })
+    }
     if (!due) e.push({ id: DUE_ID, message: 'Wpisz termin sporządzenia oceny' })
     return e
   }
@@ -163,7 +155,7 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
 
       <PartSection
         title="Oczekiwania wobec kryteriów"
-        hint="Domyślnie opis poziomu „na poziomie oczekiwań” z modelu kompetencji. Dostosuj go do stanowiska: to punkt odniesienia przy ocenie."
+        hint="Opisz, czego oczekujesz w każdym kryterium na tym stanowisku: to punkt odniesienia przy ocenie."
       >
         <div className={s.fields}>
           {criteria.all.map((c) => (
@@ -178,6 +170,7 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
                   </span>
                 </>
               }
+              error={errorFor(expectId(c))}
             >
               {(p) => (
                 <TextArea {...p} rows={3} readOnly={!editable} value={expect[c] ?? ''} onChange={(e) => setExpect((v) => ({ ...v, [c]: e.target.value }))} />
@@ -190,10 +183,10 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
       <Field
         id={DUE_ID}
         label="Termin sporządzenia oceny"
-        hint={`Domyślnie ${afterNegative ? '6 miesięcy (art. 81 ust. 9 ustawy)' : '24 miesiące (art. 81 ust. 1 ustawy)'}. Po zatwierdzeniu części I zmiana tylko w trybie zmiany terminu.`}
+        hint={`Wpisz datę (dd.mm.rrrr). Ocenę sporządza się ${afterNegative ? 'po 6 miesiącach (art. 81 ust. 9 ustawy)' : 'co 24 miesiące (art. 81 ust. 1 ustawy)'}. Po zatwierdzeniu części I zmiana tylko w trybie zmiany terminu.`}
         error={errorFor(DUE_ID)}
       >
-        {(p) => <TextInput {...p} type="date" width={20} readOnly={!editable} value={due} onChange={(e) => setDue(e.target.value)} />}
+        {(p) => <TextInput {...p} type="date" width={20} placeholder="dd.mm.rrrr" readOnly={!editable} value={due} onChange={(e) => setDue(e.target.value)} />}
       </Field>
 
       {/* Only the actions stay here; the confirmation status is shown at the top of part I. */}

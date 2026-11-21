@@ -297,7 +297,7 @@ function seed(): Rec[] {
       path: 'PERIODIC', sheetId: 'C', cycleLabel: 'Ponowna ocena po ocenie negatywnej', stage: 'OPENING_TALK',
       cycleStart: '2026-11-18', afterNegative: true, ospId: 'osp-dsi-wwi-5',
       done: { OSP_ANALYSIS: '2026-11-19' },
-      partI: { ...emptyPartI(), assessmentDue: '2027-05-19' },
+      partI: emptyPartI(),
       history: [
         { date: '2026-11-18', text: 'Sporządzono ocenę okresową negatywną. Ponowna ocena po 6 miesiącach od zapoznania (art. 81 ust. 9 ustawy).' },
         { date: '2026-11-19', text: 'Oceniany zapoznał się z oceną. Analiza OSP: arkusz C, bez kryteriów dodatkowych.' },
