@@ -15,10 +15,10 @@ import {
   type FormError,
   type FormProgressStep,
 } from '../../components/ui'
-import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
+import { useOpenAssessmentForm, usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate, sentenceCase } from '../../lib/format'
 import { competencyName, findCompetency } from '../../lib/model'
-import { allows, caseUrl, isPartIIDraft, viewStage } from '../../lib/stages'
+import { caseUrl, isPartIIDraft, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentStage.module.css'
 import { MutationError } from './common'
@@ -53,6 +53,7 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
   const idx = all.indexOf(selected)
   const competency = findCompetency(model, selected)
   const patch = usePatchCase(detail.id)
+  const open = useOpenAssessmentForm(detail)
   // Indicator ratings are a draft until the evaluator signs, also before the assessment talk
   // (hacknation-backend/notatki/decyzje.md, 2026-11-21).
   const locked = !!detail.signedByEvaluatorOn
@@ -136,7 +137,7 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
               Ocena została podpisana {fmtDate(detail.signedByEvaluatorOn)}.
             </InlineAlert>
           ) : (
-            draft && <DraftStatus detail={detail} />
+            draft && <DraftStatus detail={detail} error={open.error} />
           )
         }
       >
@@ -226,33 +227,24 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 /* ------------------------------------------------------------------ */
 
 /**
- * Before the assessment talk the form is filled as a draft; the talk itself starts here, in the step where it
- * takes place. Signing stays available only after the talk (the backend's `availableActions`).
+ * Before part I is confirmed and acknowledged the form is filled as a draft. During the assessment period the form
+ * opens itself (`useOpenAssessmentForm` in AssessmentStage). Signing stays available only once it is open (the
+ * backend's `availableActions`).
  */
-function DraftStatus({ detail }: { detail: CaseDetail }) {
-  const act = useCaseAction(detail.id)
+function DraftStatus({ detail, error }: { detail: CaseDetail; error: unknown }) {
   const due = detail.partI.assessmentDue
   return (
     <InlineAlert tone="info" title="Wersja robocza">
       <p>
-        Formularz możesz wypełnić roboczo już teraz. Rozmowę oceniającą przeprowadź na koniec okresu oceny
-        {due ? ` (termin oceny: ${fmtDate(due)})` : ''}, a po niej wprowadź poprawki i zatwierdź ocenę.
+        Formularz możesz wypełnić roboczo już teraz{due ? ` (termin oceny: ${fmtDate(due)})` : ''}. Poprawki wprowadzisz aż do
+        zatwierdzenia oceny.
       </p>
       {detail.currentStage === 'OBSERVATION' ? (
-        <div className="btn-row">
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')}
-            onClick={() => act.mutate('START_ASSESSMENT')}
-          >
-            Rozpocznij rozmowę oceniającą
-          </button>
-        </div>
+        <p>Otwieranie formularza oceny kompetencji…</p>
       ) : (
-        <p>Rozmowę oceniającą rozpoczniesz po zatwierdzeniu części I i potwierdzeniu jej przez ocenianego.</p>
+        <p>Ocenę zatwierdzisz po zatwierdzeniu części I w kroku „Formularz oceny” i potwierdzeniu jej przez ocenianego.</p>
       )}
-      <MutationError error={act.error} />
+      <MutationError error={error} />
     </InlineAlert>
   )
 }

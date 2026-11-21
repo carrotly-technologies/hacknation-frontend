@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
 import {
   addObservation,
@@ -10,7 +11,7 @@ import {
   type CasePatch,
   type Observation,
 } from '../api/cases'
-import { caseUrl, viewStage } from './stages'
+import { allows, caseUrl, viewStage } from './stages'
 
 export const caseKey = (id: string) => ['case', id] as const
 
@@ -81,8 +82,11 @@ export function usePatchCase(id: string) {
   })
 }
 
-/** Runs a workflow action; when the case moves to another stage, the view follows it. */
-export function useCaseAction(id: string) {
+/**
+ * Runs a workflow action; when the case moves to another stage, the view follows it. `follow: false` for callers
+ * that decide where to go themselves (step 4 stays open even when its criteria are all decided → JUSTIFICATION).
+ */
+export function useCaseAction(id: string, { follow = true }: { follow?: boolean } = {}) {
   const qc = useQueryClient()
   const navigate = useNavigate()
   return useMutation({
@@ -91,15 +95,30 @@ export function useCaseAction(id: string) {
       const prev = qc.getQueryData<CaseDetail>(caseKey(id))
       qc.setQueryData(caseKey(id), data)
       // Only when the new stage has its own view: e.g. OPENING_TALK → OBSERVATION stays in the sheet wizard (?czesc=…).
-      // Not when the view is already open, e.g. step 4 opening its own form: no second history entry.
-      const target = caseUrl(id, viewStage(data.stages, data.currentStage))
-      if (prev && viewStage(data.stages, prev.currentStage) !== viewStage(data.stages, data.currentStage) && window.location.pathname !== target) {
-        navigate(target)
+      if (follow && prev && viewStage(data.stages, prev.currentStage) !== viewStage(data.stages, data.currentStage)) {
+        navigate(caseUrl(id, viewStage(data.stages, data.currentStage)))
       }
       qc.invalidateQueries({ queryKey: ['team'] })
       qc.invalidateQueries({ queryKey: ['hr'] })
     },
   })
+}
+
+/**
+ * Step 4 ("Formularz oceny kompetencji") opens itself: the assessment period has no screen of its own, so entering
+ * step 4 during it runs START_ASSESSMENT once. Signing still waits for it (the backend's `availableActions`).
+ */
+export function useOpenAssessmentForm(detail: CaseDetail) {
+  const act = useCaseAction(detail.id, { follow: false })
+  const { mutate } = act
+  const started = useRef(false)
+  const due = detail.currentStage === 'OBSERVATION' && allows(detail, 'START_ASSESSMENT')
+  useEffect(() => {
+    if (!due || started.current) return
+    started.current = true
+    mutate('START_ASSESSMENT')
+  }, [due, mutate])
+  return act
 }
 
 export function useAddObservation(id: string) {

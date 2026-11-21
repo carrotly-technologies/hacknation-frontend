@@ -1,11 +1,7 @@
-import { useEffect, useRef } from 'react'
 import { Link } from 'react-router'
-import { errorMessage } from '../../api/client'
 import type { CaseDetail, StageId } from '../../api/cases'
-import { LoadingState } from '../../components/QueryState'
 import { InlineAlert } from '../../components/ui'
-import { useCaseAction } from '../../lib/caseQueries'
-import { allows, caseUrl, stageTitle, viewStage } from '../../lib/stages'
+import { caseUrl, stageTitle } from '../../lib/stages'
 import { StageHeader } from './common'
 
 const WHAT: Partial<Record<StageId, string>> = {
@@ -24,9 +20,6 @@ const WHAT: Partial<Record<StageId, string>> = {
 export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: StageId }) {
   const info = detail.stages.find((s) => s.id === stage)!
   const current = detail.stages.find((s) => s.id === detail.currentStage)!
-  if (stage === 'ASSESSMENT' && detail.currentStage === 'OBSERVATION' && allows(detail, 'START_ASSESSMENT')) {
-    return <OpenAssessmentForm detail={detail} />
-  }
   return (
     <div className="stage">
       <StageHeader
@@ -41,40 +34,6 @@ export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: Sta
       <div className="stage-pad">
         <Link className="btn btn--primary" to={caseUrl(detail.id, detail.currentStage)}>
           Przejdź do bieżącego etapu
-        </Link>
-      </div>
-    </div>
-  )
-}
-
-/**
- * The assessment period has no screen of its own (step 3 shows only the official sheet). Entering step 4 during it
- * opens "Formularz oceny kompetencji" right away (START_ASSESSMENT); the case view then shows the form itself.
- */
-function OpenAssessmentForm({ detail }: { detail: CaseDetail }) {
-  const info = detail.stages.find((s) => s.id === 'ASSESSMENT')!
-  const { mutate, error } = useCaseAction(detail.id)
-  const started = useRef(false)
-  useEffect(() => {
-    if (started.current) return
-    started.current = true
-    mutate('START_ASSESSMENT')
-  }, [mutate])
-
-  if (!error) return <LoadingState label="Otwieranie formularza oceny kompetencji…" />
-  return (
-    <div className="stage">
-      <StageHeader
-        title={stageTitle(info)}
-        status={
-          <InlineAlert tone="error" live title="Nie udało się otworzyć formularza oceny kompetencji">
-            {errorMessage(error)}
-          </InlineAlert>
-        }
-      />
-      <div className="stage-pad">
-        <Link className="btn btn--primary" to={caseUrl(detail.id, viewStage(detail.stages, detail.currentStage))}>
-          Wróć do formularza oceny
         </Link>
       </div>
     </div>

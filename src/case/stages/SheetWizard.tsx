@@ -67,7 +67,7 @@ export function SheetWizard(props: StageProps) {
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const part = readPart(params.get('czesc')) ?? 1
-  const act = useCaseAction(detail.id)
+  const act = useCaseAction(detail.id, { follow: false })
   const [partINotice, setPartINotice] = useState(false)
 
   useEffect(() => {
@@ -97,8 +97,7 @@ export function SheetWizard(props: StageProps) {
       let current = detail
       if (current.currentStage === 'OPENING_TALK') current = await act.mutateAsync('EMPLOYEE_ACK_PART_I')
       if (current.currentStage === 'OBSERVATION') await act.mutateAsync('START_ASSESSMENT')
-      // useCaseAction already follows the case to step 4 when the stage changes; no second history entry.
-      if (window.location.pathname !== target) navigate(target)
+      navigate(target)
     } catch {
       // shown by StageError in part III
     }
