@@ -56,9 +56,6 @@ export function ObservationStage({ detail, model, criteria, stage }: StageProps)
     <div className="stage">
       <StageHeader
         title={info.name}
-        legal={info.legalBasis}
-        deadline={done ? null : info.deadline}
-        lead="Zapisuj konkretne zachowania: sytuacja, działanie, rezultat. Obserwacje pojawią się w rubryce przy wskaźnikach, których dotyczą — to dowody do oceny zamiast ogólnego wrażenia."
         actions={
           !done && (
             <button type="button" className="btn" onClick={() => setFormOpen((v) => !v)} aria-expanded={formOpen}>

@@ -25,10 +25,7 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
   const periodic = (sheets.data ?? []).filter((x) => x.kind === 'PERIODIC')
 
   return (
-    <StageLayout
-      info={info}
-      lead="System zaproponował formularz na podstawie opisu stanowiska. Przejrzyj pytania kompetencyjne i zaakceptuj formularz albo wprowadź poprawki."
-    >
+    <StageLayout info={info}>
       <Field label="Formularz oceny" className={s.sheetField}>
         {(control) => (
           <>

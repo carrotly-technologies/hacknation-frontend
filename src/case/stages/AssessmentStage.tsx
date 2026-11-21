@@ -41,7 +41,7 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
   if (!competency) {
     return (
       <div className="stage">
-        <StageHeader title={info.name} legal={info.legalBasis} />
+        <StageHeader title={info.name} />
         <p className="stage-pad muted">Brak kryteriów do oceny — najpierw ustal arkusz i kryteria w części I.</p>
       </div>
     )
@@ -57,16 +57,7 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 
   return (
     <div className="stage stage--assess">
-      <StageHeader
-        title={info.name}
-        legal={info.legalBasis}
-        deadline={info.status === 'DONE' ? null : info.deadline}
-        lead={
-          isFirst
-            ? 'Oceń 5 elementów w skali 3 / 5 / 7 pkt. Przy każdym wskaźniku wybierz zachowanie, które najlepiej opisuje to, co obserwowałeś.'
-            : 'Przy każdym wskaźniku wybierz zachowanie najbliższe temu, co obserwowałeś. Kolumna „na poziomie oczekiwań” to standard.'
-        }
-      />
+      <StageHeader title={info.name} />
 
       <CriteriaNav detail={detail} model={model} criteria={criteria} selected={selected} onPick={go} />
 

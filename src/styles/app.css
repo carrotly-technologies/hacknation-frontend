@@ -533,23 +533,6 @@
   line-height: var(--leading-tight);
 }
 
-.stage-head__meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 14px;
-  margin-top: 4px;
-  font-size: var(--text-sm);
-}
-
-.stage-head__lead {
-  max-width: 760px;
-  margin-top: 8px;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  line-height: var(--leading);
-}
-
 .stage-head__actions {
   display: flex;
   flex: none;

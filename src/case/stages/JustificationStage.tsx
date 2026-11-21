@@ -25,12 +25,7 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
 
   return (
     <div className="stage">
-      <StageHeader
-        title={info.name}
-        legal={info.legalBasis}
-        deadline={info.status === 'DONE' ? null : info.deadline}
-        lead="Uzasadnienie jest obowiązkowe przy ocenie negatywnej, a przy pozytywnej fakultatywne. Wnioski do indywidualnego programu rozwoju zawodowego wpisujesz zawsze."
-      />
+      <StageHeader title={info.name} />
 
       {!r.complete && (
         <div className="stage-pad stage-pad--tight">

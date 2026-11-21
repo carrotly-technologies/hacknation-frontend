@@ -49,7 +49,6 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
   return (
     <StageLayout
       info={info}
-      lead="Przygotowanie przed rozmową rozpoczynającą, bez udziału pracownika. System czyta opis stanowiska i proponuje formularz oceny. Decyzję podejmujesz Ty w następnym kroku."
       actions={
         done ? null : (
           <Button loading={patch.isPending || act.isPending} disabled={!sheetId || !allows(detail, 'ACCEPT_OSP_ANALYSIS')} onClick={accept}>
@@ -60,9 +59,6 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
     >
       <Card as="h3" title="Opis stanowiska">
         <div className={s.cardContent}>
-          <p className={s.kicker}>
-            {osp.title} · {osp.source}
-          </p>
           <p className={s.text}>{osp.purpose}</p>
           <p className={s.text}>Liczba podległych pracowników: {osp.subordinates}</p>
         </div>

@@ -21,7 +21,7 @@ export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: Sta
   const current = detail.stages.find((s) => s.id === detail.currentStage)!
   return (
     <div className="stage">
-      <StageHeader title={stageTitle(info)} legal={info.legalBasis} deadline={info.deadline} />
+      <StageHeader title={stageTitle(info)} />
       <div className="stage-pad">
         <div className="notice notice--info" style={{ maxWidth: 640 }}>
           <div>

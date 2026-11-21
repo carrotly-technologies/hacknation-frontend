@@ -23,15 +23,7 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
 
   return (
     <div className="stage">
-      <StageHeader
-        title={info.name}
-        legal={info.legalBasis}
-        lead={
-          isFirst
-            ? 'Arkusz wypełnił się z decyzji podjętych w teczce. Oryginał wraz ze sprawozdaniem trafia do akt osobowych, kopia do ocenianego.'
-            : 'Arkusz wypełnił się z decyzji podjętych w teczce. Od dnia zapoznania oceniany ma 7 dni na sprzeciw do dyrektora generalnego urzędu; nowy cykl oceny rusza niezależnie od sprzeciwu.'
-        }
-      />
+      <StageHeader title={info.name} />
       <div className="stage-pad">
         <div className="doc-flow">
           <ol className="steps">

@@ -26,12 +26,7 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
 
   return (
     <div className="stage">
-      <StageHeader
-        title={info.name}
-        legal={info.legalBasis}
-        deadline={info.status === 'DONE' ? null : info.deadline}
-        lead="Pierwsza ocena jest pozytywna tylko wtedy, gdy łącznie: egzamin zaliczony (lub nie dotyczy), sprawozdanie złożone w terminie, najwyżej jedna ocena 3 pkt i ocena łączna co najmniej 5 pkt."
-      />
+      <StageHeader title={info.name} />
       <div className="stage-pad">
         <div className="cond-grid">
           <fieldset className="cond" disabled={locked}>

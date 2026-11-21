@@ -31,7 +31,7 @@ export function IntroTalkStage({ detail, stage }: StageProps) {
 
   return (
     <div className="stage">
-      <StageHeader title={info.name} legal={info.legalBasis} deadline={done ? null : info.deadline} lead="Rozmowę wstępną przeprowadza bezpośredni przełożony w ciągu 21 dni od nawiązania stosunku pracy. Kopię części I i II arkusza otrzymuje oceniany." />
+      <StageHeader title={info.name} />
       <div className="stage-pad stage-pad--narrow">
         <ol className="topics">
           {INTRO_ITEMS.map((t, i) => (
@@ -74,7 +74,7 @@ export function ReportStage({ detail, stage }: StageProps) {
   const fc = detail.firstConditions
   return (
     <div className="stage">
-      <StageHeader title={info.name} legal={info.legalBasis} deadline={done ? null : info.deadline} lead="Pracownik składa sprawozdanie z wykonywania obowiązków w wyznaczonym terminie. Złożenie w terminie jest warunkiem pozytywnej oceny." />
+      <StageHeader title={info.name} />
       <div className="stage-pad stage-pad--narrow">
         <dl className="dl dl--lg">
           <dt>Zatrudnienie</dt>

@@ -51,12 +51,7 @@ export function OpeningTalkStage({ detail, model, criteria, stage }: StageProps)
 
   return (
     <div className="stage">
-      <StageHeader
-        title={info.name}
-        legal={info.legalBasis}
-        deadline={info.status === 'DONE' ? null : info.deadline}
-        lead="Rozmowa rozpoczyna okres oceny. Omówcie cztery zagadnienia z §5 ust. 1, ustal oczekiwania i termin oceny. Zatwierdzenie części I blokuje kryteria."
-      />
+      <StageHeader title={info.name} />
       <div className="stage-pad stage-pad--narrow">
         {afterNegative && (
           <p className="notice notice--warn" style={{ marginBottom: 16 }}>
