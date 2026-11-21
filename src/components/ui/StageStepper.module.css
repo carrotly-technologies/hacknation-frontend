@@ -69,6 +69,7 @@
 .label {
   min-width: 0;
   overflow-wrap: anywhere;
+  text-decoration: none;
 }
 
 .marker {
@@ -110,11 +111,9 @@
   background: var(--accent-subtle);
 }
 
-/* the step shown on the page: bold label + bar under it (not colour alone) */
+/* the step shown on the page: bolder label + aria-current (not colour alone), no underline */
 .active .label {
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
+  font-weight: var(--weight-bold);
 }
 
 a.step:hover::before {
@@ -126,8 +125,14 @@ a.todo:hover::before {
   filter: none;
 }
 
-a.step:hover .label {
-  text-decoration: underline;
+/* no underline in any link state; hover is signalled by the fill above */
+a.step:hover,
+a.step:focus-visible,
+a.step:visited,
+a.step:hover .label,
+a.step:focus-visible .label,
+a.step:visited .label {
+  text-decoration: none;
 }
 
 /* clip-path cuts a box-shadow ring, so the focus ring is drawn inside */
