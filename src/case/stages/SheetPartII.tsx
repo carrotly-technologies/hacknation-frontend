@@ -45,11 +45,16 @@ const RESULT_OPTIONS = [
 
 const samePrevious = (a: PreviousAssessment, b: PreviousAssessment) => a.result === b.result && a.level === b.level && a.date === b.date
 
-/** Part II: the assessment itself. Editable only while the backend is in part II (assessment talk, justification). */
+/**
+ * Part II: the assessment itself. Filled as a draft from the start (Poradnik, etap II: „wypełniony na roboczo
+ * arkusz oceny” before the assessment talk), corrected after the talk and locked by the evaluator's signature.
+ * The backend decides (`partIIEditable` in patch.rules.ts); decision log: hacknation-backend/notatki/decyzje.md.
+ */
 export function SheetPartII({ detail, model, criteria, onBack, onNext }: StageProps & { onBack: () => void; onNext: () => void }) {
   const patch = usePatchCase(detail.id)
   const signed = detail.signedByEvaluatorOn
-  const editable = !signed && (detail.currentStage === 'ASSESSMENT' || detail.currentStage === 'JUSTIFICATION')
+  // A draft until the evaluator signs (hacknation-backend/notatki/decyzje.md, 2026-11-21).
+  const editable = !signed
   const [justification, setJustification] = useState(detail.justification)
   const [iprz, setIprz] = useState(detail.iprz)
   const [previous, setPrevious] = useState<PreviousAssessment>(detail.previousAssessment ?? EMPTY_PREVIOUS)

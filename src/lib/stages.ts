@@ -86,11 +86,27 @@ const EVAL_GROUP: StageId[][] = [
   ['FIRST_ASSESSMENT', 'FIRST_CONDITIONS'],
 ]
 
-/** A stage can be worked on when done/current, or when it shares the evaluation step with the current one. */
+/** Periodic stages before the assessment talk, at which part II is already filled as a draft. */
+const DRAFT_STAGES: StageId[] = ['SHEET_PROPOSAL', 'OPENING_TALK', 'OBSERVATION']
+
+/**
+ * Part II of a periodic sheet is drafted before the assessment talk (Poradnik, etap II: „wypełniony na roboczo
+ * arkusz oceny”) and stays editable until the evaluator signs. The backend enforces it (`partIIEditable`);
+ * decision log: hacknation-backend/notatki/decyzje.md, 2026-11-21.
+ */
+export function isPartIIDraft(detail: CaseDetail): boolean {
+  return detail.path === 'PERIODIC' && !!detail.sheetId && !detail.signedByEvaluatorOn && DRAFT_STAGES.includes(detail.currentStage)
+}
+
+/**
+ * A stage can be worked on when done/current, when it shares the evaluation step with the current one, or
+ * (the competency form) as a draft before the assessment talk.
+ */
 export function canOpenStage(detail: CaseDetail, stage: StageId): boolean {
   const info = detail.stages.find((s) => s.id === stage)
   if (!info) return false
   if (info.status === 'DONE' || info.status === 'CURRENT') return true
+  if (stage === 'ASSESSMENT' && isPartIIDraft(detail)) return true
   return EVAL_GROUP.some((g) => g.includes(stage) && g.includes(detail.currentStage))
 }
 

@@ -40,8 +40,8 @@ export function SheetPartIII({ detail, criteria, onBack, onNext }: StageProps & 
   const template = criteria.sheet?.template
   const request = detail.promotionRequest
   const signed = detail.signedByEvaluatorOn
-  // The same window as part II: the backend accepts the request until the evaluator signs the assessment.
-  const editable = !signed && (detail.currentStage === 'ASSESSMENT' || detail.currentStage === 'JUSTIFICATION')
+  // The same window as part II: a draft until the evaluator signs (hacknation-backend/notatki/decyzje.md, 2026-11-21).
+  const editable = !signed
   const attached = request.attached === 'YES'
   const name = `${detail.person.firstName} ${detail.person.lastName}`
 

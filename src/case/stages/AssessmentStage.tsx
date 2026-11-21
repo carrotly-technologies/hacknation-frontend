@@ -15,12 +15,13 @@ import {
   type FormError,
   type FormProgressStep,
 } from '../../components/ui'
-import { usePatchCase } from '../../lib/caseQueries'
+import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate, sentenceCase } from '../../lib/format'
 import { competencyName, findCompetency } from '../../lib/model'
-import { caseUrl } from '../../lib/stages'
+import { allows, caseUrl, isPartIIDraft, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentStage.module.css'
+import { MutationError } from './common'
 import { ResultBar } from './ResultBar'
 import { StageError, StageLayout } from './StageLayout'
 import layout from './StageLayout.module.css'
@@ -53,7 +54,10 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
   const idx = all.indexOf(selected)
   const competency = findCompetency(model, selected)
   const patch = usePatchCase(detail.id)
+  // Indicator ratings are a draft until the evaluator signs, also before the assessment talk
+  // (hacknation-backend/notatki/decyzje.md, 2026-11-21).
   const locked = !!detail.signedByEvaluatorOn
+  const draft = isPartIIDraft(detail)
   const info = detail.stages.find((x) => x.id === stage)!
   const isFirst = detail.path === 'FIRST'
   const scale = criteria.scale
@@ -115,6 +119,8 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
       if (errs.length) return
     }
     if (idx < all.length - 1) go(all[idx + 1])
+    // Before the assessment talk the next step is not open yet: back to the stage in progress.
+    else if (draft) navigate(caseUrl(detail.id, viewStage(detail.stages, detail.currentStage)))
     else navigate(caseUrl(detail.id, isFirst ? 'FIRST_CONDITIONS' : 'JUSTIFICATION'))
   }
 
@@ -126,10 +132,12 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
       <StageLayout
         info={info}
         status={
-          locked && (
+          locked ? (
             <InlineAlert tone="info" title="Formularz jest tylko do odczytu">
               Ocena została podpisana {fmtDate(detail.signedByEvaluatorOn)}.
             </InlineAlert>
+          ) : (
+            draft && <DraftStatus detail={detail} />
           )
         }
       >
@@ -219,6 +227,38 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 }
 
 /* ------------------------------------------------------------------ */
+
+/**
+ * Before the assessment talk the form is filled as a draft; the talk itself starts here, in the step where it
+ * takes place. Signing stays available only after the talk (the backend's `availableActions`).
+ */
+function DraftStatus({ detail }: { detail: CaseDetail }) {
+  const act = useCaseAction(detail.id)
+  const due = detail.partI.assessmentDue
+  return (
+    <InlineAlert tone="info" title="Wersja robocza">
+      <p>
+        Formularz możesz wypełnić roboczo już teraz. Rozmowę oceniającą przeprowadź na koniec okresu oceny
+        {due ? ` (termin oceny: ${fmtDate(due)})` : ''}, a po niej wprowadź poprawki i zatwierdź ocenę.
+      </p>
+      {detail.currentStage === 'OBSERVATION' ? (
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--primary"
+            disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')}
+            onClick={() => act.mutate('START_ASSESSMENT')}
+          >
+            Rozpocznij rozmowę oceniającą
+          </button>
+        </div>
+      ) : (
+        <p>Rozmowę oceniającą rozpoczniesz po zatwierdzeniu części I i potwierdzeniu jej przez ocenianego.</p>
+      )}
+      <MutationError error={act.error} />
+    </InlineAlert>
+  )
+}
 
 function ObsDetails({ title, items }: { title: string; items: Observation[] }) {
   return (
