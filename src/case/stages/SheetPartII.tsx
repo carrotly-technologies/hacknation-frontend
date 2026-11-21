@@ -2,7 +2,6 @@ import { useState, type FormEvent } from 'react'
 import type { PreviousAssessment, PromotionAttached } from '../../api/cases'
 import {
   Button,
-  Checkbox,
   Dialog,
   ErrorSummary,
   Field,
@@ -24,6 +23,7 @@ import { officePlace } from '../../lib/office'
 import { liveResult } from '../../lib/result'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
+import { AckLinkSection } from './AckLinkSection'
 import { PartHeading, PartSection, WizardActions } from './SheetWizardCommon'
 import { StageError } from './StageLayout'
 import layout from './StageLayout.module.css'
@@ -331,19 +331,8 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       </PartSection>
 
       <PartSection title="Zapoznanie ocenianego z oceną">
-        {/* Read only: the assessed person confirms in the step "Dokument"; the box mirrors that action and its date. */}
-        <Checkbox
-          id="employee-acknowledgement"
-          label={template?.employeeAcknowledgement ?? 'Oceniany zapoznał się z oceną okresową'}
-          hint={
-            detail.acknowledgedOn
-              ? `Potwierdzono ${fmtDate(detail.acknowledgedOn)}, ${detail.person.firstName} ${detail.person.lastName}`
-              : 'Jeszcze nie: po zatwierdzeniu oceny'
-          }
-          checked={!!detail.acknowledgedOn}
-          disabled
-          readOnly
-        />
+        {/* The evaluator generates the link; the assessed person confirms on /zapoznanie/:token (AckPage). */}
+        <AckLinkSection detail={detail} label={template?.employeeAcknowledgement ?? 'Oceniany zapoznał się z oceną okresową'} />
       </PartSection>
 
       <StageError error={patch.error ?? sign.error} />

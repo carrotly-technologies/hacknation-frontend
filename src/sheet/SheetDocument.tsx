@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
-import type { CaseDetail } from '../api/cases'
-import type { CompetencyModel } from '../api/kompas'
+import type { AckSheetData } from '../api/ack'
 import { fmtAvg, fmtDate } from '../lib/format'
-import { competencyName, type CaseCriteria } from '../lib/model'
+import { competencyName, type CaseCriteria, type ModelNames } from '../lib/model'
 import { officePlace } from '../lib/office'
 import { BANDS } from '../lib/scale'
 
@@ -25,7 +24,11 @@ function Signatures({ cells }: { cells: { value?: ReactNode; caption: string }[]
 
 const ESIGN = '/podpisano elektronicznie/'
 
-export function SheetDocument({ detail, model, criteria }: { detail: CaseDetail; model: CompetencyModel; criteria: CaseCriteria }) {
+/** A case as the sheet prints it: the full case in the app, or the public data of the link for the assessed person. */
+type SheetData = Omit<AckSheetData, 'acknowledgedOn'> & { acknowledgedOn: string | null }
+type CompetencyModel = ModelNames
+
+export function SheetDocument({ detail, model, criteria }: { detail: SheetData; model: CompetencyModel; criteria: CaseCriteria }) {
   return detail.path === 'FIRST' ? (
     <FirstSheet detail={detail} model={model} criteria={criteria} />
   ) : (
@@ -33,7 +36,7 @@ export function SheetDocument({ detail, model, criteria }: { detail: CaseDetail;
   )
 }
 
-function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model: CompetencyModel; criteria: CaseCriteria }) {
+function PeriodicSheet({ detail, model, criteria }: { detail: SheetData; model: CompetencyModel; criteria: CaseCriteria }) {
   const p = detail.person
   const e = detail.evaluator
   const sheet = detail.sheetId ?? 'C'
@@ -335,7 +338,7 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
   )
 }
 
-function FirstSheet({ detail, model, criteria }: { detail: CaseDetail; model: CompetencyModel; criteria: CaseCriteria }) {
+function FirstSheet({ detail, model, criteria }: { detail: SheetData; model: CompetencyModel; criteria: CaseCriteria }) {
   const p = detail.person
   const e = detail.evaluator
   const fc = detail.firstConditions

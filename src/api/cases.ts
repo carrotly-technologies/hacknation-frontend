@@ -148,6 +148,11 @@ export interface CaseDetail extends CaseSummary {
   evaluation: EvaluateResponse | null
   formalCheck: FormalCheckItem[]
   signedByEvaluatorOn: string | null
+  /** First handover to the assessed person (SEND_FOR_ACK). */
+  sentForAckOn?: string | null
+  /** "/zapoznanie/{token}" for the case's evaluator until the assessed person confirms; a frontend path. */
+  ackLink?: string | null
+  ackLinkExpiresOn?: string | null
   acknowledgedOn: string | null
   objectionDeadline: Deadline | null
   history: { date: string; text: string }[]
