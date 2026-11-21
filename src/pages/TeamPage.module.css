@@ -1,6 +1,6 @@
 /* "Mój zespół": one table in a card. Fixed layout so long names and positions end with "…" instead of widening the
-   table; below 900px the hire date and below 600px also the current assessment move under the name, so the table
-   never scrolls sideways (also at 375px and 150% text). Widths in rem so they follow the text size. */
+   table; below 600px the hire date moves under the position, so the table never scrolls sideways (also at 375px and
+   150% text). Widths in rem so they follow the text size. */
 .card {
   padding: 0;
   overflow: hidden;
@@ -54,14 +54,6 @@
   width: 9.5rem;
 }
 
-.colCurrent {
-  width: 30%;
-}
-
-.colDeadline {
-  width: 10.5rem;
-}
-
 .colOpen {
   width: 6.5rem;
   text-align: right;
@@ -82,11 +74,7 @@
 }
 
 .name,
-.sub,
-.kind,
-.step,
-.none,
-.dateless {
+.sub {
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -106,37 +94,9 @@
   font-size: var(--text-sm);
 }
 
-/* Shown only on narrow screens, when their columns are hidden. */
-.subHired,
-.subCurrent {
+/* Shown only on narrow screens, when the hire date column is hidden. */
+.subHired {
   display: none;
-}
-
-.kind {
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-}
-
-.step {
-  color: var(--text);
-}
-
-.dateless,
-.none {
-  color: var(--text-secondary);
-}
-
-.deadline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-1) var(--s-2);
-  min-width: 0;
-}
-
-/* The badge may break into two lines in a narrow column (375px at 150% text) instead of being cut off. */
-.badge > * {
-  white-space: normal;
 }
 
 .open {
@@ -162,26 +122,12 @@
   border-radius: var(--radius-sm);
 }
 
-@media (max-width: 899px) {
+@media (max-width: 599px) {
   .colHired {
     display: none;
   }
 
   .subHired {
-    display: block;
-  }
-
-  .colCurrent {
-    width: 34%;
-  }
-}
-
-@media (max-width: 599px) {
-  .colCurrent {
-    display: none;
-  }
-
-  .subCurrent {
     display: block;
   }
 
@@ -198,11 +144,6 @@
   .table th:last-child,
   .table td:last-child {
     padding-right: var(--s-3);
-  }
-
-  /* In % here, so at 150% text the name column keeps its share of the 375px width. */
-  .colDeadline {
-    width: 38%;
   }
 
   .table th {
