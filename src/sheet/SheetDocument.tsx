@@ -3,6 +3,7 @@ import type { CaseDetail } from '../api/cases'
 import type { CompetencyModel } from '../api/kompas'
 import { fmtAvg, fmtDate } from '../lib/format'
 import { competencyName, type CaseCriteria } from '../lib/model'
+import { officePlace } from '../lib/office'
 import { BANDS } from '../lib/scale'
 
 const X = ({ on }: { on: boolean }) => <span className="doc-x">{on ? 'X' : ''}</span>
@@ -40,7 +41,7 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
   const t = criteria.sheet?.template
   const ev = detail.evaluation
   const extra = criteria.additional
-  const place = 'Warszawa'
+  const place = officePlace()
   const scaleCols = criteria.scale
   const scaleHead = scaleCols.map((p) => model.scale.find((x) => x.points === p)?.label ?? '')
   const prev = detail.previousAssessment
@@ -342,7 +343,7 @@ function FirstSheet({ detail, model, criteria }: { detail: CaseDetail; model: Co
   const intro = detail.stages.find((s) => s.id === 'INTRO_TALK')?.completedOn ?? null
   const talk = detail.stages.find((s) => s.id === 'FIRST_ASSESSMENT')?.completedOn ?? null
   const onTime = fc?.reportSubmittedOn && fc.reportDue ? fc.reportSubmittedOn <= fc.reportDue : null
-  const place = 'Warszawa'
+  const place = officePlace()
   return (
     <article className="doc" lang="pl">
       <div className="doc-page">
