@@ -9,7 +9,8 @@ import { StageError, StageLayout } from './StageLayout'
 import s from './StageLayout.module.css'
 
 /**
- * "Analiza opisu stanowiska" (design frame 1): the job description in four sections, the system's
+ * "Analiza opisu stanowiska" (design frame 1): the job description in three cards (description,
+ * the employee's tasks, competencies), the system's
  * proposal (marked as a suggestion) and one action. Accepting takes the proposal to "Proponowany formularz",
  * where the evaluator reviews it and may change the sheet and criteria.
  */
@@ -57,26 +58,25 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
         )
       }
     >
-      <p className={s.kicker}>
-        {osp.title} · {osp.source}
-      </p>
+      <Card as="h3" title="Opis stanowiska">
+        <div className={s.cardContent}>
+          <p className={s.kicker}>
+            {osp.title} · {osp.source}
+          </p>
+          <p className={s.text}>{osp.purpose}</p>
+          <p className={s.text}>Liczba podległych pracowników: {osp.subordinates}</p>
+        </div>
+      </Card>
 
-      <section className={s.section} aria-labelledby="osp-purpose">
-        <h3 id="osp-purpose" className={s.h3}>Opis stanowiska</h3>
-        <p className={s.text}>{osp.purpose}</p>
-      </section>
-
-      <section className={s.section} aria-labelledby="osp-tasks">
-        <h3 id="osp-tasks" className={s.h3}>Zadania pracownika</h3>
+      <Card as="h3" title="Zadania pracownika">
         <ul className={s.bullets}>
           {osp.mainTasks.map((t, i) => (
             <li key={i}>{t}</li>
           ))}
         </ul>
-      </section>
+      </Card>
 
-      <section className={s.section} aria-labelledby="osp-comp">
-        <h3 id="osp-comp" className={s.h3}>Kompetencje wykorzystywane w pracy:</h3>
+      <Card as="h3" title="Kompetencje">
         <ul className={s.bullets}>
           {osp.softCompetencies.map((c) => (
             <li key={c}>{competencyName(model, c)}</li>
@@ -85,12 +85,7 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
             <li key={r}>{r}</li>
           ))}
         </ul>
-      </section>
-
-      <section className={s.section} aria-labelledby="osp-sub">
-        <h3 id="osp-sub" className={s.h3}>Liczba podległych pracowników:</h3>
-        <p className={s.text}>{osp.subordinates}</p>
-      </section>
+      </Card>
 
       <Card as="h3" title="Propozycja systemu">
         {suggested ? (

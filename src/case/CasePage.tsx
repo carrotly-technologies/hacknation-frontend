@@ -12,7 +12,6 @@ import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/mod
 import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, type CaseStep } from '../lib/stages'
 import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
 import s from './CasePage.module.css'
-import { CaseSidebar } from './CaseSidebar'
 import { AssessmentStage } from './stages/AssessmentStage'
 import { DocumentStage } from './stages/DocumentStage'
 import { FirstConditionsStage } from './stages/FirstConditionsStage'
@@ -130,7 +129,6 @@ export function CasePage() {
       </header>
 
       <div className={s.body}>
-        <CaseSidebar detail={detail} active={stage} model={model.data} criteria={criteria} />
         <section ref={workRef} className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
           {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
         </section>

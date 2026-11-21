@@ -1,4 +1,4 @@
-/* Case file (teczka): back link, the assessed person, the stage stepper, then sidebar + stage workspace. */
+/* Case file (teczka): back link, the assessed person, the stage stepper, then the full-width stage workspace (+ assistant). */
 .root {
   display: flex;
   flex-direction: column;
@@ -113,12 +113,12 @@
 .body {
   display: grid;
   flex: 1;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: 0;
 }
 
 .withAssistant .body {
-  grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--assistant-w);
+  grid-template-columns: minmax(0, 1fr) var(--assistant-w);
 }
 
 .work {

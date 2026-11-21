@@ -1,17 +1,18 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronRight } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import type { CaseDetail, Observation, Points } from '../../api/cases'
-import { suggestLevel, type Indicator, type LevelKey } from '../../api/kompas'
+import { suggestLevel, type CompetencyModel, type Indicator, type LevelKey } from '../../api/kompas'
 import { ScoreChip } from '../../components/Score'
 import { usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate } from '../../lib/format'
-import { competencyName, findCompetency } from '../../lib/model'
+import { competencyName, findCompetency, type CaseCriteria } from '../../lib/model'
 import { SCALE_LABELS, SCALE_SHORT, scoreClass } from '../../lib/scale'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { MutationError, StageHeader } from './common'
+import c from './CriteriaNav.module.css'
 import { ResultBar } from './ResultBar'
 
 export function AssessmentStage({ detail, model, criteria, stage }: StageProps) {
@@ -66,6 +67,8 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
             : 'Przy każdym wskaźniku wybierz zachowanie najbliższe temu, co obserwowałeś. Kolumna „na poziomie oczekiwań” to standard.'
         }
       />
+
+      <CriteriaNav detail={detail} model={model} criteria={criteria} selected={selected} onPick={go} />
 
       <div className="assess">
         <div className="assess__main">
@@ -127,6 +130,69 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 
       <ResultBar detail={detail} criteria={all} model={model} onPick={go} active={selected} />
     </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+/** All criteria of the sheet in one row at the top of the stage, with the decided points (or progress) of each. */
+function CriteriaNav({
+  detail,
+  model,
+  criteria,
+  selected,
+  onPick,
+}: {
+  detail: CaseDetail
+  model: CompetencyModel
+  criteria: CaseCriteria
+  selected: string
+  onPick: (id: string) => void
+}) {
+  const listRef = useRef<HTMLOListElement>(null)
+  // Keep the selected criterion visible when the row scrolls sideways (phones, many criteria).
+  useEffect(() => {
+    const list = listRef.current
+    const item = list?.querySelector<HTMLElement>('[aria-current="true"]')
+    if (!list || !item) return
+    const left = item.offsetLeft
+    const right = left + item.offsetWidth
+    if (left < list.scrollLeft || right > list.scrollLeft + list.clientWidth) list.scrollLeft = left - 16
+  }, [selected])
+
+  return (
+    <nav className={c.root} aria-label="Kryteria oceny">
+      <ol ref={listRef} className={c.list}>
+        {criteria.all.map((id) => {
+          const decided = detail.decisions[id]
+          const touched = Object.keys(detail.ratings[id] ?? {}).length > 0
+          const state = decided != null ? 'decided' : touched ? 'progress' : 'todo'
+          const active = id === selected
+          return (
+            <li key={id}>
+              <button
+                type="button"
+                className={`${c.item} ${state === 'progress' ? c.progress : ''} ${active ? c.active : ''}`}
+                aria-current={active ? 'true' : undefined}
+                onClick={() => onPick(id)}
+              >
+                <span className={c.name}>
+                  <span>{competencyName(model, id)}</span>
+                  {criteria.additional.includes(id) && <span className={c.extra}>dodatkowe</span>}
+                </span>
+                {state === 'decided' ? (
+                  <ScoreChip points={decided} size="sm" />
+                ) : (
+                  <span className={c.state} title={state === 'progress' ? 'w toku' : 'nieocenione'}>
+                    <span className="visually-hidden">{state === 'progress' ? 'w toku' : 'nieocenione'}</span>
+                  </span>
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
   )
 }
 

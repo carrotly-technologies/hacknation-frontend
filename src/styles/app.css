@@ -501,69 +501,6 @@
   background: var(--accent-faint);
   color: var(--accent);
 }
-/* Rail */
-
-/* Criteria nav inside the case sidebar */
-.crit-nav {
-  margin: 4px 0 8px 38px;
-  padding-left: 0;
-  border-left: 1px solid var(--border);
-}
-
-.crit-nav__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  width: 100%;
-  padding: 5px 6px 5px 10px;
-  border: 0;
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: none;
-  font-size: var(--text-sm);
-  line-height: 1.25;
-  text-align: left;
-  cursor: pointer;
-}
-
-.crit-nav__item:hover {
-  background: var(--bg-hover);
-}
-
-.crit-nav__item.is-active {
-  margin-left: -1px;
-  border-left: 2px solid var(--accent);
-  background: var(--bg-surface);
-  font-weight: var(--weight-semibold);
-}
-
-.crit-nav__name {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.crit-nav__extra {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: var(--weight-regular);
-}
-
-.crit-nav__state {
-  flex: none;
-  width: 9px;
-  height: 9px;
-  margin-right: 6px;
-  border: 1.5px solid var(--gray-400);
-  border-radius: 50%;
-}
-
-.crit-nav__item--progress .crit-nav__state {
-  border-color: var(--warn);
-  background: var(--warn);
-  box-shadow: inset 0 0 0 1.5px var(--bg-surface);
-}
-
 /* Workspace */
 .case-work {
   position: relative;
@@ -2517,12 +2454,9 @@
 .verdict__suggest,
 .result-strip,
 .calc__line,
-.sources__text,
-.crit-nav__name {
+.sources__text {
   min-width: 0;
 }
-.crit-nav__label,
-.crit-nav__extra,
 .timeline__meta strong,
 .timeline__ind,
 .timeline__date,
