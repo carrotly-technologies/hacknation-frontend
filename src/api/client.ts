@@ -1,6 +1,14 @@
 // Empty VITE_API_URL = same origin, so requests go through the Vite dev proxy.
 const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
 
+/**
+ * A link returned by the API: "/api/..." paths are relative to the API origin
+ * (VITE_API_URL), absolute URLs (e.g. ISAP) are kept as they are.
+ */
+export function apiUrl(url: string): string {
+  return url.startsWith('/') ? `${API_URL}${url}` : url
+}
+
 /** Error thrown by the API client. `status` is 0 when the server could not be reached. */
 export class ApiError extends Error {
   readonly status: number

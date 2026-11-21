@@ -2676,6 +2676,49 @@
   font-weight: var(--weight-semibold);
 }
 
+.msg__src-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.assistant__docs {
+  margin: 0 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-xs);
+}
+
+.assistant__docs summary {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.assistant__docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  margin-top: 6px;
+  overflow-y: auto;
+  line-height: 1.35;
+}
+
+.assistant__docs-list a {
+  color: var(--accent);
+}
+
+.assistant__docs-list svg {
+  margin-left: 3px;
+  vertical-align: -1px;
+}
+
+.assistant__docs-note {
+  margin-top: 6px;
+  color: var(--text-muted);
+}
+
 .assistant__form {
   position: relative;
   margin: 0 12px;

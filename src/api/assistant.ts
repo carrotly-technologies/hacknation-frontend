@@ -1,4 +1,4 @@
-import { apiPost } from './client'
+import { apiGet, apiPost, apiUrl } from './client'
 import type { StageId } from './cases'
 
 export type AssistantMode = 'FORMAL' | 'CONVERSATION'
@@ -16,6 +16,8 @@ export interface AssistantSource {
   /** e.g. "Poradnik KPRM, s. 28" */
   locator?: string
   quote?: string
+  /** Absolute link to the original document (PDFs open on the excerpt's page), or null when there is no file. */
+  url: string | null
 }
 
 export interface AssistantAnswer {
@@ -37,8 +39,26 @@ interface AskResponse {
   answer: string
   grounded: boolean
   mode: 'LLM' | 'EXTRACTIVE'
-  sources: { n: number; title: string; ref: string; quote: string }[]
+  sources: { n: number; title: string; ref: string; quote: string; url: string | null }[]
   disclaimer: string
+}
+
+/** One document of the assistant's knowledge base (GET /api/assistant/documents). */
+export interface SourceDocument {
+  id: string
+  title: string
+  /** Absolute link to the file or the official text, or null when there is no source file. */
+  url: string | null
+  /** Whether the assistant answers from this document. */
+  indexed: boolean
+  /** e.g. "brak pliku źródłowego". */
+  note: string | null
+}
+
+/** GET /api/assistant/documents — every source document, linked. */
+export async function getSourceDocuments(signal?: AbortSignal): Promise<SourceDocument[]> {
+  const docs = await apiGet<SourceDocument[]>('/assistant/documents', signal)
+  return docs.map((d) => ({ ...d, url: d.url ? apiUrl(d.url) : null }))
 }
 
 /** POST /api/assistant/ask — answers only from the knowledge base, with sources. */
@@ -55,6 +75,7 @@ export async function askAssistant(req: AskAssistantRequest): Promise<AssistantA
       title: s.ref,
       locator: s.title,
       quote: s.quote,
+      url: s.url ? apiUrl(s.url) : null,
     })),
     noAnswer: !res.grounded,
   }

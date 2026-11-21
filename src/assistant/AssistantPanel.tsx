@@ -1,6 +1,7 @@
-import { ArrowUp, X } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { ArrowUp, ExternalLink, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { askAssistant, type AssistantAnswer, type AssistantContext, type AssistantMode } from '../api/assistant'
+import { askAssistant, getSourceDocuments, type AssistantAnswer, type AssistantContext, type AssistantMode } from '../api/assistant'
 import { suggestedQuestions } from './suggestions'
 
 interface Msg {
@@ -84,6 +85,8 @@ export function AssistantPanel({ context, onClose, variant = 'dock' }: { context
         )}
       </div>
 
+      <SourceDocuments />
+
       <div className="assistant__list" ref={listRef} role="log" aria-live="polite">
         {msgs.length === 0 && (
           <div className="assistant__intro">
@@ -111,7 +114,14 @@ export function AssistantPanel({ context, onClose, variant = 'dock' }: { context
                   <ul className="msg__sources">
                     {m.answer.sources.map((s, i) => (
                       <li key={i}>
-                        <span className="msg__src-n num">[{i + 1}]</span> {s.title}
+                        <span className="msg__src-n num">[{i + 1}]</span>{' '}
+                        {s.url ? (
+                          <a href={s.url} target="_blank" rel="noopener" className="msg__src-link" title="Otwórz dokument źródłowy w nowej karcie">
+                            {s.title}
+                          </a>
+                        ) : (
+                          s.title
+                        )}
                         {s.locator && <span className="faint">, {s.locator}</span>}
                       </li>
                     ))}
@@ -154,5 +164,45 @@ export function AssistantPanel({ context, onClose, variant = 'dock' }: { context
       </form>
       <p className="assistant__disclaimer">Asystent odpowiada na podstawie przepisów i poradników, podając źródło. Nie ocenia pracownika — decyzja należy do przełożonego.</p>
     </aside>
+  )
+}
+
+/** Collapsible list of every document of the knowledge base, each a link to the original. */
+function SourceDocuments() {
+  const [open, setOpen] = useState(false)
+  const docs = useQuery({
+    queryKey: ['assistant', 'documents'],
+    queryFn: ({ signal }) => getSourceDocuments(signal),
+    staleTime: Infinity,
+    enabled: open,
+  })
+  return (
+    <details className="assistant__docs" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary>Dokumenty źródłowe</summary>
+      {docs.isPending && <p className="assistant__docs-note">Wczytuję listę…</p>}
+      {docs.isError && <p className="assistant__docs-note">Nie udało się wczytać listy dokumentów.</p>}
+      {docs.data && (
+        <ul className="assistant__docs-list">
+          {docs.data.map((d) => (
+            <li key={d.id}>
+              {d.url ? (
+                <a href={d.url} target="_blank" rel="noopener">
+                  {d.title}
+                  <ExternalLink size={11} aria-hidden="true" />
+                </a>
+              ) : (
+                <span>{d.title}</span>
+              )}
+              {(d.note || !d.indexed) && (
+                <span className="faint">
+                  {' '}
+                  ({[d.note, d.indexed ? null : 'poza bazą odpowiedzi'].filter(Boolean).join('; ')})
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </details>
   )
 }
