@@ -53,7 +53,7 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   below 600px; Esc closes). In the case file it knows the case and the stage (`useAssistantContext`; only `caseId` and
   `stageId` go to the API), and "Przygotuj pytania do rozmowy" in step 5 opens it with the question. The conversation
   stays in memory for the signed-in session (`src/assistant/AssistantProvider.tsx`), nothing is stored in the browser.
-  Shown only with `FEATURE_ASSISTANT=true` on the backend (`GET /api/config`);
+  Always on (without an LLM on the backend it answers extractively, with citations);
 - `/ustawienia` — appearance settings for every role (gear icon in the top bar; on phones in "Menu"): theme
   system/light/dark, text size 100/125/150%, high contrast. Kept only in this browser (`localStorage`
   `kompas.prefs`, `src/lib/preferences.ts`) and applied before the first paint by a small script in `index.html`;

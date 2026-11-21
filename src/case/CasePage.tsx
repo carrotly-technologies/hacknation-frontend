@@ -29,8 +29,8 @@ export interface StageProps {
   model: CompetencyModel
   criteria: CaseCriteria
   stage: StageId
-  /** Opens the "Asystent AI" popup and asks the question there; missing when the assistant is turned off (FEATURE_ASSISTANT). */
-  askAssistant?: (request: AssistantRequest) => void
+  /** Opens the "Asystent AI" popup and asks the question there. */
+  askAssistant: (request: AssistantRequest) => void
 }
 
 const STATUS_TONE = {
@@ -67,8 +67,7 @@ export function CasePage() {
   if (slug !== STAGE_SLUG[stage]) return <Navigate to={caseUrl(detail.id, stage)} replace />
 
   const criteria = caseCriteria(detail, sheets.data)
-  const askAssistant = assistant.enabled ? assistant.open : undefined
-  const props: StageProps = { detail, model: model.data, criteria, stage, askAssistant }
+  const props: StageProps = { detail, model: model.data, criteria, stage, askAssistant: assistant.open }
   const name = `${detail.person.firstName} ${detail.person.lastName}`
   const sheetLabel = sheetLabelOf(detail)
   const steps = caseSteps(detail)
