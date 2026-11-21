@@ -10,9 +10,9 @@ import s from './StageLayout.module.css'
 
 /**
  * "Analiza opisu stanowiska" (design frame 1): the job description in three cards (description,
- * the employee's tasks, competencies), the system's
- * proposal (marked as a suggestion) and one action. Accepting takes the proposal to "Proponowany formularz",
- * where the evaluator reviews it and may change the sheet and criteria.
+ * the employee's tasks, competencies) and one action. The system's proposal is not shown here: accepting
+ * saves the suggested sheet and additional criteria as the draft, and "Proponowany formularz" shows it for
+ * review. When no sheet can be suggested, a sheet picker sits above the action.
  */
 export function OspAnalysisStage({ detail, model, stage }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
@@ -83,32 +83,20 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
         </ul>
       </Card>
 
-      <Card as="h3" title="Propozycja systemu">
-        {suggested ? (
-          <p>
-            Formularz {suggested.sheetId}, bo: {suggested.reason} <span className={s.muted}>({suggested.legalBasis})</span>
-          </p>
-        ) : (
-          !detail.sheetId && (
-            <Field label="Arkusz oceny" hint="Z opisu stanowiska nie da się ustalić arkusza. Wybierz go sam.">
-              {(p) => (
-                <Select
-                  {...p}
-                  value={chosen}
-                  placeholder="Wybierz arkusz"
-                  disabled={done}
-                  onChange={(e) => setChosen(e.target.value as SheetId)}
-                  options={(sheets.data ?? []).filter((x) => x.kind === 'PERIODIC').map((x) => ({ value: x.id, label: `Arkusz ${x.id}` }))}
-                />
-              )}
-            </Field>
-          )
-        )}
-        {candidates.length > 0 && (
-          <p>Proponowane kryteria dodatkowe: {candidates.map((c) => competencyName(model, c.criterionId)).join(', ')}.</p>
-        )}
-        <p className={s.muted}>To sugestia. W kroku „Proponowany formularz” zaakceptujesz ją albo wprowadzisz zmiany.</p>
-      </Card>
+      {!suggested && !detail.sheetId && (
+        <Field label="Arkusz oceny" hint="Z opisu stanowiska nie da się ustalić arkusza. Wybierz go sam.">
+          {(p) => (
+            <Select
+              {...p}
+              value={chosen}
+              placeholder="Wybierz arkusz"
+              disabled={done}
+              onChange={(e) => setChosen(e.target.value as SheetId)}
+              options={(sheets.data ?? []).filter((x) => x.kind === 'PERIODIC').map((x) => ({ value: x.id, label: `Arkusz ${x.id}` }))}
+            />
+          )}
+        </Field>
+      )}
 
       {done && (
         <InlineAlert tone="success" title="Analiza zatwierdzona">
