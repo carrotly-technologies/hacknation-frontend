@@ -122,8 +122,35 @@
   font-weight: var(--weight-semibold);
 }
 
+.labelBold {
+  font-weight: var(--weight-semibold);
+}
+
+/* Radio answers: the label's hit area covers the whole item, so clicking the hint (e.g. a behaviour
+   description) also selects the option. The hint stays outside the label, so the accessible name is
+   the label only and the hint is announced as the description (aria-describedby). */
+.stretch {
+  position: relative;
+}
+
+.stretch .label::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.stretch .input:disabled + .label::after {
+  cursor: not-allowed;
+}
+
+.stretch:hover .input:not(:disabled) {
+  border-color: var(--accent);
+}
+
 .hint {
   grid-column: 2;
+  min-width: 0;
+  overflow-wrap: break-word;
   color: var(--text-secondary);
   font-size: var(--text-md);
 }

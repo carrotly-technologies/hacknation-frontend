@@ -25,10 +25,15 @@ type Props = {
   value: string
   onChange: (value: string) => void
   forceFocus?: string
+  /**
+   * Answers with a longer description in the hint (e.g. level name + behaviour): bold labels, and the
+   * whole answer, description included, selects the option.
+   */
+  detailed?: boolean
 }
 
 /** One question with mutually exclusive answers (fieldset + legend + native radios). */
-export function RadioGroup({ id, name, legend, hint, error, asHeading, inline, options, value, onChange, forceFocus }: Props) {
+export function RadioGroup({ id, name, legend, hint, error, asHeading, inline, options, value, onChange, forceFocus, detailed }: Props) {
   return (
     <Fieldset id={id} legend={legend} hint={hint} error={error} asHeading={asHeading}>
       <div className={cx(s.list, inline && s.inline)}>
@@ -37,7 +42,7 @@ export function RadioGroup({ id, name, legend, hint, error, asHeading, inline, o
           const hintId = o.hint ? `${rid}-hint` : undefined
           return (
             <Fragment key={o.value}>
-              <div className={s.item}>
+              <div className={cx(s.item, detailed && s.stretch)}>
                 <input
                   id={rid}
                   type="radio"
@@ -51,7 +56,7 @@ export function RadioGroup({ id, name, legend, hint, error, asHeading, inline, o
                   data-force={forceFocus === o.value ? 'focus' : undefined}
                   className={cx(s.input, s.radio)}
                 />
-                <label htmlFor={rid} className={s.label}>
+                <label htmlFor={rid} className={cx(s.label, detailed && s.labelBold)}>
                   {o.label}
                 </label>
                 {o.hint && (

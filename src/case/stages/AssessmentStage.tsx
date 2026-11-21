@@ -16,7 +16,7 @@ import {
   type FormProgressStep,
 } from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
-import { fmtAvg, fmtDate } from '../../lib/format'
+import { fmtAvg, fmtDate, sentenceCase } from '../../lib/format'
 import { competencyName, findCompetency } from '../../lib/model'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
@@ -32,6 +32,11 @@ const indicatorFieldId = (i: number) => `wskaznik-${i + 1}`
 
 /** Scale labels come from the competency model sent by the API (the legal scale lives in the backend). */
 const scaleLabel = (model: CompetencyModel, p: number) => model.scale.find((l) => l.points === p)?.label ?? ''
+/** Answer label of an indicator: level name first, then the points, e.g. "Znacznie poniżej oczekiwań · 1 pkt". */
+const levelLabel = (model: CompetencyModel, p: number) => {
+  const name = scaleLabel(model, p)
+  return name ? `${sentenceCase(name)} · ${p} pkt` : `${p} pkt`
+}
 
 /**
  * "Formularz oceny kompetencji": one competency per page, in the order of the "Proponowany formularz"
@@ -159,14 +164,15 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
                         </>
                       }
                       hint="Wybierz zachowanie, które najlepiej opisuje to, co obserwowałeś."
+                      detailed
                       error={errors.some((e) => e.id === fieldId) && missing(ind) ? 'Zaznacz jedną odpowiedź' : undefined}
                       value={value === undefined ? '' : value === null ? SKIP : String(value)}
                       onChange={(v) => setRating(ind.id, v === SKIP ? null : (Number(v) as Points))}
                       options={[
                         ...scale.map((p) => ({
                           value: String(p),
-                          label: ind.levels[String(p) as LevelKey],
-                          hint: `${p} pkt · ${scaleLabel(model, p)}${p === 5 ? ' (standard)' : ''}`,
+                          label: levelLabel(model, p),
+                          hint: ind.levels[String(p) as LevelKey],
                           disabled: locked,
                         })),
                         {
