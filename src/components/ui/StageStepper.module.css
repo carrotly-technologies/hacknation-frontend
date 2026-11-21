@@ -129,8 +129,28 @@
   background: var(--accent-subtle);
 }
 
+/* The width of every word is the width of its bold version (hidden bold copy in ::after, height 0), and the spaces
+   between words keep the step's weight. So the line breaks are the same whether the step is bold or not: selecting
+   a step never moves a word to the next line or shifts its neighbours. The copy is generated content with
+   visibility: hidden, so screen readers read each name once. */
+.word {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.word::after {
+  content: attr(data-label);
+  content: attr(data-label) / '';
+  height: 0;
+  overflow: hidden;
+  font-weight: var(--weight-bold);
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* the step shown on the page: bolder label + aria-current (not colour alone), no underline */
-.active .label {
+.active .word {
   font-weight: var(--weight-bold);
 }
 

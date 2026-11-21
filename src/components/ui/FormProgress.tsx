@@ -28,7 +28,8 @@ type Props = {
  * only) and the list of parts with numbered circles, a check for done parts and the current part marked
  * with aria-current="step". Steps with `to` are links. The parts always sit in one row: names that do not
  * fit are cut with "…" (full name in `title`), and in very narrow columns only the circles are shown. Shared by "Formularz oceny" and "Formularz oceny
- * kompetencji", so both forms look and behave the same.
+ * kompetencji", so both forms look and behave the same. The name keeps the width of its bold version (`data-label`,
+ * see FormProgress.module.css), so marking a part as current never changes the size of its step.
  */
 export function FormProgress({ steps, unit, label }: Props) {
   const index = steps.findIndex((st) => st.state === 'current')
@@ -46,10 +47,12 @@ export function FormProgress({ steps, unit, label }: Props) {
               <span className={s.mark} aria-hidden="true">
                 {st.state === 'done' ? <Check size={14} strokeWidth={3} /> : n}
               </span>
-              <span className={s.name}>
-                <span className="visually-hidden">{unit} {n}: </span>
-                {st.label}
-                {st.state === 'done' && <span className="visually-hidden"> (za Tobą)</span>}
+              <span className={s.name} data-label={st.label}>
+                <span className={s.text}>
+                  <span className="visually-hidden">{unit} {n}: </span>
+                  {st.label}
+                  {st.state === 'done' && <span className="visually-hidden"> (za Tobą)</span>}
+                </span>
               </span>
             </>
           )
