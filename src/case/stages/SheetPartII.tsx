@@ -78,7 +78,7 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
             <>Oceniający zatwierdził ocenę {fmtDate(signed)}, więc pola są tylko do odczytu.</>
           ) : (
             <>
-              Pola będą dostępne po rozpoczęciu rozmowy oceniającej (krok „Rozmowa z pracownikiem”), na koniec okresu oceny
+              Pola będą dostępne po rozpoczęciu rozmowy oceniającej (krok „Formularz oceny kompetencji”), na koniec okresu oceny
               {detail.partI.assessmentDue ? `, przed terminem sporządzenia oceny ${fmtDate(detail.partI.assessmentDue)}` : ''}. Do tego czasu
               możesz przejrzeć, co będzie oceniane.
             </>
