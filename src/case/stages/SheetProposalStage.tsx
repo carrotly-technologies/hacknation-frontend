@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Button, InlineAlert } from '../../components/ui'
+import { Button, Field, InlineAlert, Select } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
-import { findCompetency, competencyName } from '../../lib/model'
+import { findCompetency, competencyName, useSheets } from '../../lib/model'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetCriteriaEditor } from './SheetCriteriaEditor'
@@ -10,9 +10,9 @@ import layout from './StageLayout.module.css'
 import s from './SheetProposalStage.module.css'
 
 /**
- * "Wstępny formularz" (design frame 2): the sheet proposed from the job description and its competency
- * questions, read only. "Akceptuj formularz" moves the case on to the opening talk; "Wprowadź zmiany"
- * opens the editor of the sheet and the additional criteria.
+ * "Proponowany formularz" (design frame 2): the sheet proposed from the job description (a locked
+ * dropdown) and its competency questions, read only. At the end, "Akceptuj formularz" moves the case on
+ * to the opening talk; "Wprowadź poprawki" opens the editor of the sheet and the additional criteria.
  */
 export function SheetProposalStage({ detail, model, criteria, stage }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
@@ -21,34 +21,39 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
   const done = info.status === 'DONE'
   const canEdit = !done && allows(detail, 'ACCEPT_SHEET')
 
+  const sheets = useSheets()
+  const periodic = (sheets.data ?? []).filter((x) => x.kind === 'PERIODIC')
+
   return (
     <StageLayout
       info={info}
-      lead="System zaproponował formularz na podstawie opisu stanowiska. Przejrzyj pytania kompetencyjne i zaakceptuj formularz albo wprowadź zmiany."
-      actions={
-        canEdit && !editing ? (
-          <>
-            <Button variant="text" onClick={() => setEditing(true)}>
-              Wprowadź zmiany
-            </Button>
-            <Button loading={act.isPending} disabled={!detail.sheetId} onClick={() => act.mutate('ACCEPT_SHEET')}>
-              Akceptuj formularz
-            </Button>
-          </>
-        ) : null
-      }
+      lead="System zaproponował formularz na podstawie opisu stanowiska. Przejrzyj pytania kompetencyjne i zaakceptuj formularz albo wprowadź poprawki."
     >
-      <div className={s.title}>
-        <p className={layout.kicker}>Proponowany formularz oceny okresowej pracownika</p>
-        <h3 className={s.sheetName}>{detail.sheetId ? `Formularz ${detail.sheetId}` : 'Formularz nieustalony'}</h3>
-        {criteria.sheet && <p className={layout.muted}>{criteria.sheet.appliesTo}</p>}
-      </div>
+      <Field label="Formularz oceny" className={s.sheetField}>
+        {(control) => (
+          <>
+            <Select
+              {...control}
+              aria-describedby={criteria.sheet ? `${control.id}-applies` : undefined}
+              disabled
+              value={detail.sheetId ?? ''}
+              placeholder={detail.sheetId ? undefined : 'Nie ustalono'}
+              options={periodic.map((x) => ({ value: x.id, label: `Arkusz ${x.id}` }))}
+            />
+            {criteria.sheet && (
+              <p id={`${control.id}-applies`} className={`${layout.muted} ${s.appliesTo}`}>
+                {criteria.sheet.appliesTo}
+              </p>
+            )}
+          </>
+        )}
+      </Field>
 
       {editing ? (
         <SheetCriteriaEditor detail={detail} model={model} onDone={() => setEditing(false)} />
       ) : (
         <section className={s.questions} aria-labelledby="questions-h">
-          <h4 id="questions-h" className={s.questionsLabel}>Pytania kompetencyjne</h4>
+          <h3 id="questions-h" className={s.questionsLabel}>Pytania kompetencyjne wybrane na podstawie analizy opisu stanowiska</h3>
           {criteria.all.length === 0 ? (
             <p className={layout.muted}>Wybierz arkusz, aby zobaczyć pytania.</p>
           ) : (
@@ -76,6 +81,17 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
             </ol>
           )}
         </section>
+      )}
+
+      {canEdit && !editing && (
+        <div className={s.finalActions}>
+          <Button loading={act.isPending} disabled={!detail.sheetId} onClick={() => act.mutate('ACCEPT_SHEET')}>
+            Akceptuj formularz
+          </Button>
+          <Button variant="text" onClick={() => setEditing(true)}>
+            Wprowadź poprawki
+          </Button>
+        </div>
       )}
 
       {done && (

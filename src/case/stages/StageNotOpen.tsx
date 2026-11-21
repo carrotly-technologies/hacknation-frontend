@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import type { CaseDetail, StageId } from '../../api/cases'
-import { caseUrl } from '../../lib/stages'
+import { caseUrl, stageTitle } from '../../lib/stages'
 import { StageHeader } from './common'
 
 const WHAT: Partial<Record<StageId, string>> = {
@@ -21,12 +21,12 @@ export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: Sta
   const current = detail.stages.find((s) => s.id === detail.currentStage)!
   return (
     <div className="stage">
-      <StageHeader title={info.name} legal={info.legalBasis} deadline={info.deadline} />
+      <StageHeader title={stageTitle(info)} legal={info.legalBasis} deadline={info.deadline} />
       <div className="stage-pad">
         <div className="notice notice--info" style={{ maxWidth: 640 }}>
           <div>
             <p>
-              <strong>Ten etap jeszcze się nie rozpoczął.</strong> Najpierw trzeba zakończyć etap „{current.name}”.
+              <strong>Ten etap jeszcze się nie rozpoczął.</strong> Najpierw trzeba zakończyć etap „{stageTitle(current)}”.
             </p>
             {WHAT[stage] && <p style={{ marginTop: 6 }}>{WHAT[stage]}</p>}
           </div>

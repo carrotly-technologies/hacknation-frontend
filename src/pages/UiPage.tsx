@@ -35,7 +35,7 @@ import s from './UiPage.module.css'
 
 const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'tertiary', 'text']
 
-const STEP_LABELS = ['Analiza opisu stanowiska', 'Wstępny formularz', 'Formularz oceny', 'Rozmowa z pracownikiem', 'Weryfikacja formularza', 'Ocena końcowa']
+const STEP_LABELS = ['Analiza opisu stanowiska', 'Proponowany formularz', 'Formularz oceny', 'Rozmowa z pracownikiem', 'Weryfikacja formularza', 'Ocena końcowa']
 
 /** Demo stepper with `current` steps done before it (index of the current step; = length means all done). */
 function demoSteps(current: number): StageStep[] {

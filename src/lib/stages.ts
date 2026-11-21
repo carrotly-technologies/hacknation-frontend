@@ -3,7 +3,7 @@ import type { CaseAction, CaseDetail, Path, StageId, StageInfo } from '../api/ca
 /** URL slugs for /teczka/:id/:stage. */
 export const STAGE_SLUG: Record<StageId, string> = {
   OSP_ANALYSIS: 'analiza-osp',
-  SHEET_PROPOSAL: 'wstepny-formularz',
+  SHEET_PROPOSAL: 'proponowany-formularz',
   OPENING_TALK: 'rozmowa-rozpoczynajaca',
   OBSERVATION: 'obserwacje',
   ASSESSMENT: 'ocena',
@@ -16,10 +16,15 @@ export const STAGE_SLUG: Record<StageId, string> = {
   FIRST_DOCUMENT: 'dokument-pierwsza',
 }
 
+/** Old slugs still accepted in links; CasePage redirects them to the current slug. */
+const LEGACY_SLUG: Record<string, StageId> = {
+  'wstepny-formularz': 'SHEET_PROPOSAL',
+}
+
 export function stageFromSlug(slug: string | undefined): StageId | null {
   if (!slug) return null
   const hit = (Object.entries(STAGE_SLUG) as [StageId, string][]).find(([, s]) => s === slug)
-  return hit ? hit[0] : null
+  return hit ? hit[0] : (LEGACY_SLUG[slug] ?? null)
 }
 
 export const caseUrl = (id: string, stage?: StageId) =>
@@ -28,7 +33,7 @@ export const caseUrl = (id: string, stage?: StageId) =>
 /** Short names used in compact places (team table, HR table, context chip). */
 export const STAGE_SHORT: Record<StageId, string> = {
   OSP_ANALYSIS: 'Analiza OSP',
-  SHEET_PROPOSAL: 'Wstępny formularz',
+  SHEET_PROPOSAL: 'Proponowany formularz',
   OPENING_TALK: 'Rozmowa rozpoczynająca',
   OBSERVATION: 'Okres oceny',
   ASSESSMENT: 'Ocena',
@@ -40,6 +45,13 @@ export const STAGE_SHORT: Record<StageId, string> = {
   FIRST_CONDITIONS: 'Warunki',
   FIRST_DOCUMENT: 'Dokument',
 }
+
+/** Stage headings the UI names differently than the API (the backend label is kept for the legal record). */
+const STAGE_TITLE: Partial<Record<StageId, string>> = {
+  SHEET_PROPOSAL: 'Proponowany formularz',
+}
+
+export const stageTitle = (info: Pick<StageInfo, 'id' | 'name'>) => STAGE_TITLE[info.id] ?? info.name
 
 export function pathLabel(path: Path, sheetId: string | null): string {
   if (path === 'FIRST') return 'Pierwsza ocena'
@@ -89,7 +101,7 @@ export interface CaseStep {
  */
 const PERIODIC_STEPS: { key: string; label: string; stages: StageId[] }[] = [
   { key: 'analiza', label: 'Analiza opisu stanowiska', stages: ['OSP_ANALYSIS'] },
-  { key: 'wstepny', label: 'Wstępny formularz', stages: ['SHEET_PROPOSAL'] },
+  { key: 'proponowany', label: 'Proponowany formularz', stages: ['SHEET_PROPOSAL'] },
   { key: 'formularz', label: 'Formularz oceny', stages: ['OPENING_TALK', 'OBSERVATION'] },
   { key: 'rozmowa', label: 'Rozmowa z pracownikiem', stages: ['ASSESSMENT'] },
   { key: 'weryfikacja', label: 'Weryfikacja formularza', stages: ['JUSTIFICATION'] },

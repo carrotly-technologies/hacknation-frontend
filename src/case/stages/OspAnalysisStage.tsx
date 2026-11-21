@@ -10,7 +10,7 @@ import s from './StageLayout.module.css'
 
 /**
  * "Analiza opisu stanowiska" (design frame 1): the job description in four sections, the system's
- * proposal (marked as a suggestion) and one action. Accepting takes the proposal to "Wstępny formularz",
+ * proposal (marked as a suggestion) and one action. Accepting takes the proposal to "Proponowany formularz",
  * where the evaluator reviews it and may change the sheet and criteria.
  */
 export function OspAnalysisStage({ detail, model, stage }: StageProps) {
@@ -116,7 +116,7 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
         {candidates.length > 0 && (
           <p>Proponowane kryteria dodatkowe: {candidates.map((c) => competencyName(model, c.criterionId)).join(', ')}.</p>
         )}
-        <p className={s.muted}>To sugestia. W kroku „Wstępny formularz” zaakceptujesz ją albo wprowadzisz zmiany.</p>
+        <p className={s.muted}>To sugestia. W kroku „Proponowany formularz” zaakceptujesz ją albo wprowadzisz zmiany.</p>
       </Card>
 
       {done && (

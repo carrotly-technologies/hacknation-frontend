@@ -3,6 +3,7 @@ import { errorMessage } from '../../api/client'
 import type { StageInfo } from '../../api/cases'
 import { DeadlineText } from '../../components/Deadline'
 import { InlineAlert } from '../../components/ui'
+import { stageTitle } from '../../lib/stages'
 import s from './StageLayout.module.css'
 
 /** Frame of the stages redrawn after the "Kompas kompetencji" design: heading, deadline, legal basis, content, actions. */
@@ -21,7 +22,7 @@ export function StageLayout({
   return (
     <div className={s.root}>
       <header className={s.head}>
-        <h2 className={s.title}>{info.name}</h2>
+        <h2 className={s.title}>{stageTitle(info)}</h2>
         <p className={s.meta}>
           {info.status !== 'DONE' && info.deadline?.date && <DeadlineText deadline={info.deadline} showLabel />}
           <span className={s.legal}>{info.legalBasis}</span>

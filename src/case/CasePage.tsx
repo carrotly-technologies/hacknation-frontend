@@ -9,7 +9,7 @@ import { BackLink, StageStepper, StatusBadge } from '../components/ui'
 import { useCase } from '../lib/caseQueries'
 import { useFeatures } from '../lib/features'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
-import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, type CaseStep } from '../lib/stages'
+import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, type CaseStep } from '../lib/stages'
 import { HOME_BY_ROLE, useMe } from '../lib/useAuth'
 import s from './CasePage.module.css'
 import { CaseSidebar } from './CaseSidebar'
@@ -80,6 +80,7 @@ export function CasePage() {
   const detail = q.data
   const stage = stageFromSlug(slug)
   if (!stage || !detail.stages.some((st) => st.id === stage)) return <Navigate to={caseUrl(detail.id, detail.currentStage)} replace />
+  if (slug !== STAGE_SLUG[stage]) return <Navigate to={caseUrl(detail.id, stage)} replace />
 
   const criteria = caseCriteria(detail, sheets.data)
   const props: StageProps = { detail, model: model.data, criteria, stage }
