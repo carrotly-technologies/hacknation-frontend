@@ -4,15 +4,15 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import type { CaseDetail } from '../../api/cases'
 import { suggestLevel, type CompetencyModel } from '../../api/kompas'
-import { ScoreChip } from '../../components/Score'
 import { Button, Field, Fieldset, InlineAlert, TextInput, Checkbox } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
-import { DEMO_TODAY, fmtAvg, fmtDate } from '../../lib/format'
+import { DEMO_TODAY, fmtDate } from '../../lib/format'
 import { competencyName, findCompetency } from '../../lib/model'
 import { liveResult } from '../../lib/result'
 import { allows, caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentTalkStage.module.css'
+import { CompetencyScoresTable, ResultSummary } from './CompetencyScores'
 import { StageError, StageLayout } from './StageLayout'
 import layout from './StageLayout.module.css'
 
@@ -76,37 +76,16 @@ export function AssessmentTalkStage({ detail, model, criteria, stage, askAssista
 
       <section aria-labelledby="material-h" className={s.section}>
         <h3 id="material-h" className={s.heading}>Materiał do rozmowy</h3>
-        <table className={s.table}>
-          <caption className="visually-hidden">Oceny cząstkowe i sugestie systemu dla każdego kryterium</caption>
-          <thead>
-            <tr>
-              <th scope="col">Kryterium</th>
-              <th scope="col">Ocena cząstkowa (wersja robocza)</th>
-              <th scope="col">Sugestia systemu</th>
-            </tr>
-          </thead>
-          <tbody>
-            {criteria.all.map((c) => (
-              <tr key={c}>
-                <th scope="row">
-                  {competencyName(model, c)}
-                  {detail.deviationNotes[c] && <span className={s.note}>Odstępstwo od sugestii: {detail.deviationNotes[c]}</span>}
-                </th>
-                <td data-label="Ocena cząstkowa">
-                  <ScoreChip points={detail.decisions[c]} size="sm" />
-                </td>
-                <td data-label="Sugestia systemu">
-                  <Suggestion detail={detail} model={model} criterionId={c} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <p className={layout.muted}>
-          Średnia {fmtAvg(r.average)}
-          {r.band && ` · ${r.band.label.toLowerCase()}`}
-          {r.result && ` · wstępnie ${r.result === 'POSITIVE' ? 'pozytywna' : 'negatywna'}`}. Sugestie są tylko pomocą: ocenę ustalasz Ty.
-        </p>
+        <CompetencyScoresTable
+          detail={detail}
+          model={model}
+          criteria={criteria.all}
+          caption="Oceny cząstkowe (wersja robocza) i sugestie systemu dla każdej kompetencji"
+          note={(c) => detail.deviationNotes[c] && `Odstępstwo od sugestii: ${detail.deviationNotes[c]}`}
+          extra={[{ header: 'Sugestia systemu', cell: (c) => <Suggestion detail={detail} model={model} criterionId={c} /> }]}
+        />
+        <ResultSummary result={r} />
+        <p className={layout.muted}>Oceny pochodzą z wersji roboczej formularza. Sugestie są tylko pomocą: ocenę ustalasz Ty.</p>
         <div className={s.lists}>
           <div>
             <h4 className={s.subheading}>Najmocniejsze kryteria</h4>
