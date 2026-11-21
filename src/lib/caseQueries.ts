@@ -45,6 +45,13 @@ function applyPatch(prev: CaseDetail, patch: CasePatch): CaseDetail {
     deviationNotes: mergeNullable(prev.deviationNotes, patch.deviationNotes),
     justification: patch.justification ?? prev.justification,
     iprz: patch.iprz ?? prev.iprz,
+    previousAssessment:
+      patch.previousAssessment === undefined
+        ? prev.previousAssessment
+        : patch.previousAssessment === null
+          ? null
+          : { result: null, level: null, date: null, ...prev.previousAssessment, ...patch.previousAssessment },
+    promotionRequest: patch.promotionRequest ? { ...prev.promotionRequest, ...patch.promotionRequest } : prev.promotionRequest,
     firstConditions:
       patch.firstConditions && prev.firstConditions
         ? { ...prev.firstConditions, ...patch.firstConditions }

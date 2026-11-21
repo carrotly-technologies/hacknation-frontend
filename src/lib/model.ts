@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { CaseDetail } from '../api/cases'
-import { getCompetencyModel, getSheets, type Competency, type CompetencyModel, type Sheet } from '../api/kompas'
+import { getCivilServiceGrades, getCompetencyModel, getSheets, type Competency, type CompetencyModel, type Sheet } from '../api/kompas'
 import { sentenceCase } from './format'
 
 export function useModel() {
@@ -15,6 +15,14 @@ export function useSheets() {
   return useQuery({
     queryKey: ['sheets'],
     queryFn: ({ signal }) => getSheets(signal),
+    staleTime: Infinity,
+  })
+}
+
+export function useCivilServiceGrades() {
+  return useQuery({
+    queryKey: ['civil-service-grades'],
+    queryFn: ({ signal }) => getCivilServiceGrades(signal),
     staleTime: Infinity,
   })
 }

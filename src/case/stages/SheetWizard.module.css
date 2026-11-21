@@ -176,3 +176,34 @@
     align-items: stretch;
   }
 }
+
+/* wording quoted from the sheet template (Potwierdzamy, the assessed person's statement, part III) */
+.quote {
+  display: grid;
+  gap: var(--s-2);
+  max-width: 760px;
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border-left: 3px solid var(--border-strong);
+  background: var(--bg-subtle);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.dashList {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding-left: var(--s-5);
+  list-style: '– ';
+}
+
+.sentence {
+  max-width: 760px;
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.sentence strong {
+  font-weight: var(--weight-semibold);
+}

@@ -5,12 +5,6 @@ import { fmtAvg, fmtDate } from '../lib/format'
 import { competencyName, type CaseCriteria } from '../lib/model'
 import { BANDS } from '../lib/scale'
 
-const SHEET_META: Record<string, { annex: string; title: string }> = {
-  A: { annex: 'Załącznik nr 2', title: 'OCENA OKRESOWA KIEROWNIKA URZĘDU' },
-  B: { annex: 'Załącznik nr 3', title: 'OCENA OKRESOWA URZĘDNIKA SŁUŻBY CYWILNEJ LUB PRACOWNIKA SŁUŻBY CYWILNEJ' },
-  C: { annex: 'Załącznik nr 4', title: 'OCENA OKRESOWA URZĘDNIKA SŁUŻBY CYWILNEJ LUB PRACOWNIKA SŁUŻBY CYWILNEJ' },
-}
-
 const X = ({ on }: { on: boolean }) => <span className="doc-x">{on ? 'X' : ''}</span>
 const Blank = ({ hint }: { hint?: string }) => <span className="doc-blank">{hint ? `(${hint})` : ''}</span>
 const Val = ({ v, hint }: { v: ReactNode; hint?: string }) => (v ? <span className="doc-val">{v}</span> : <Blank hint={hint} />)
@@ -42,12 +36,16 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
   const p = detail.person
   const e = detail.evaluator
   const sheet = detail.sheetId ?? 'C'
-  const meta = SHEET_META[sheet] ?? SHEET_META.C
+  // Annex, title and the fixed wording come from the sheet template in the API (GET /api/sheets).
+  const t = criteria.sheet?.template
   const ev = detail.evaluation
   const extra = criteria.additional
   const place = 'Warszawa'
-  const scaleCols = [1, 3, 5, 7, 9]
-  const scaleHead = ['Znacznie poniżej oczekiwań', 'Poniżej oczekiwań', 'Na poziomie oczekiwań', 'Powyżej oczekiwań', 'Znacznie powyżej oczekiwań']
+  const scaleCols = criteria.scale
+  const scaleHead = scaleCols.map((p) => model.scale.find((x) => x.points === p)?.label ?? '')
+  const prev = detail.previousAssessment
+  const request = detail.promotionRequest
+  const partIII = request.attached === 'YES'
   const ptsWord = (n: number) => (n === 1 ? 'punkt' : n === 3 ? 'punkty' : 'punktów')
   const conversationDate = detail.stages.find((s) => s.id === 'ASSESSMENT')?.completedOn ?? null
   const periodTo = detail.signedByEvaluatorOn ?? null
@@ -68,11 +66,11 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
     <article className="doc" lang="pl">
       <div className="doc-page">
         <div className="doc-annex">
-          <span>{meta.annex}</span>
+          <span>{t?.annex}</span>
         </div>
         <h1 className="doc-title">
           <span className="doc-title__sheet">ARKUSZ {sheet}</span>
-          <span className="doc-title__main">{meta.title}</span>
+          <span className="doc-title__main">{t?.title}</span>
         </h1>
 
         <h2 className="doc-part">C Z Ę Ś Ć&nbsp;&nbsp;&nbsp;I</h2>
@@ -135,12 +133,7 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
           <p>
             <i>Potwierdzamy:</i>
           </p>
-          <p>
-            – przeprowadzenie rozmowy, o której mowa w § 5 ust. 1 rozporządzenia Prezesa Rady Ministrów z dnia 4 kwietnia 2016 r. w sprawie warunków i
-            sposobu przeprowadzania ocen okresowych urzędników służby cywilnej i pracowników służby cywilnej (Dz. U. poz. 470), i omówienie w trakcie tej
-            rozmowy wszystkich wymaganych zagadnień;
-          </p>
-          <p>– zapoznanie ocenianego z kryteriami oceny oraz terminem sporządzenia oceny.</p>
+          {t?.partIConfirmation.map((line) => <p key={line}>– {line}</p>)}
           <Signatures
             cells={[
               { value: detail.partI.confirmedByEvaluatorOn ? place : '', caption: 'miejscowość' },
@@ -243,17 +236,17 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
             <tr><th colSpan={6} className="doc-th-group">DANE DOTYCZĄCE POPRZEDNIEJ OCENY OKRESOWEJ URZĘDNIKA SŁUŻBY CYWILNEJ</th></tr>
             <tr>
               <td className="doc-label">Ocena</td>
-              <td>{urzednik ? <Blank /> : <span className="doc-muted">nie dotyczy</span>}</td>
+              <td>{urzednik ? <Val v={prev?.result === 'POSITIVE' ? 'pozytywna' : prev?.result === 'NEGATIVE' ? 'negatywna' : ''} /> : <span className="doc-muted">nie dotyczy</span>}</td>
               <td className="doc-label">Poziom</td>
-              <td>{urzednik ? <Blank /> : ''}</td>
+              <td>{urzednik ? <Val v={prev?.level ?? ''} /> : ''}</td>
               <td className="doc-label">Data sporządzenia</td>
-              <td>{urzednik ? <Blank hint="dd.mm.rrrr" /> : ''}</td>
+              <td>{urzednik ? <Val v={prev?.date ? fmtDate(prev.date) : ''} hint="dd.mm.rrrr" /> : ''}</td>
             </tr>
             <tr><th colSpan={6} className="doc-th-group">CZY DO OCENY OKRESOWEJ DOŁĄCZONO WNIOSEK O PRZYZNANIE KOLEJNEGO STOPNIA SŁUŻBOWEGO</th></tr>
             <tr>
-              <td colSpan={2}>TAK <span className="doc-check"><X on={false} /></span></td>
-              <td colSpan={2}>NIE <span className="doc-check"><X on={urzednik} /></span></td>
-              <td colSpan={2}>NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej) <span className="doc-check"><X on={!urzednik} /></span></td>
+              <td colSpan={2}>TAK <span className="doc-check"><X on={request.attached === 'YES'} /></span></td>
+              <td colSpan={2}>NIE <span className="doc-check"><X on={request.attached === 'NO'} /></span></td>
+              <td colSpan={2}>NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej) <span className="doc-check"><X on={request.attached === 'NOT_APPLICABLE'} /></span></td>
             </tr>
             <tr><th colSpan={6} className="doc-th-group">DANE OCENIAJĄCEGO</th></tr>
             <tr><td className="doc-label">Imię</td><td colSpan={5}>{e.firstName}</td></tr>
@@ -271,7 +264,7 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
         />
         <div className="doc-box">
           <p>
-            <i>Przeprowadzono ze mną rozmowę oceniającą oraz zapoznano mnie z oceną okresową i wnioskami dotyczącymi indywidualnego programu rozwoju zawodowego.</i>
+            <i>{t?.employeeAcknowledgement}</i>
           </p>
           <Signatures
             cells={[
@@ -284,19 +277,58 @@ function PeriodicSheet({ detail, model, criteria }: { detail: CaseDetail; model:
         </div>
         <div className="doc-box doc-box--note">
           <p><i>Pouczenie</i></p>
-          <p>
-            Zgodnie z art. 83 ust. 1 ustawy z dnia 21 listopada 2008 r. o służbie cywilnej od oceny okresowej służy, w terminie 7 dni od dnia zapoznania się z
-            oceną, sprzeciw do dyrektora generalnego urzędu.
-          </p>
+          <p>{t?.objectionNotice}</p>
+          {t?.objectionNoticeNote && <p className="doc-muted">{t.objectionNoticeNote}</p>}
         </div>
       </div>
 
-      <div className="doc-page doc-page--part3 doc-screen-only">
-        <h2 className="doc-part">C Z Ę Ś Ć&nbsp;&nbsp;&nbsp;I I I</h2>
-        <p className="doc-muted doc-center">
-          Część III nie jest dołączana — {urzednik ? 'oceniający nie złożył wniosku o przyznanie kolejnego stopnia służbowego' : 'oceniany jest pracownikiem służby cywilnej'} (przypis 18 do wzoru arkusza).
-        </p>
-      </div>
+      {partIII ? (
+        <div className="doc-page doc-page--part3">
+          <h2 className="doc-part">C Z Ę Ś Ć&nbsp;&nbsp;&nbsp;I I I</h2>
+          <p className="doc-center"><i>{t?.partIIIApplicability}</i></p>
+          <table className="doc-table">
+            <tbody>
+              <tr><th colSpan={2} className="doc-th-group">DANE URZĘDNIKA SŁUŻBY CYWILNEJ</th></tr>
+              <tr><td className="doc-label">Imię</td><td>{p.firstName}</td></tr>
+              <tr><td className="doc-label">Nazwisko</td><td>{p.lastName}</td></tr>
+              <tr><td className="doc-label">Rok mianowania</td><td><Val v={request.appointedYear ?? ''} hint="rrrr" /></td></tr>
+              <tr><td className="doc-label">Posiadany stopień służbowy</td><td><Val v={request.currentGrade ?? ''} /></td></tr>
+              <tr><td className="doc-label">Data przyznania stopnia służbowego</td><td><Val v={request.gradeGrantedOn ? fmtDate(request.gradeGrantedOn) : ''} hint="dd.mm.rrrr" /></td></tr>
+            </tbody>
+          </table>
+          <h3 className="doc-h">WNIOSEK O PRZYZNANIE URZĘDNIKOWI SŁUŻBY CYWILNEJ KOLEJNEGO STOPNIA SŁUŻBOWEGO</h3>
+          {t && (
+            <p className="doc-line">
+              {t.promotionRequest.beforeName} <strong className="doc-val">{p.firstName} {p.lastName}</strong> {t.promotionRequest.afterName}{' '}
+              <strong className="doc-val">{request.requestedGrade ?? '……….'}</strong> {t.promotionRequest.afterGrade}
+            </p>
+          )}
+          <h3 className="doc-h">Umotywowanie wniosku</h3>
+          <div className="doc-text">{request.motivation || <Blank />}</div>
+          <Signatures
+            cells={[
+              { value: detail.signedByEvaluatorOn ? place : '', caption: 'miejscowość' },
+              { value: fmtDate(detail.signedByEvaluatorOn).replace('—', ''), caption: 'data (dd.mm.rrrr)' },
+              { value: detail.signedByEvaluatorOn ? `${e.firstName} ${e.lastName}` : '', caption: 'imię i nazwisko lub pieczątka oceniającego' },
+              { value: detail.signedByEvaluatorOn ? ESIGN : '', caption: 'podpis oceniającego' },
+            ]}
+          />
+        </div>
+      ) : (
+        <div className="doc-page doc-page--part3 doc-screen-only">
+          <h2 className="doc-part">C Z Ę Ś Ć&nbsp;&nbsp;&nbsp;I I I</h2>
+          <p className="doc-muted doc-center">
+            Część III nie jest dołączana —{' '}
+            {request.attached === 'NOT_APPLICABLE'
+              ? 'oceniany jest pracownikiem służby cywilnej'
+              : request.attached === 'NO'
+                ? 'oceniający nie dołączył wniosku o przyznanie kolejnego stopnia służbowego'
+                : 'nie zaznaczono jeszcze, czy do oceny dołączono wniosek o przyznanie kolejnego stopnia służbowego'}
+            .
+          </p>
+          {t && <p className="doc-muted doc-center">{t.partIIINotAttached}</p>}
+        </div>
+      )}
       <p className="doc-footnote">Wygenerowano w Kompasie Kompetencji na podstawie wzoru z rozporządzenia PRM z 4.04.2016 (Dz.U. poz. 470). Średnia {ev ? fmtAvg(ev.average) : '—'} liczona bez zaokrągleń.</p>
     </article>
   )

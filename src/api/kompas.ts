@@ -39,6 +39,27 @@ export interface Sheet {
   mandatoryCriteria: string[]
   maxAdditionalCriteria: number
   legalBasis: string
+  /** Fixed texts of the official template (periodic sheets); null for FIRST. */
+  template?: SheetTemplate | null
+}
+
+/** Wording of a periodic sheet template (załączniki nr 2–4 do rozp. PRM z 4.04.2016), from the API. */
+export interface SheetTemplate {
+  annex: string
+  title: string
+  partIConfirmation: string[]
+  employeeAcknowledgement: string
+  objectionNotice: string
+  objectionNoticeNote: string | null
+  partIIIApplicability: string
+  partIIINotAttached: string
+  promotionRequest: { beforeName: string; afterName: string; afterGrade: string }
+}
+
+/** GET /api/civil-service-grades: stopnie służbowe, lowest first (art. 86 ust. 1 ustawy o służbie cywilnej). */
+export interface CivilServiceGrades {
+  grades: { id: string; label: string }[]
+  legalBasis: string
 }
 
 export interface IndicatorRating {
@@ -91,6 +112,10 @@ export function getCompetencyModel(signal?: AbortSignal) {
 
 export function getSheets(signal?: AbortSignal) {
   return apiGet<Sheet[]>('/sheets', signal)
+}
+
+export function getCivilServiceGrades(signal?: AbortSignal) {
+  return apiGet<CivilServiceGrades>('/civil-service-grades', signal)
 }
 
 export function suggestLevel(body: SuggestLevelRequest, signal?: AbortSignal) {

@@ -114,7 +114,7 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
         </div>
       </PartSection>
 
-      <PartSection title="Kryteria oceny" hint="Ustalone w kroku „Proponowany formularz”.">
+      <PartSection title="Kryteria oceny i termin sporządzenia oceny" hint="Kryteria ustalono w kroku „Proponowany formularz”.">
         <div className={s.criteria}>
           <div>
             <p className={s.listLabel}>Kryteria obowiązkowe</p>
@@ -133,6 +133,14 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
             )}
           </div>
         </div>
+        <Field
+          id={DUE_ID}
+          label="Termin sporządzenia oceny"
+          hint={`Wpisz datę (dd.mm.rrrr). Ocenę sporządza się ${afterNegative ? 'po 6 miesiącach (art. 81 ust. 9 ustawy)' : 'co 24 miesiące (art. 81 ust. 1 ustawy)'}. Po zatwierdzeniu części I zmiana tylko w trybie zmiany terminu.`}
+          error={errorFor(DUE_ID)}
+        >
+          {(p) => <TextInput {...p} type="date" width={20} placeholder="dd.mm.rrrr" readOnly={!editable} value={due} onChange={(e) => setDue(e.target.value)} />}
+        </Field>
       </PartSection>
 
       <PartSection title="Zagadnienia rozmowy rozpoczynającej" hint="Rozporządzenie wymaga omówienia każdego zagadnienia (§5 ust. 1 rozp. PRM z 4.04.2016).">
@@ -180,40 +188,49 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
         </div>
       </PartSection>
 
-      <Field
-        id={DUE_ID}
-        label="Termin sporządzenia oceny"
-        hint={`Wpisz datę (dd.mm.rrrr). Ocenę sporządza się ${afterNegative ? 'po 6 miesiącach (art. 81 ust. 9 ustawy)' : 'co 24 miesiące (art. 81 ust. 1 ustawy)'}. Po zatwierdzeniu części I zmiana tylko w trybie zmiany terminu.`}
-        error={errorFor(DUE_ID)}
-      >
-        {(p) => <TextInput {...p} type="date" width={20} placeholder="dd.mm.rrrr" readOnly={!editable} value={due} onChange={(e) => setDue(e.target.value)} />}
-      </Field>
-
-      {/* Only the actions stay here; the confirmation status is shown at the top of part I. */}
-      {((!confirmed && editable) || (confirmed && !acked)) && (
-        <PartSection title="Potwierdzenie części I" hint="Oceniający i oceniany potwierdzają rozmowę oraz zapoznanie z kryteriami i terminem oceny.">
-          {!confirmed && editable && (
-            <div className={s.inlineActions}>
-              <Button variant="secondary" loading={act.isPending} disabled={patch.isPending || !allows(detail, 'CONFIRM_PART_I')} onClick={confirm}>
-                Zatwierdź część I
-              </Button>
-              <p className={layout.muted}>Zatwierdzenie zapisuje część I i blokuje kryteria oraz termin oceny.</p>
-            </div>
-          )}
-          {confirmed && !acked && (
-            <div className={s.inlineActions}>
-              <Button variant="secondary" loading={act.isPending} disabled={!allows(detail, 'EMPLOYEE_ACK_PART_I')} onClick={() => act.mutate('EMPLOYEE_ACK_PART_I')}>
-                Oceniany potwierdził zapoznanie
-              </Button>
-              <p className={layout.muted}>W wersji demonstracyjnej podpis ocenianego symulujemy przyciskiem (data = dziś).</p>
-            </div>
-          )}
-        </PartSection>
-      )}
+      {/* The wording of the template; the confirmation status is shown at the top of part I, the actions stay here. */}
+      <PartSection title="Potwierdzenie części I" hint="Oceniający i oceniany potwierdzają rozmowę oraz zapoznanie z kryteriami i terminem oceny.">
+        <TemplateConfirmation lines={criteria.sheet?.template?.partIConfirmation} />
+        {!confirmed && !editable && <p className={layout.muted}>Oceniający jeszcze nie potwierdził części I.</p>}
+        {!confirmed && editable && (
+          <div className={s.inlineActions}>
+            <Button variant="secondary" loading={act.isPending} disabled={patch.isPending || !allows(detail, 'CONFIRM_PART_I')} onClick={confirm}>
+              Zatwierdź część I
+            </Button>
+            <p className={layout.muted}>Zatwierdzenie zapisuje część I i blokuje kryteria oraz termin oceny.</p>
+          </div>
+        )}
+        {confirmed && !acked && (
+          <div className={s.inlineActions}>
+            <Button variant="secondary" loading={act.isPending} disabled={!allows(detail, 'EMPLOYEE_ACK_PART_I')} onClick={() => act.mutate('EMPLOYEE_ACK_PART_I')}>
+              Oceniany potwierdził zapoznanie
+            </Button>
+            <p className={layout.muted}>W wersji demonstracyjnej podpis ocenianego symulujemy przyciskiem (data = dziś).</p>
+          </div>
+        )}
+        {confirmed && acked && (
+          <p className={layout.muted}>
+            Potwierdzone elektronicznie: oceniający {fmtDate(detail.partI.confirmedByEvaluatorOn)}, oceniany {fmtDate(detail.partI.acknowledgedByEmployeeOn)}.
+          </p>
+        )}
+      </PartSection>
 
       <StageError error={patch.error ?? act.error} />
       <WizardActions loading={patch.isPending && !act.isPending} />
     </form>
+  )
+}
+
+/** "Potwierdzamy: – …; – …" exactly as in the sheet template (text from GET /api/sheets). */
+function TemplateConfirmation({ lines }: { lines: string[] | undefined }) {
+  if (!lines?.length) return null
+  return (
+    <blockquote className={s.quote}>
+      <p><i>Potwierdzamy:</i></p>
+      <ul className={s.dashList}>
+        {lines.map((l) => <li key={l}>{l}</li>)}
+      </ul>
+    </blockquote>
   )
 }
 

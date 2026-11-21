@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import { ErrorSummary, Field, InfoList, InfoRow, InlineAlert, RadioGroup, TextArea, type FormError } from '../../components/ui'
+import type { PreviousAssessment, PromotionAttached } from '../../api/cases'
+import { ErrorSummary, Field, InfoList, InfoRow, InlineAlert, RadioGroup, Select, TextArea, TextInput, type FormError } from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate } from '../../lib/format'
 import { competencyName } from '../../lib/model'
@@ -14,6 +15,20 @@ import s from './SheetWizard.module.css'
 const decisionId = (c: string) => `decision-${c}`
 const JUST_ID = 'justification'
 const IPRZ_ID = 'iprz'
+const PREV_RESULT_ID = 'previous-result'
+const PREV_LEVEL_ID = 'previous-level'
+const PREV_DATE_ID = 'previous-date'
+const ATTACHED_ID = 'promotion-attached'
+
+const EMPTY_PREVIOUS: PreviousAssessment = { result: null, level: null, date: null }
+
+/** Footnote 13 of the template: "Należy wpisać „pozytywna” lub „negatywna”". */
+const RESULT_OPTIONS = [
+  { value: 'POSITIVE', label: 'pozytywna' },
+  { value: 'NEGATIVE', label: 'negatywna' },
+]
+
+const samePrevious = (a: PreviousAssessment, b: PreviousAssessment) => a.result === b.result && a.level === b.level && a.date === b.date
 
 /** Part II: the assessment itself. Editable only while the backend is in part II (assessment talk, justification). */
 export function SheetPartII({ detail, model, criteria, onBack, onNext }: StageProps & { onBack: () => void; onNext: () => void }) {
@@ -22,6 +37,10 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
   const editable = !signed && (detail.currentStage === 'ASSESSMENT' || detail.currentStage === 'JUSTIFICATION')
   const [justification, setJustification] = useState(detail.justification)
   const [iprz, setIprz] = useState(detail.iprz)
+  const [previous, setPrevious] = useState<PreviousAssessment>(detail.previousAssessment ?? EMPTY_PREVIOUS)
+  const urzednik = detail.person.employment === 'URZEDNIK'
+  const attached = detail.promotionRequest.attached
+  const template = criteria.sheet?.template
   const [errors, setErrors] = useState<FormError[]>([])
   const errorFor = (id: string) => errors.find((e) => e.id === id)?.message
 
@@ -42,16 +61,32 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       .map((c) => ({ id: decisionId(c), message: `Wybierz ocenę cząstkową kryterium „${competencyName(model, c)}”` }))
     if (negative && !justification.trim()) e.push({ id: JUST_ID, message: 'Wpisz uzasadnienie: przy ocenie negatywnej jest obowiązkowe' })
     if (!iprz.trim()) e.push({ id: IPRZ_ID, message: 'Wpisz wnioski dotyczące indywidualnego programu rozwoju zawodowego' })
+    if (urzednik && attached === null) {
+      e.push({ id: ATTACHED_ID, message: 'Zaznacz, czy do oceny okresowej dołączono wniosek o przyznanie kolejnego stopnia służbowego' })
+    }
     return e
   }
 
-  const dirty = justification !== detail.justification || iprz !== detail.iprz
+  const previousDirty = urzednik && !samePrevious(previous, detail.previousAssessment ?? EMPTY_PREVIOUS)
+  const dirty = justification !== detail.justification || iprz !== detail.iprz || previousDirty
+  const changes = () => ({ justification, iprz, ...(previousDirty ? { previousAssessment: previous } : {}) })
 
   // "Wstecz" keeps what was typed: unsaved text goes to the server without the checks of "Dalej".
   const back = () => {
-    if (editable && dirty) patch.mutate({ justification, iprz })
+    if (editable && dirty) patch.mutate(changes())
     onBack()
   }
+
+  // The answer decides whether part III is attached, so it is saved at once (like the partial scores).
+  // NIE DOTYCZY is never chosen by hand: the backend sets it for a pracownik służby cywilnej, and then it is locked.
+  const answer = (v: string) => patch.mutate({ promotionRequest: { attached: v as PromotionAttached } })
+  const attachedOptions = [
+    { value: 'YES', label: 'TAK', disabled: !editable || !urzednik },
+    { value: 'NO', label: 'NIE', disabled: !editable || !urzednik },
+    { value: 'NOT_APPLICABLE', label: 'NIE DOTYCZY (oceniany jest pracownikiem służby cywilnej)', disabled: true },
+  ]
+  const levelOptions = model.scale.map((x) => ({ value: x.label.toLowerCase(), label: x.label.toLowerCase() }))
+  const evaluator = detail.evaluator
 
   const onSubmit = async (ev: FormEvent) => {
     ev.preventDefault()
@@ -60,7 +95,7 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
     setErrors(e)
     if (e.length) return
     try {
-      if (dirty) await patch.mutateAsync({ justification, iprz })
+      if (dirty) await patch.mutateAsync(changes())
       onNext()
     } catch {
       // the error is shown under the form
@@ -150,6 +185,101 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       >
         {(p) => <TextArea {...p} rows={5} readOnly={!editable} value={iprz} onChange={(e) => setIprz(e.target.value)} />}
       </Field>
+
+      <PartSection
+        title="Dane dotyczące poprzedniej oceny okresowej urzędnika służby cywilnej"
+        hint={urzednik ? 'Jeśli poprzednia ocena jest w systemie, dane są już wpisane: sprawdź je. W przeciwnym razie wpisz je z poprzedniego arkusza.' : undefined}
+      >
+        {urzednik ? (
+          <div className={s.fields}>
+            <Field id={PREV_RESULT_ID} label="Ocena" optional>
+              {(p) => (
+                <Select
+                  {...p}
+                  disabled={!editable}
+                  placeholder="Wybierz"
+                  options={RESULT_OPTIONS}
+                  value={previous.result ?? ''}
+                  onChange={(ev) => setPrevious((v) => ({ ...v, result: (ev.target.value || null) as PreviousAssessment['result'] }))}
+                />
+              )}
+            </Field>
+            <Field id={PREV_LEVEL_ID} label="Poziom" hint="Na jakim poziomie przyznano poprzednią ocenę, np. „na poziomie oczekiwań”." optional>
+              {(p) => (
+                <Select
+                  {...p}
+                  disabled={!editable}
+                  placeholder="Wybierz"
+                  options={levelOptions}
+                  value={previous.level ?? ''}
+                  onChange={(ev) => setPrevious((v) => ({ ...v, level: ev.target.value || null }))}
+                />
+              )}
+            </Field>
+            <Field id={PREV_DATE_ID} label="Data sporządzenia" optional>
+              {(p) => (
+                <TextInput
+                  {...p}
+                  type="date"
+                  width={20}
+                  placeholder="dd.mm.rrrr"
+                  readOnly={!editable}
+                  value={previous.date ?? ''}
+                  onChange={(ev) => setPrevious((v) => ({ ...v, date: ev.target.value || null }))}
+                />
+              )}
+            </Field>
+          </div>
+        ) : (
+          <p className={layout.muted}>Nie dotyczy: oceniany jest pracownikiem służby cywilnej.</p>
+        )}
+      </PartSection>
+
+      <RadioGroup
+        id={ATTACHED_ID}
+        name={ATTACHED_ID}
+        legend="Czy do oceny okresowej dołączono wniosek o przyznanie kolejnego stopnia służbowego?"
+        hint={
+          urzednik
+            ? 'Przy odpowiedzi TAK wypełnisz wniosek w części III. Wniosek można dołączyć tylko do oceny pozytywnej. Wybór zapisuje się od razu.'
+            : 'Oceniany jest pracownikiem służby cywilnej, więc odpowiedź jest ustawiona na stałe.'
+        }
+        error={errorFor(ATTACHED_ID)}
+        options={attachedOptions}
+        value={attached ?? ''}
+        onChange={answer}
+      />
+
+      <PartSection title="Dane oceniającego" hint="Uzupełnione automatycznie z teczki.">
+        <InfoList>
+          <InfoRow label="Imię" value={evaluator.firstName} />
+          <InfoRow label="Nazwisko" value={evaluator.lastName} />
+          <InfoRow label="Komórka organizacyjna" value={evaluator.unit} />
+          <InfoRow label="Stanowisko pracy" value={evaluator.position} />
+          <InfoRow label="Data i podpis oceniającego" value={signed ? `${fmtDate(signed)}, podpisano elektronicznie` : 'Po zatwierdzeniu oceny (krok „Dokument”)'} />
+        </InfoList>
+      </PartSection>
+
+      <PartSection title="Zapoznanie ocenianego z oceną">
+        {template && (
+          <blockquote className={s.quote}>
+            <p><i>{template.employeeAcknowledgement}</i></p>
+          </blockquote>
+        )}
+        <InfoList>
+          <InfoRow
+            label="Oceniany potwierdził"
+            value={detail.acknowledgedOn ? `${fmtDate(detail.acknowledgedOn)}, ${detail.person.firstName} ${detail.person.lastName}` : 'Jeszcze nie: po zatwierdzeniu oceny'}
+          />
+        </InfoList>
+      </PartSection>
+
+      {template && (
+        <InlineAlert tone="info" title="Pouczenie">
+          <p>{template.objectionNotice}</p>
+          {template.objectionNoticeNote && <p className={layout.muted}>{template.objectionNoticeNote}</p>}
+        </InlineAlert>
+      )}
 
       <StageError error={patch.error} />
       <WizardActions onBack={back} loading={patch.isPending} />
