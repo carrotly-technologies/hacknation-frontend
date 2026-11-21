@@ -1,7 +1,17 @@
-/* Horizontal stage stepper: chevrons on desktop, numbered dots on phones. Tokens only. */
+/*
+  Horizontal stage stepper. Tokens only. The layout follows the stepper's own width (container queries), not the
+  viewport, so labels never break inside a word and never take more than two lines:
+  - wide: chevrons with the marker beside the label;
+  - medium (< 82rem): chevrons with the marker above a smaller label;
+  - compact (< 58rem): numbered dots joined by a line, the name of the shown step under them.
+  The thresholds are in rem, so enlarged text (/ustawienia, 125% / 150%) switches to the compact variant before
+  a word stops fitting. They are sized for the seven periodic steps (longest two-line label „Formularz oceny
+  kompetencji”, longest words „Proponowany”, „Weryfikacja”, „kompetencji” in bold); fewer steps get wider chevrons.
+*/
 .root {
   --chev: 14px;
   min-width: 0;
+  container: stage-stepper / inline-size;
 }
 
 .list {
@@ -66,10 +76,18 @@
   clip-path: inherit;
 }
 
+/* Breaks only at spaces, never inside a word; at most two lines (the full name stays in the step's title) */
 .label {
+  display: -webkit-box;
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
   text-decoration: none;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .marker {
@@ -160,16 +178,26 @@ a.step:visited .label {
   color: var(--text);
 }
 
-@media (max-width: 1100px) {
+/* Medium: marker above the label, tighter padding inside the chevron (the chevron tips stay clear) */
+@container stage-stepper (width < 82rem) {
   .step {
     flex-direction: column;
     gap: var(--s-1);
+    padding: var(--s-2) calc(var(--chev) + var(--s-1)) var(--s-2) calc(var(--chev) + var(--s-2));
     font-size: var(--text-xs);
+  }
+
+  .item:first-child .step {
+    padding-left: var(--s-2);
+  }
+
+  .item:last-child .step {
+    padding-right: var(--s-2);
   }
 }
 
-/* Phones: numbered dots joined by a line, the name of the shown step under them */
-@media (max-width: 767px) {
+/* Compact (phones, narrow windows, enlarged text): numbered dots joined by a line, the name of the shown step under them */
+@container stage-stepper (width < 58rem) {
   .list {
     justify-content: space-between;
     position: relative;
@@ -185,8 +213,9 @@ a.step:visited .label {
     background: var(--border-strong);
   }
 
+  /* 44px per dot; in a very narrow stepper (e.g. 320px) the dots shrink instead of scrolling sideways */
   .item {
-    flex: none;
+    flex: 0 1 44px;
   }
 
   .item + .item {
@@ -197,9 +226,11 @@ a.step:visited .label {
   .step,
   .item:first-child .step,
   .item:last-child .step {
-    width: 44px;
-    height: 44px;
-    min-height: 44px;
+    width: 100%;
+    max-width: 44px;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1;
     padding: 0;
     border-radius: 50%;
     background: transparent;
