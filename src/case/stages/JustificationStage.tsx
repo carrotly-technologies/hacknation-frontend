@@ -1,13 +1,13 @@
 import { Link } from 'react-router'
-import { ScoreChip } from '../../components/Score'
 import { Field, InlineAlert, TextArea } from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
-import { fmtAvg, fmtDate } from '../../lib/format'
+import { fmtDate } from '../../lib/format'
 import { competencyName } from '../../lib/model'
 import { liveResult } from '../../lib/result'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentTalkStage.module.css'
+import { CompetencyScoresTable, ResultSummary } from './CompetencyScores'
 import { FormalCheck } from './FormalCheck'
 import { SignAssessment } from './SignAssessment'
 import { StageError, StageLayout } from './StageLayout'
@@ -84,21 +84,18 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
         <p className={layout.muted}>Część I jest zatwierdzona, więc nie można jej już zmienić.</p>
 
         <h4 className={s.subheading}>Część II · Ocena okresowa</h4>
-        {criteria.all.map((c) => (
-          <div key={c} className={s.summaryRow}>
-            <div>
-              {competencyName(model, c)} <ScoreChip points={detail.decisions[c]} size="sm" />
-            </div>
-            {fix(competency(c), `ocena cząstkowa kryterium ${competencyName(model, c)}`)}
-          </div>
-        ))}
-        <div className={s.summaryRow}>
-          <div>
-            Średnia {fmtAvg(r.average)}
-            {r.band && ` · ${r.band.label.toLowerCase()}`} · ocena{' '}
-            <strong>{r.result === 'POSITIVE' ? 'pozytywna' : r.result === 'NEGATIVE' ? 'negatywna' : '—'}</strong>
-          </div>
-        </div>
+        <CompetencyScoresTable
+          detail={detail}
+          model={model}
+          criteria={criteria.all}
+          caption="Oceny cząstkowe w części II arkusza"
+          extra={
+            signed
+              ? []
+              : [{ header: 'Działanie', hiddenHeader: true, cell: (c) => fix(competency(c), `ocena cząstkowa kryterium ${competencyName(model, c)}`) }]
+          }
+        />
+        <ResultSummary result={r} />
         <div className={s.summaryRow}>
           <div>
             Data przeprowadzenia rozmowy oceniającej: <span className={s.summaryValue}>{fmtDate(detail.assessmentTalkOn) || '—'}</span>
