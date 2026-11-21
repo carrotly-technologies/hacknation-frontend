@@ -1,17 +1,18 @@
 import { useQuery } from '@tanstack/react-query'
 import { ChevronRight } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
-import { getMe, getTeam, type CaseSummary } from '../api/cases'
+import { getTeam, type CaseSummary } from '../api/cases'
 import { DeadlineText } from '../components/Deadline'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { StageDots } from '../components/StageDots'
+import { useMe } from '../lib/useAuth'
 import { countLabel } from '../lib/format'
 import { caseUrl, CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
 
 export function TeamPage() {
   const navigate = useNavigate()
   const team = useQuery({ queryKey: ['team'], queryFn: ({ signal }) => getTeam(signal) })
-  const me = useQuery({ queryKey: ['me'], queryFn: ({ signal }) => getMe(signal), staleTime: Infinity })
+  const me = useMe()
 
   if (team.isPending) return <div className="page"><LoadingState /></div>
   if (team.isError) return <div className="page"><ErrorState error={team.error} what="lista zespołu" onRetry={() => team.refetch()} /></div>
@@ -23,7 +24,7 @@ export function TeamPage() {
       <header className="page-head">
         <div>
           <h1 className="h-page">Mój zespół</h1>
-          <p className="page-head__meta" title={me.data?.unit ?? 'Wydział'}>{me.data?.unit ?? 'Wydział'}</p>
+          <p className="page-head__meta" title={me.unit}>{me.unit}</p>
         </div>
       </header>
 

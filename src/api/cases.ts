@@ -154,8 +154,14 @@ export type CaseAction =
   | 'REPORT_SUBMITTED'
   | 'COMPLETE_INTRO_TALK'
 
+export type Role = 'SUPERVISOR' | 'HR' | 'ADMIN'
+
+/** GET /api/me: the signed-in user. */
 export interface Me {
+  id: string
+  login: string
   name: string
+  role: Role
   position: string
   unit: string
   officeName: string

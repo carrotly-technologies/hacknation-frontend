@@ -25,6 +25,12 @@ npm run dev       # http://localhost:5173
 The app is **Kompas Kompetencji** (UI in Polish), a work tool for civil-service
 supervisors and HR, built around the assessment file ("teczka oceny"):
 
+- `/logowanie` — sign-in with login and password; the role (supervisor, HR, admin) comes from the account
+  (demo accounts: backend README). The token sits in `sessionStorage` and goes with every API call
+  (`Authorization: Bearer`); a 401 sends you back to sign-in. Routes and the menu depend on the role, and a
+  route for another role redirects to your start page (`src/lib/useAuth.ts`, `src/shell/RequireAuth.tsx`);
+- `/admin/uzytkownicy` — admin only: accounts and their roles;
+
 - `/zespol` — my team: deadline-driven to-do list and team table;
 - `/teczka/:id/:stage` — the case file: stage rail (periodic and first-assessment paths), stage workspaces
   (OSP analysis, opening talk, observations, rubric assessment with system suggestion and supervisor
@@ -41,7 +47,7 @@ components in `src/components/ui/`; see `docs/DESIGN.md`.
 Without a backend you can use a dev-only mock (off by default, never bundled):
 
 ```bash
-MOCK_API=1 npm run dev   # serves v1 + v2 /api/* (dev-mock-api.ts, dev-mock-v2.ts)
+MOCK_API=1 npm run dev   # serves v1 + v2 /api/* (dev-mock-api.ts, dev-mock-v2.ts); any password, login a.lis = HR, admin = ADMIN
 ```
 
 ## Quality

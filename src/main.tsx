@@ -15,7 +15,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import App from './App.tsx'
 import { prefetchConfig } from './lib/features'
-import { RoleProvider } from './lib/role.tsx'
+import { AuthProvider } from './lib/auth.tsx'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,9 +28,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <RoleProvider>
+        <AuthProvider>
           <App />
-        </RoleProvider>
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

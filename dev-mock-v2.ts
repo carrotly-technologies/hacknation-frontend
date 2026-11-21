@@ -689,11 +689,36 @@ export function createV2(model: { competencies: { id: string; name: string; indi
     }
   }
 
+  type MockUser = { id: string; login: string; name: string; firstName: string; lastName: string; role: 'SUPERVISOR' | 'HR' | 'ADMIN'; position: string; unit: string }
+  const MOCK_USERS: MockUser[] = [
+    { id: 'u-kowalczyk', login: 'j.kaminska', name: 'Joanna Kowalczyk', firstName: 'Joanna', lastName: 'Kowalczyk', role: 'SUPERVISOR', position: 'naczelnik wydziału', unit: UNIT },
+    { id: 'u-lis', login: 'a.lis', name: 'Agnieszka Lis', firstName: 'Agnieszka', lastName: 'Lis', role: 'HR', position: 'Specjalistka ds. kadr', unit: 'Biuro Dyrektora Generalnego' },
+    { id: 'u-admin', login: 'admin', name: 'Marek Zając', firstName: 'Marek', lastName: 'Zając', role: 'ADMIN', position: 'Administrator systemu', unit: 'Biuro Informatyki' },
+  ]
+  let mockUserId = MOCK_USERS[0].id
+
   /** Returns null when the route is not a v2 route. */
   return function handle(method: string, url: string, body: Json): { status: number; body: unknown } | null {
     const path = url.split('?')[0]
-    if (method === 'GET' && path === '/api/me')
-      return ok({ name: 'Joanna Kowalczyk', position: 'naczelnik wydziału', unit: UNIT, officeName: OFFICE })
+    // Auth is not enforced in the mock: any password works, the login picks the role.
+    if (method === 'POST' && path === '/api/auth/login') {
+      const login = String((body as { login?: unknown }).login ?? '')
+      const user = MOCK_USERS.find((u) => u.login === login) ?? MOCK_USERS[0]
+      mockUserId = user.id
+      return ok({ accessToken: `mock-${user.id}`, tokenType: 'Bearer', expiresIn: 28800, user })
+    }
+    if (method === 'POST' && path === '/api/auth/logout') return { status: 204, body: undefined }
+    if (method === 'GET' && path === '/api/me') {
+      const u = MOCK_USERS.find((x) => x.id === mockUserId) ?? MOCK_USERS[0]
+      return ok({ id: u.id, login: u.login, name: u.name, role: u.role, position: u.position, unit: u.unit, officeName: OFFICE })
+    }
+    if (method === 'GET' && path === '/api/admin/users') return ok(MOCK_USERS)
+    if (method === 'PATCH' && path.startsWith('/api/admin/users/')) {
+      const u = MOCK_USERS.find((x) => x.id === path.split('/').pop())
+      if (!u) return { status: 404, body: { statusCode: 404, message: 'Nie ma użytkownika' } }
+      u.role = String((body as { role?: unknown }).role) as MockUser['role']
+      return ok(u)
+    }
     if (method === 'GET' && path === '/api/team') {
       const mine = store.filter((r) => r.mine)
       const todos = mine.map(todo).filter((t) => t !== null).sort((a, b) => (a.deadline.date ?? '').localeCompare(b.deadline.date ?? ''))

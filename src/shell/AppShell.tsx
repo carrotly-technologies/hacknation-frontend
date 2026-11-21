@@ -1,42 +1,27 @@
-import { useEffect } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BookOpen, Compass, Ellipsis, RotateCcw, TableProperties, Users } from 'lucide-react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
-import { getMe, resetDemo } from '../api/cases'
+import { useQueryClient } from '@tanstack/react-query'
+import { BookOpen, Compass, Ellipsis, LogOut, RotateCcw, TableProperties, UserCog, Users } from 'lucide-react'
+import { NavLink, Outlet, useLocation } from 'react-router'
+import { resetDemo } from '../api/cases'
 import { ApiStatus } from '../components/ApiStatus'
-import { useRole, type Role } from '../lib/role'
+import { ROLE_LABEL, useAuth, useMe } from '../lib/useAuth'
 
 export function AppShell() {
-  const { role, setRole } = useRole()
-  const navigate = useNavigate()
+  const me = useMe()
+  const { signOut } = useAuth()
   const location = useLocation()
   const qc = useQueryClient()
-  // Deep links decide the role: /hr is the HR view, team and case files are the supervisor's.
-  useEffect(() => {
-    const p = location.pathname
-    if (p.startsWith('/hr') && role !== 'HR') setRole('HR')
-    else if ((p.startsWith('/zespol') || p.startsWith('/teczka')) && role !== 'SUPERVISOR') setRole('SUPERVISOR')
-  }, [location.pathname, role, setRole])
-
-  const me = useQuery({ queryKey: ['me'], queryFn: ({ signal }) => getMe(signal), staleTime: Infinity })
-
-  const switchRole = (r: Role) => {
-    if (r === role) return
-    setRole(r)
-    navigate(r === 'HR' ? '/hr' : '/zespol')
-  }
 
   const onReset = async () => {
     if (!window.confirm('Przywrócić dane demonstracyjne do stanu początkowego?')) return
     try {
       await resetDemo()
     } finally {
-      qc.invalidateQueries()
+      // keep the signed-in user, refetch the rest
+      qc.invalidateQueries({ predicate: (q) => q.queryKey[0] !== 'me' })
     }
   }
 
-  const userName = role === 'HR' ? 'Agnieszka Lis' : (me.data?.name ?? 'Joanna Kowalczyk')
-  const userRole = role === 'HR' ? 'Biuro Dyrektora Generalnego · kadry' : (me.data?.position ?? 'naczelnik wydziału')
+  const userRole = `${ROLE_LABEL[me.role]} · ${me.position}`
 
   return (
     <div className="shell">
@@ -48,49 +33,43 @@ export function AppShell() {
           <Compass className="topbar__logo" size={22} strokeWidth={1.75} aria-hidden="true" />
           <span className="topbar__product">Kompas Kompetencji</span>
           <span className="topbar__sep" aria-hidden="true" />
-          <span className="topbar__office" title={officeLabel(me.data?.officeName)}>{officeLabel(me.data?.officeName)}</span>
+          <span className="topbar__office" title={officeLabel(me.officeName)}>{officeLabel(me.officeName)}</span>
         </div>
         <div className="topbar__right">
-          <div className="role-switch" role="radiogroup" aria-label="Rola w systemie">
-            {(
-              [
-                ['SUPERVISOR', 'Przełożony'],
-                ['HR', 'Kadry HR'],
-              ] as const
-            ).map(([r, label]) => (
-              <button
-                key={r}
-                type="button"
-                role="radio"
-                aria-checked={role === r}
-                className={`role-switch__opt ${role === r ? 'is-on' : ''}`}
-                onClick={() => switchRole(r)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
           <div className="topbar__user">
-            <span className="topbar__user-name" title={userName}>{userName}</span>
+            <span className="topbar__user-name" title={me.name}>{me.name}</span>
             <span className="topbar__user-role" title={userRole}>{userRole}</span>
           </div>
+          <button type="button" className="topbar__logout" onClick={() => void signOut()}>
+            <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
+            <span>Wyloguj</span>
+          </button>
         </div>
       </header>
 
       <nav className="sidenav" aria-label="Nawigacja główna">
         <ul className="sidenav__list">
-          {role === 'SUPERVISOR' ? (
+          {me.role === 'SUPERVISOR' && (
             <li>
               <NavLink to="/zespol" className={({ isActive }) => navCls(isActive || location.pathname.startsWith('/teczka'))}>
                 <Users size={20} strokeWidth={1.75} aria-hidden="true" />
                 <span title="Mój zespół">Mój zespół</span>
               </NavLink>
             </li>
-          ) : (
+          )}
+          {me.role === 'HR' && (
             <li>
               <NavLink to="/hr" className={({ isActive }) => navCls(isActive)}>
                 <TableProperties size={20} strokeWidth={1.75} aria-hidden="true" />
                 <span title="Monitoring">Monitoring</span>
+              </NavLink>
+            </li>
+          )}
+          {me.role === 'ADMIN' && (
+            <li>
+              <NavLink to="/admin/uzytkownicy" className={({ isActive }) => navCls(isActive)}>
+                <UserCog size={20} strokeWidth={1.75} aria-hidden="true" />
+                <span title="Użytkownicy">Użytkownicy</span>
               </NavLink>
             </li>
           )}
