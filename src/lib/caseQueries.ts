@@ -7,6 +7,7 @@ import {
   patchCase,
   runCaseAction,
   type CaseAction,
+  type CaseActionInput,
   type CaseDetail,
   type CasePatch,
   type Observation,
@@ -84,13 +85,13 @@ export function usePatchCase(id: string) {
 
 /**
  * Runs a workflow action; when the case moves to another stage, the view follows it. `follow: false` for callers
- * that decide where to go themselves (step 4 stays open even when its criteria are all decided → JUSTIFICATION).
+ * that decide where to go themselves (step 4 stays open even when its criteria are all decided → ASSESSMENT_TALK).
  */
 export function useCaseAction(id: string, { follow = true }: { follow?: boolean } = {}) {
   const qc = useQueryClient()
   const navigate = useNavigate()
   return useMutation({
-    mutationFn: (action: CaseAction) => runCaseAction(id, action),
+    mutationFn: (input: CaseAction | CaseActionInput) => runCaseAction(id, input),
     onSuccess: (data) => {
       const prev = qc.getQueryData<CaseDetail>(caseKey(id))
       qc.setQueryData(caseKey(id), data)

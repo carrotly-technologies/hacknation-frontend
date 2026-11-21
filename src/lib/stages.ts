@@ -7,7 +7,8 @@ export const STAGE_SLUG: Record<StageId, string> = {
   OPENING_TALK: 'rozmowa-rozpoczynajaca',
   OBSERVATION: 'obserwacje',
   ASSESSMENT: 'formularz-kompetencji',
-  JUSTIFICATION: 'uzasadnienie',
+  ASSESSMENT_TALK: 'rozmowa-oceniajaca',
+  JUSTIFICATION: 'weryfikacja',
   DOCUMENT: 'dokument',
   INTRO_TALK: 'rozmowa-wstepna',
   REPORT: 'sprawozdanie',
@@ -20,6 +21,7 @@ export const STAGE_SLUG: Record<StageId, string> = {
 const LEGACY_SLUG: Record<string, StageId> = {
   'wstepny-formularz': 'SHEET_PROPOSAL',
   ocena: 'ASSESSMENT',
+  uzasadnienie: 'JUSTIFICATION',
 }
 
 export function stageFromSlug(slug: string | undefined): StageId | null {
@@ -52,7 +54,8 @@ export const STAGE_SHORT: Record<StageId, string> = {
   OPENING_TALK: 'Rozmowa rozpoczynająca',
   OBSERVATION: 'Okres oceny',
   ASSESSMENT: 'Formularz oceny kompetencji',
-  JUSTIFICATION: 'Uzasadnienie i IPRZ',
+  ASSESSMENT_TALK: 'Rozmowa oceniająca',
+  JUSTIFICATION: 'Weryfikacja formularza',
   DOCUMENT: 'Dokument',
   INTRO_TALK: 'Rozmowa wstępna',
   REPORT: 'Sprawozdanie',
@@ -81,8 +84,12 @@ export const CASE_STATUS_LABEL = {
   ZAKONCZONA: 'Zakończona',
 } as const
 
+/**
+ * Stages that open together: the talk material (step 5) can be looked at while the competency form is still being
+ * filled in, and the form stays open during the talk. "Weryfikacja formularza" (step 6) opens only after the talk.
+ */
 const EVAL_GROUP: StageId[][] = [
-  ['ASSESSMENT', 'JUSTIFICATION'],
+  ['ASSESSMENT', 'ASSESSMENT_TALK'],
   ['FIRST_ASSESSMENT', 'FIRST_CONDITIONS'],
 ]
 
@@ -127,7 +134,7 @@ export interface CaseStep {
 }
 
 /**
- * The six steps of the periodic assessment as the design names them, each grouping one or more backend
+ * The seven steps of the periodic assessment as the design names them, each grouping one or more backend
  * stages (the process itself and its legal rules stay in the backend). Stages missing from the case are
  * skipped and stages not listed here get a step of their own, so the stepper follows whatever the API sends.
  */
@@ -136,6 +143,8 @@ const PERIODIC_STEPS: { key: string; label: string; stages: StageId[] }[] = [
   { key: 'proponowany', label: 'Proponowany formularz', stages: ['SHEET_PROPOSAL'] },
   { key: 'formularz', label: 'Formularz oceny', stages: ['OPENING_TALK', 'OBSERVATION'] },
   { key: 'kompetencje', label: 'Formularz oceny kompetencji', stages: ['ASSESSMENT'] },
+  // Poradnik „Oceny okresowe w służbie cywilnej”, Tabela nr 1: etap III (rozmowa) and etap IV (ocena na piśmie).
+  { key: 'rozmowa', label: 'Rozmowa oceniająca', stages: ['ASSESSMENT_TALK'] },
   { key: 'weryfikacja', label: 'Weryfikacja formularza', stages: ['JUSTIFICATION'] },
   { key: 'koncowa', label: 'Ocena końcowa', stages: ['DOCUMENT'] },
 ]

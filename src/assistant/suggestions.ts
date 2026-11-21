@@ -29,6 +29,11 @@ const FORMAL: Bank = {
     'Co jeśli średnia wynosi dokładnie 4,00?',
     'Jak traktować wskaźnik, którego nie miałem okazji zaobserwować?',
   ],
+  ASSESSMENT_TALK: [
+    'Co omawia się na rozmowie oceniającej?',
+    'Kiedy przeprowadza się rozmowę oceniającą?',
+    'Czy po rozmowie oceniającej mogę zmienić oceny cząstkowe?',
+  ],
   JUSTIFICATION: [
     'Kiedy uzasadnienie oceny jest obowiązkowe?',
     'Co powinny zawierać wnioski do IPRZ?',
@@ -76,6 +81,11 @@ const CONVERSATION: Bank = {
     'Zaproponuj pytania do rozmowy o kryterium Współpraca.',
     'Jak omówić obszar do rozwoju bez demotywowania?',
     'Pomóż uporządkować argumenty do tej oceny.',
+  ],
+  ASSESSMENT_TALK: [
+    'Przygotuj pytania do rozmowy oceniającej.',
+    'Jakie kwestie wymagają omówienia na tej rozmowie?',
+    'Pomóż uporządkować argumenty uzasadniające ocenę.',
   ],
   JUSTIFICATION: [
     'Pomóż napisać szkic uzasadnienia na podstawie moich decyzji.',

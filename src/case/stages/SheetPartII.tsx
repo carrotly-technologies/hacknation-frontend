@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { PreviousAssessment, PromotionAttached } from '../../api/cases'
 import {
-  Button,
-  Dialog,
   ErrorSummary,
   Field,
   InfoList,
@@ -16,14 +14,13 @@ import {
   type FormError,
   type RadioMatrixGroup,
 } from '../../components/ui'
-import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
+import { usePatchCase } from '../../lib/caseQueries'
 import { fmtAvg, fmtDate, plPoints } from '../../lib/format'
 import { competencyName } from '../../lib/model'
-import { officePlace } from '../../lib/office'
 import { liveResult } from '../../lib/result'
-import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { AckLinkSection } from './AckLinkSection'
+import { SignAssessment } from './SignAssessment'
 import { PartHeading, PartSection, WizardActions } from './SheetWizardCommon'
 import { StageError } from './StageLayout'
 import layout from './StageLayout.module.css'
@@ -38,7 +35,6 @@ const PREV_RESULT_ID = 'previous-result'
 const PREV_LEVEL_ID = 'previous-level'
 const PREV_DATE_ID = 'previous-date'
 const ATTACHED_ID = 'promotion-attached'
-const SIGN_HINT_ID = 'evaluator-signature-hint'
 
 const EMPTY_PREVIOUS: PreviousAssessment = { result: null, level: null, date: null }
 
@@ -57,9 +53,6 @@ const samePrevious = (a: PreviousAssessment, b: PreviousAssessment) => a.result 
  */
 export function SheetPartII({ detail, model, criteria, onBack, onNext }: StageProps & { onBack: () => void; onNext: () => void }) {
   const patch = usePatchCase(detail.id)
-  // follow: false: after signing the user stays here and sees the signature; the case itself moves on to "Ocena końcowa".
-  const sign = useCaseAction(detail.id, { follow: false })
-  const [confirmSign, setConfirmSign] = useState(false)
   const signed = detail.signedByEvaluatorOn
   // A draft until the evaluator signs (hacknation-backend/notatki/decyzje.md, 2026-11-21).
   const editable = !signed
@@ -74,7 +67,8 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
 
   const r = liveResult(detail, criteria.all, model)
   const negative = r.result === 'NEGATIVE'
-  const conversationDate = detail.stages.find((x) => x.id === 'ASSESSMENT')?.completedOn ?? null
+  // Recorded in step 5, "Rozmowa oceniająca" (RECORD_ASSESSMENT_TALK).
+  const conversationDate = detail.assessmentTalkOn ?? null
   const periodFrom = detail.partI.acknowledgedByEmployeeOn
   const periodTo = signed ?? detail.partI.assessmentDue
   // Points come from the sheet and their labels from the competency model (both from the API), as in the template.
@@ -121,17 +115,9 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
   const levelOptions = model.scale.map((x) => ({ value: x.label.toLowerCase(), label: x.label.toLowerCase() }))
   const evaluator = detail.evaluator
 
-  // The backend decides whether signing is open (step 4 opened); the formal check runs on the action itself.
-  const canSign = allows(detail, 'SIGN_ASSESSMENT')
   // Unsaved text of part II is saved first, so the signature covers what is on screen.
-  const signNow = async () => {
-    setConfirmSign(false)
-    try {
-      if (dirty) await patch.mutateAsync(changes())
-      await sign.mutateAsync('SIGN_ASSESSMENT')
-    } catch {
-      // the error is shown under the form
-    }
+  const saveBeforeSign = async () => {
+    if (dirty) await patch.mutateAsync(changes())
   }
 
   const onSubmit = async (ev: FormEvent) => {
@@ -291,43 +277,8 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
           <InfoRow label="Komórka organizacyjna" value={evaluator.unit} />
           <InfoRow label="Stanowisko pracy" value={evaluator.position} />
         </InfoList>
-        {/* The same action as "Zatwierdź ocenę i podpisz" in "Weryfikacja formularza": a signature here shows there too. */}
-        {signed ? (
-          <InlineAlert tone="success" live title="Data i podpis oceniającego">
-            Podpisano elektronicznie: {evaluator.firstName} {evaluator.lastName}, {officePlace()}, {fmtDate(signed)}
-          </InlineAlert>
-        ) : (
-          <div>
-            <Button
-              disabled={!canSign}
-              loading={sign.isPending}
-              aria-describedby={canSign ? undefined : SIGN_HINT_ID}
-              onClick={() => setConfirmSign(true)}
-            >
-              Podpisz ocenę
-            </Button>
-            {!canSign && (
-              <p id={SIGN_HINT_ID} className="blocked-reason">
-                Dostępne po ocenie wszystkich kryteriów
-              </p>
-            )}
-          </div>
-        )}
-        <Dialog
-          open={confirmSign}
-          onClose={() => setConfirmSign(false)}
-          title="Podpisać ocenę?"
-          actions={
-            <>
-              <Button variant="text" onClick={() => setConfirmSign(false)}>
-                Anuluj
-              </Button>
-              <Button onClick={() => void signNow()}>Podpisz</Button>
-            </>
-          }
-        >
-          Po podpisaniu oceny nie można jej zmienić. Podpisać?
-        </Dialog>
+        {/* The same control as in step 6, "Weryfikacja formularza": active only after the assessment talk. */}
+        <SignAssessment detail={detail} beforeSign={saveBeforeSign} formalCheck={false} />
       </PartSection>
 
       <PartSection title="Zapoznanie ocenianego z oceną">
@@ -335,7 +286,7 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
         <AckLinkSection detail={detail} label={template?.employeeAcknowledgement ?? 'Oceniany zapoznał się z oceną okresową'} />
       </PartSection>
 
-      <StageError error={patch.error ?? sign.error} />
+      <StageError error={patch.error} />
       <WizardActions onBack={back} loading={patch.isPending} />
     </form>
   )

@@ -34,7 +34,8 @@ type Props = {
   criteria?: Pick<CaseCriteria, 'all' | 'scale'>
   fields?: FormalCheckFields
   action?: CaseAction
-  label: string
+  /** The signing button; without it only the list ("Weryfikacja formularza" signs with `SignAssessment`). */
+  label?: string
 }
 
 /**
@@ -94,7 +95,7 @@ export function FormalCheck({ detail, criteria, fields = {}, action = 'SIGN_ASSE
         </div>
       )}
 
-      {(!signed || !!act.error) && (
+      {label && (!signed || !!act.error) && (
         <div className={s.actions}>
           {!signed && (
             <Button
@@ -171,6 +172,8 @@ function fixFor(item: FormalCheckItem, detail: CaseDetail, criteria: Props['crit
   switch (item.id) {
     case 'SHEET_SELECTED':
       return step('OSP_ANALYSIS')
+    case 'ASSESSMENT_TALK_HELD':
+      return step('ASSESSMENT_TALK')
     case 'PART_I_CONFIRMED':
     case 'ADDITIONAL_CRITERIA_CONSISTENT':
       return sheetPart(1)

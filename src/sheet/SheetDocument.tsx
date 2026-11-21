@@ -51,7 +51,7 @@ function PeriodicSheet({ detail, model, criteria }: { detail: SheetData; model: 
   const request = detail.promotionRequest
   const partIII = request.attached === 'YES'
   const ptsWord = (n: number) => (n === 1 ? 'punkt' : n === 3 ? 'punkty' : 'punktów')
-  const conversationDate = detail.stages.find((s) => s.id === 'ASSESSMENT')?.completedOn ?? null
+  const conversationDate = detail.assessmentTalkOn ?? null
   const periodTo = detail.signedByEvaluatorOn ?? null
   const urzednik = p.employment === 'URZEDNIK'
 

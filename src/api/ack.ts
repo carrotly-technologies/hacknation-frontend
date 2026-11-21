@@ -19,6 +19,7 @@ export interface AckSheetData
     | 'previousAssessment'
     | 'promotionRequest'
     | 'firstConditions'
+    | 'assessmentTalkOn'
     | 'signedByEvaluatorOn'
   > {
   person: Omit<Person, 'id'>
