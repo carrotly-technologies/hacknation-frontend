@@ -1,4 +1,5 @@
 import { DeadlineText } from '../../components/Deadline'
+import { InlineAlert } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
 import { SheetDocument } from '../../sheet/SheetDocument'
@@ -20,10 +21,29 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
     { label: isFirst ? 'Oceniany zapoznał się z pierwszą oceną' : 'Oceniany zapoznał się z oceną', date: detail.acknowledgedOn, done: acked },
   ]
   const nextCycle = detail.history.filter((h) => h.text.startsWith('Nowy cykl')).at(-1)
+  // One status once the assessed person has acknowledged the assessment: the end of the first assessment
+  // and/or the objection deadline that starts on that day.
+  const status = acked && (isFirst || detail.objectionDeadline) && (
+    <InlineAlert
+      tone={isFirst ? 'success' : 'info'}
+      title={isFirst ? 'Pierwsza ocena zakończona' : `Oceniany zapoznał się z oceną ${fmtDate(detail.acknowledgedOn)}`}
+    >
+      {isFirst && <p>Przełożony kieruje wniosek do dyrektora generalnego (art. 38 ust. 3 ustawy).</p>}
+      {detail.objectionDeadline && (
+        <>
+          <p>
+            <strong>Termin na sprzeciw:</strong> <DeadlineText deadline={detail.objectionDeadline} />
+          </p>
+          <p className="legal legal--wrap">{detail.objectionDeadline.legalBasis}</p>
+        </>
+      )}
+      {nextCycle && <p>{nextCycle.text}</p>}
+    </InlineAlert>
+  )
 
   return (
     <div className="stage">
-      <StageHeader title={info.name} />
+      <StageHeader title={info.name} status={status} />
       <div className="stage-pad">
         <div className="doc-flow">
           <ol className="steps">
@@ -49,18 +69,6 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
                 <BlockedReason>W wersji demonstracyjnej potwierdzenie ocenianego symulujemy przyciskiem. Datą zapoznania będzie dzisiejsza data.</BlockedReason>
               </>
             )}
-            {acked && detail.objectionDeadline && (
-              <div className="notice notice--info">
-                <div>
-                  <p>
-                    <strong>Termin na sprzeciw:</strong> <DeadlineText deadline={detail.objectionDeadline} />
-                  </p>
-                  <p className="legal legal--wrap">{detail.objectionDeadline.legalBasis}</p>
-                  {nextCycle && <p style={{ marginTop: 6 }}>{nextCycle.text}</p>}
-                </div>
-              </div>
-            )}
-            {acked && isFirst && <p className="notice notice--ok">Pierwsza ocena zakończona. Przełożony kieruje wniosek do dyrektora generalnego (art. 38 ust. 3 ustawy).</p>}
             <MutationError error={act.error} />
           </div>
         </div>

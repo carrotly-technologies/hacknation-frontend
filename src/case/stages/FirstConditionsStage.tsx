@@ -4,7 +4,7 @@ import { fmtAvg, fmtDate } from '../../lib/format'
 import { liveResult } from '../../lib/result'
 import type { StageProps } from '../CasePage'
 import { MutationError, StageHeader } from './common'
-import { FormalCheck } from './FormalCheck'
+import { FormalCheck, SignedStatus } from './FormalCheck'
 import { useDraft } from './useDraft'
 
 const EXAM: { v: ExamPassed; label: string; hint?: string }[] = [
@@ -26,7 +26,7 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
 
   return (
     <div className="stage">
-      <StageHeader title={info.name} />
+      <StageHeader title={info.name} status={locked && <SignedStatus detail={detail} />} />
       <div className="stage-pad">
         <div className="cond-grid">
           <fieldset className="cond" disabled={locked}>

@@ -1,6 +1,7 @@
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { DeadlineText } from '../../components/Deadline'
+import { InlineAlert } from '../../components/ui'
 import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
 import { addDaysIso, fmtDate } from '../../lib/format'
 import type { StageProps } from '../CasePage'
@@ -31,7 +32,16 @@ export function IntroTalkStage({ detail, stage }: StageProps) {
 
   return (
     <div className="stage">
-      <StageHeader title={info.name} />
+      <StageHeader
+        title={info.name}
+        status={
+          done && (
+            <InlineAlert tone="success" title="Rozmowa wstępna zakończona">
+              Rozmowa wstępna odbyła się {fmtDate(info.completedOn)}. Termin sprawozdania: {fmtDate(detail.firstConditions?.reportDue)}.
+            </InlineAlert>
+          )
+        }
+      />
       <div className="stage-pad stage-pad--narrow">
         <ol className="topics">
           {INTRO_ITEMS.map((t, i) => (
@@ -49,19 +59,17 @@ export function IntroTalkStage({ detail, stage }: StageProps) {
           <input type="date" className="input" style={{ width: 180 }} min={minReport} value={due} readOnly={done} onChange={(e) => setDue(e.target.value)} aria-label="Termin sprawozdania" />
           <span className="faint small">Najwcześniej {fmtDate(minReport)} (8 miesięcy od zatrudnienia), tak by ocena zmieściła się w oknie z art. 38 ust. 1 ustawy. §4 ust. 1 rozp. 2015.</span>
         </div>
-        <div className="confirm-box">
-          {done ? (
-            <p className="notice notice--ok">Rozmowa wstępna odbyła się {fmtDate(info.completedOn)}. Termin sprawozdania: {fmtDate(detail.firstConditions?.reportDue)}.</p>
-          ) : (
-            <>
-              <button type="button" className="btn btn--primary" disabled={missing > 0 || act.isPending || !allows(detail, 'COMPLETE_INTRO_TALK')} onClick={complete}>
-                Zatwierdź rozmowę wstępną
-              </button>
-              {missing > 0 && <BlockedReason>Zaznacz wszystkie zagadnienia ({missing} pozostało) — każde z nich wymaga §3 rozp. 2015.</BlockedReason>}
-            </>
-          )}
+        {done ? (
           <MutationError error={act.error ?? patch.error} />
-        </div>
+        ) : (
+          <div className="confirm-box">
+            <button type="button" className="btn btn--primary" disabled={missing > 0 || act.isPending || !allows(detail, 'COMPLETE_INTRO_TALK')} onClick={complete}>
+              Zatwierdź rozmowę wstępną
+            </button>
+            {missing > 0 && <BlockedReason>Zaznacz wszystkie zagadnienia ({missing} pozostało) — każde z nich wymaga §3 rozp. 2015.</BlockedReason>}
+            <MutationError error={act.error ?? patch.error} />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -74,7 +82,16 @@ export function ReportStage({ detail, stage }: StageProps) {
   const fc = detail.firstConditions
   return (
     <div className="stage">
-      <StageHeader title={info.name} />
+      <StageHeader
+        title={info.name}
+        status={
+          done && (
+            <InlineAlert tone="success" title="Sprawozdanie złożone">
+              Pracownik złożył sprawozdanie {fmtDate(fc?.reportSubmittedOn)}.
+            </InlineAlert>
+          )
+        }
+      />
       <div className="stage-pad stage-pad--narrow">
         <dl className="dl dl--lg">
           <dt>Zatrudnienie</dt>
@@ -101,27 +118,25 @@ export function ReportStage({ detail, stage }: StageProps) {
           </div>
         </div>
 
-        <div className="confirm-box">
-          {done ? (
-            <p className="notice notice--ok">Sprawozdanie złożone {fmtDate(fc?.reportSubmittedOn)}.</p>
-          ) : (
-            <>
-              <div className="btn-row">
-                <button type="button" className="btn btn--primary" disabled={act.isPending || !allows(detail, 'REPORT_SUBMITTED')} onClick={() => act.mutate('REPORT_SUBMITTED')}>
-                  Pracownik złożył sprawozdanie
-                </button>
-                <button type="button" className="btn" disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')} onClick={() => act.mutate('START_ASSESSMENT')}>
-                  Termin minął — przejdź do oceny
-                </button>
-              </div>
-              <BlockedReason>
-                W wersji demonstracyjnej datą złożenia będzie dzisiejsza data (docelowo sprawozdanie wpłynie przez EZD).
-                {!allows(detail, 'START_ASSESSMENT') && ' Ocenę bez sprawozdania można rozpocząć dopiero po upływie wyznaczonego terminu.'}
-              </BlockedReason>
-            </>
-          )}
+        {done ? (
           <MutationError error={act.error} />
-        </div>
+        ) : (
+          <div className="confirm-box">
+            <div className="btn-row">
+              <button type="button" className="btn btn--primary" disabled={act.isPending || !allows(detail, 'REPORT_SUBMITTED')} onClick={() => act.mutate('REPORT_SUBMITTED')}>
+                Pracownik złożył sprawozdanie
+              </button>
+              <button type="button" className="btn" disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')} onClick={() => act.mutate('START_ASSESSMENT')}>
+                Termin minął — przejdź do oceny
+              </button>
+            </div>
+            <BlockedReason>
+              W wersji demonstracyjnej datą złożenia będzie dzisiejsza data (docelowo sprawozdanie wpłynie przez EZD).
+              {!allows(detail, 'START_ASSESSMENT') && ' Ocenę bez sprawozdania można rozpocząć dopiero po upływie wyznaczonego terminu.'}
+            </BlockedReason>
+            <MutationError error={act.error} />
+          </div>
+        )}
       </div>
     </div>
   )

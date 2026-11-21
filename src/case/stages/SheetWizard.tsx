@@ -1,8 +1,9 @@
 import { Check } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import type { StageId } from '../../api/cases'
-import { Stepper } from '../../components/ui'
+import type { CaseDetail, StageId } from '../../api/cases'
+import { InfoList, InfoRow, InlineAlert, Stepper } from '../../components/ui'
+import { fmtDate } from '../../lib/format'
 import { caseUrl, viewStage } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetPartI } from './SheetPartI'
@@ -23,6 +24,34 @@ const TOTAL = SHEET_PARTS.length
 function readPart(raw: string | null): number | null {
   const n = Number(raw)
   return Number.isInteger(n) && n >= 1 && n <= TOTAL ? n : null
+}
+
+/** The status of the part on screen, shown under the stage title; null while the part is still being filled in. */
+function partStatus(detail: CaseDetail, part: number): ReactNode {
+  const signed = detail.signedByEvaluatorOn
+  if (part === 1) {
+    const { confirmedByEvaluatorOn: confirmed, acknowledgedByEmployeeOn: acked } = detail.partI
+    if (!confirmed) return null
+    return (
+      <InlineAlert tone="success" title="Część I jest zatwierdzona">
+        <InfoList>
+          <InfoRow label="Oceniający potwierdza przeprowadzenie rozmowy i ustalenia" value={fmtDate(confirmed)} />
+          <InfoRow
+            label="Oceniany potwierdza zapoznanie z kryteriami i terminem (od tej daty biegnie okres oceny)"
+            value={acked ? fmtDate(acked) : 'Nie potwierdzono'}
+          />
+        </InfoList>
+        <p>Pola są tylko do odczytu. Zmiana jest możliwa tylko w trybie korekty błędów przez administratora.</p>
+      </InlineAlert>
+    )
+  }
+  // Part III is a form only when the request is attached; otherwise its own note explains why it is empty.
+  if (!signed || (part === 3 && detail.promotionRequest.attached !== 'YES')) return null
+  return (
+    <InlineAlert tone="info" title="Ocena jest zatwierdzona">
+      Oceniający zatwierdził ocenę {fmtDate(signed)}, więc pola są tylko do odczytu.
+    </InlineAlert>
+  )
 }
 
 /**
@@ -62,7 +91,7 @@ export function SheetWizard(props: StageProps) {
   const title = `Ocena okresowa pracownika – ${detail.sheetId ? `Arkusz ${detail.sheetId}` : 'arkusz nieustalony'}`
 
   return (
-    <StageLayout info={info} title={title}>
+    <StageLayout info={info} title={title} status={partStatus(detail, part)}>
       <div className={s.progress}>
         <Stepper unit="Część" current={part} total={TOTAL} name={SHEET_PARTS[part - 1].name} hideText />
         <ol className={s.parts} aria-label="Części arkusza">

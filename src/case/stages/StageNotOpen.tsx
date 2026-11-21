@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import type { CaseDetail, StageId } from '../../api/cases'
+import { InlineAlert } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
 import { allows, caseUrl, stageTitle, viewStage } from '../../lib/stages'
@@ -24,17 +25,17 @@ export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: Sta
   if (stage === 'ASSESSMENT' && detail.currentStage === 'OBSERVATION') return <AssessmentNotStarted detail={detail} />
   return (
     <div className="stage">
-      <StageHeader title={stageTitle(info)} />
+      <StageHeader
+        title={stageTitle(info)}
+        status={
+          <InlineAlert tone="info" title="Ten etap jeszcze się nie rozpoczął">
+            <p>Najpierw trzeba zakończyć etap „{stageTitle(current)}”.</p>
+            {WHAT[stage] && <p>{WHAT[stage]}</p>}
+          </InlineAlert>
+        }
+      />
       <div className="stage-pad">
-        <div className="notice notice--info" style={{ maxWidth: 640 }}>
-          <div>
-            <p>
-              <strong>Ten etap jeszcze się nie rozpoczął.</strong> Najpierw trzeba zakończyć etap „{stageTitle(current)}”.
-            </p>
-            {WHAT[stage] && <p style={{ marginTop: 6 }}>{WHAT[stage]}</p>}
-          </div>
-        </div>
-        <Link className="btn btn--primary" style={{ marginTop: 16 }} to={caseUrl(detail.id, detail.currentStage)}>
+        <Link className="btn btn--primary" to={caseUrl(detail.id, detail.currentStage)}>
           Przejdź do bieżącego etapu
         </Link>
       </div>
@@ -52,18 +53,20 @@ function AssessmentNotStarted({ detail }: { detail: CaseDetail }) {
   const due = detail.partI.assessmentDue
   return (
     <div className="stage">
-      <StageHeader title={stageTitle(info)} />
-      <div className="stage-pad">
-        <div className="notice notice--info" style={{ maxWidth: 640 }}>
-          <div>
+      <StageHeader
+        title={stageTitle(info)}
+        status={
+          <InlineAlert tone="info" title="Trwa okres oceny">
             <p>
-              <strong>Trwa okres oceny.</strong> Rozmowę oceniającą przeprowadź na koniec okresu oceny, przed sporządzeniem oceny na piśmie
+              Rozmowę oceniającą przeprowadź na koniec okresu oceny, przed sporządzeniem oceny na piśmie
               {due ? ` (termin oceny: ${fmtDate(due)})` : ''}.
             </p>
-            {WHAT.ASSESSMENT && <p style={{ marginTop: 6 }}>{WHAT.ASSESSMENT}</p>}
-          </div>
-        </div>
-        <div className="btn-row" style={{ marginTop: 16 }}>
+            {WHAT.ASSESSMENT && <p>{WHAT.ASSESSMENT}</p>}
+          </InlineAlert>
+        }
+      />
+      <div className="stage-pad">
+        <div className="btn-row">
           <button
             type="button"
             className="btn btn--primary"

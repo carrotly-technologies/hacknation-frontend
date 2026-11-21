@@ -45,6 +45,13 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
   return (
     <StageLayout
       info={info}
+      status={
+        done && (
+          <InlineAlert tone="success" title="Analiza zatwierdzona">
+            Proponowany formularz: arkusz {detail.sheetId}.
+          </InlineAlert>
+        )
+      }
       actions={
         done ? null : (
           <Button loading={patch.isPending || act.isPending} disabled={!sheetId || !allows(detail, 'ACCEPT_OSP_ANALYSIS')} onClick={accept}>
@@ -94,11 +101,6 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
         </Field>
       )}
 
-      {done && (
-        <InlineAlert tone="success" title="Analiza zatwierdzona">
-          Proponowany formularz: arkusz {detail.sheetId}.
-        </InlineAlert>
-      )}
       <StageError error={patch.error ?? act.error} />
     </StageLayout>
   )

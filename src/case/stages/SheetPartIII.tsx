@@ -104,12 +104,6 @@ export function SheetPartIII({ detail, criteria, onBack, onNext }: StageProps & 
         </InlineAlert>
       ) : (
         <>
-          {signed && (
-            <InlineAlert tone="info" title="Ocena jest zatwierdzona">
-              Oceniający zatwierdził ocenę {fmtDate(signed)}, więc pola są tylko do odczytu.
-            </InlineAlert>
-          )}
-
           <PartSection title="Dane urzędnika służby cywilnej">
             <InfoList>
               <InfoRow label="Imię" value={detail.person.firstName} />

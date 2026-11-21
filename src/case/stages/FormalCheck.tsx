@@ -1,12 +1,22 @@
 import { Check, X } from 'lucide-react'
 import type { CaseAction, CaseDetail, FormalCheckItem } from '../../api/cases'
+import { InlineAlert } from '../../components/ui'
 import { SCALE_LABELS } from '../../lib/scale'
 import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
 import { BlockedReason, MutationError } from './common'
 import { allows } from '../../lib/stages'
 
-/** ✓/✗ list from the backend + the signing action, blocked while any item fails. */
+/** Stage status once the evaluator has signed; the stage passes it to `StageHeader status` (shown under the title). */
+export function SignedStatus({ detail }: { detail: CaseDetail }) {
+  return (
+    <InlineAlert tone="success" title="Ocena podpisana">
+      Ocena podpisana przez oceniającego {fmtDate(detail.signedByEvaluatorOn)}. Pola są tylko do odczytu.
+    </InlineAlert>
+  )
+}
+
+/** ✓/✗ list from the backend + the signing action, blocked while any item fails. The signed status is not shown here. */
 export function FormalCheck({ detail, action = 'SIGN_ASSESSMENT', label }: { detail: CaseDetail; action?: CaseAction; label: string }) {
   const act = useCaseAction(detail.id)
   const items = [...detail.formalCheck, ...localChecks(detail)]
@@ -31,23 +41,23 @@ export function FormalCheck({ detail, action = 'SIGN_ASSESSMENT', label }: { det
           </li>
         ))}
       </ul>
-      <div className="formal__foot">
-        {signed ? (
-          <p className="notice notice--ok">Ocena podpisana przez oceniającego {fmtDate(detail.signedByEvaluatorOn)}.</p>
-        ) : (
-          <>
-            <button type="button" className="btn btn--primary" disabled={errors.length > 0 || act.isPending || !allows(detail, action)} onClick={() => act.mutate(action)}>
-              {label}
-            </button>
-            {errors.length > 0 && (
-              <BlockedReason>
-                Zatwierdzenie jest zablokowane, dopóki lista zawiera błędy. Popraw: {errors.map((e) => e.message.replace(/\.$/, '')).join('; ')}.
-              </BlockedReason>
-            )}
-          </>
-        )}
-        <MutationError error={act.error} />
-      </div>
+      {(!signed || !!act.error) && (
+        <div className="formal__foot">
+          {!signed && (
+            <>
+              <button type="button" className="btn btn--primary" disabled={errors.length > 0 || act.isPending || !allows(detail, action)} onClick={() => act.mutate(action)}>
+                {label}
+              </button>
+              {errors.length > 0 && (
+                <BlockedReason>
+                  Zatwierdzenie jest zablokowane, dopóki lista zawiera błędy. Popraw: {errors.map((e) => e.message.replace(/\.$/, '')).join('; ')}.
+                </BlockedReason>
+              )}
+            </>
+          )}
+          <MutationError error={act.error} />
+        </div>
+      )}
     </section>
   )
 }

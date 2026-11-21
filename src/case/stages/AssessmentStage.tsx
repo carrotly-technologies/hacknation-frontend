@@ -90,16 +90,19 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
 
   return (
     <>
-      <StageLayout info={info}>
-        <div className={s.form}>
-          <Stepper unit={isFirst ? 'Element' : 'Kompetencja'} current={idx + 1} total={all.length} />
-          <ErrorSummary errors={errors} />
-
-          {locked && (
+      <StageLayout
+        info={info}
+        status={
+          locked && (
             <InlineAlert tone="info" title="Formularz jest tylko do odczytu">
               Ocena została podpisana {fmtDate(detail.signedByEvaluatorOn)}.
             </InlineAlert>
-          )}
+          )
+        }
+      >
+        <div className={s.form}>
+          <Stepper unit={isFirst ? 'Element' : 'Kompetencja'} current={idx + 1} total={all.length} />
+          <ErrorSummary errors={errors} />
 
           <section className={s.competency} aria-labelledby="kompetencja-h">
             <div className={s.head}>

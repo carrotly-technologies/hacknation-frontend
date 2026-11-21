@@ -7,7 +7,7 @@ import { liveResult } from '../../lib/result'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { MutationError, StageHeader } from './common'
-import { FormalCheck } from './FormalCheck'
+import { FormalCheck, SignedStatus } from './FormalCheck'
 import { useDraft } from './useDraft'
 
 export function JustificationStage({ detail, model, criteria, stage }: StageProps) {
@@ -25,7 +25,7 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
 
   return (
     <div className="stage">
-      <StageHeader title={info.name} />
+      <StageHeader title={info.name} status={locked && <SignedStatus detail={detail} />} />
 
       {!r.complete && (
         <div className="stage-pad stage-pad--tight">

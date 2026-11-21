@@ -578,6 +578,13 @@
   padding: var(--s-5) var(--s-6) var(--s-8);
 }
 
+/* The stage's status alert under .stage-head (normal flow, scrolls with the page). */
+.stage-status {
+  min-width: 0;
+  max-width: 880px;
+  padding: var(--s-5) var(--s-6) 0;
+}
+
 .stage-pad--tight {
   padding-bottom: 0;
 }
@@ -2166,6 +2173,7 @@
   }
 
   .stage-pad,
+  .stage-status,
   .two-col__main {
     padding-right: var(--s-4);
     padding-left: var(--s-4);

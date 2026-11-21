@@ -26,7 +26,16 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
   const periodic = (sheets.data ?? []).filter((x) => x.kind === 'PERIODIC')
 
   return (
-    <StageLayout info={info}>
+    <StageLayout
+      info={info}
+      status={
+        done && (
+          <InlineAlert tone="success" title="Formularz zaakceptowany">
+            Arkusz {detail.sheetId}, kryteria dodatkowe: {criteria.additional.map((c) => competencyName(model, c)).join(', ') || 'brak'}.
+          </InlineAlert>
+        )
+      }
+    >
       {!editing && (
         <RadioGroup
           id="proposed-sheet"
@@ -82,11 +91,6 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
         </div>
       )}
 
-      {done && (
-        <InlineAlert tone="success" title="Formularz zaakceptowany">
-          Arkusz {detail.sheetId}, kryteria dodatkowe: {criteria.additional.map((c) => competencyName(model, c)).join(', ') || 'brak'}.
-        </InlineAlert>
-      )}
       <StageError error={act.error} />
     </StageLayout>
   )

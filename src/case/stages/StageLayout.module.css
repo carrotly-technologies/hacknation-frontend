@@ -20,6 +20,13 @@
   line-height: var(--leading-tight);
 }
 
+/* The stage's status alert, right under the title. Normal flow: it scrolls with the page. */
+.status {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
 .content {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

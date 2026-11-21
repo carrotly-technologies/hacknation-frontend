@@ -107,12 +107,6 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
       <PartHeading roman="II">Ocena okresowa</PartHeading>
       <ErrorSummary errors={errors} />
 
-      {signed && (
-        <InlineAlert tone="info" title="Ocena jest zatwierdzona">
-          Oceniający zatwierdził ocenę {fmtDate(signed)}, więc pola są tylko do odczytu.
-        </InlineAlert>
-      )}
-
       <PartSection title="Rozmowa i okres oceny" hint="Uzupełniane automatycznie.">
         <InfoList>
           <InfoRow label="Data przeprowadzenia rozmowy oceniającej" value={conversationDate ? fmtDate(conversationDate) : 'Po rozmowie oceniającej'} />

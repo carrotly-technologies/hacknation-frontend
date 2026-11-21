@@ -81,19 +81,7 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
 
   return (
     <form noValidate onSubmit={onSubmit} className={s.form}>
-      {/* The status alert appears only once part I is confirmed; until then the form starts with the fields. */}
-      {confirmed && (
-        <InlineAlert tone="success" title="Część I jest zatwierdzona">
-          <InfoList>
-            <InfoRow label="Oceniający potwierdza przeprowadzenie rozmowy i ustalenia" value={fmtDate(detail.partI.confirmedByEvaluatorOn)} />
-            <InfoRow
-              label="Oceniany potwierdza zapoznanie z kryteriami i terminem (od tej daty biegnie okres oceny)"
-              value={acked ? fmtDate(detail.partI.acknowledgedByEmployeeOn) : 'Nie potwierdzono'}
-            />
-          </InfoList>
-          <p>Pola są tylko do odczytu. Zmiana jest możliwa tylko w trybie korekty błędów przez administratora.</p>
-        </InlineAlert>
-      )}
+      {/* The "Część I jest zatwierdzona" status is shown by SheetWizard under the stage title. */}
       {afterNegative && (
         <InlineAlert tone="warning" title="Ponowna ocena po ocenie negatywnej">
           Rozmowę rozpoczynającą przeprowadza się w ciągu 7 dni od sporządzenia oceny (§7 pkt 2 rozp. 2016), a ocenę po 6 miesiącach od
@@ -181,7 +169,7 @@ export function SheetPartI({ detail, model, criteria, onNext }: StageProps & { o
         </div>
       </PartSection>
 
-      {/* The wording of the template; the confirmation status is shown at the top of part I, the actions stay here. */}
+      {/* The wording of the template; the confirmation status is shown under the stage title, the actions stay here. */}
       <PartSection title="Potwierdzenie części I" hint="Oceniający i oceniany potwierdzają rozmowę oraz zapoznanie z kryteriami i terminem oceny.">
         <TemplateConfirmation lines={criteria.sheet?.template?.partIConfirmation} />
         {!confirmed && !editable && <p className={layout.muted}>Oceniający jeszcze nie potwierdził części I.</p>}
