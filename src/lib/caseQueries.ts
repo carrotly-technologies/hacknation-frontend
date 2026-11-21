@@ -7,6 +7,7 @@ import {
   patchCase,
   runCaseAction,
   type CaseAction,
+  type CaseActionInput,
   type CaseDetail,
   type CasePatch,
   type Observation,
@@ -90,7 +91,7 @@ export function useCaseAction(id: string, { follow = true }: { follow?: boolean 
   const qc = useQueryClient()
   const navigate = useNavigate()
   return useMutation({
-    mutationFn: (action: CaseAction) => runCaseAction(id, action),
+    mutationFn: (input: CaseAction | CaseActionInput) => runCaseAction(id, input),
     onSuccess: (data) => {
       const prev = qc.getQueryData<CaseDetail>(caseKey(id))
       qc.setQueryData(caseKey(id), data)

@@ -74,7 +74,7 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
 
   const r = liveResult(detail, criteria.all, model)
   const negative = r.result === 'NEGATIVE'
-  const conversationDate = detail.stages.find((x) => x.id === 'ASSESSMENT')?.completedOn ?? null
+  const conversationDate = detail.assessmentTalkOn
   const periodFrom = detail.partI.acknowledgedByEmployeeOn
   const periodTo = signed ?? detail.partI.assessmentDue
   // Points come from the sheet and their labels from the competency model (both from the API), as in the template.
@@ -291,7 +291,7 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
           <InfoRow label="Komórka organizacyjna" value={evaluator.unit} />
           <InfoRow label="Stanowisko pracy" value={evaluator.position} />
         </InfoList>
-        {/* The same action as "Zatwierdź ocenę i podpisz" in "Weryfikacja formularza": a signature here shows there too. */}
+        {/* The only place to sign; open once the assessment talk is recorded in "Weryfikacja formularza" (§10 rozp. 2016). */}
         {signed ? (
           <InlineAlert tone="success" live title="Data i podpis oceniającego">
             Podpisano elektronicznie: {evaluator.firstName} {evaluator.lastName}, {officePlace()}, {fmtDate(signed)}
@@ -308,7 +308,9 @@ export function SheetPartII({ detail, model, criteria, onBack, onNext }: StagePr
             </Button>
             {!canSign && (
               <p id={SIGN_HINT_ID} className="blocked-reason">
-                Dostępne po ocenie wszystkich kryteriów
+                {detail.path === 'PERIODIC' && detail.currentStage === 'JUSTIFICATION' && !detail.assessmentTalkOn
+                  ? 'Dostępne po rozmowie oceniającej'
+                  : 'Dostępne po ocenie wszystkich kryteriów'}
               </p>
             )}
           </div>

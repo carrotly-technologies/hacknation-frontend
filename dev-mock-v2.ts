@@ -44,6 +44,7 @@ interface Rec {
   justification: string
   iprz: string
   firstConditions: { examPassed: string | null; reportSubmittedOn: string | null; reportDue: string | null } | null
+  assessmentTalkOn: string | null
   signedOn: string | null
   sentForAckOn: string | null
   acknowledgedOn: string | null
@@ -180,6 +181,7 @@ function base(p: Partial<Rec> & Pick<Rec, 'id' | 'person' | 'path' | 'stage' | '
     justification: '',
     iprz: '',
     firstConditions: null,
+    assessmentTalkOn: null,
     signedOn: null,
     sentForAckOn: null,
     acknowledgedOn: null,
@@ -313,7 +315,7 @@ function seed(): Rec[] {
       decisions: { wykorzystywanie_wiedzy: 7, rzetelnosc: 7, organizacja_pracy: 5, wspolpraca: 7, komunikacja: 5, orientacja_na_klienta: 7 },
       justification: 'Oceniana wykonuje obowiązki na poziomie powyżej oczekiwań. Opinie prawne dotyczące AI Act przygotowywała terminowo i z pogłębioną analizą orzecznictwa.',
       iprz: 'Szkolenie z wystąpień publicznych (I kw. 2027); udział w grupie roboczej Komisji ds. AI jako ekspert prowadzący.',
-      signedOn: '2026-11-13', sentForAckOn: '2026-11-13', acknowledgedOn: '2026-11-19',
+      assessmentTalkOn: '2026-11-12', signedOn: '2026-11-13', sentForAckOn: '2026-11-13', acknowledgedOn: '2026-11-19',
       history: [
         { date: '2026-11-12', text: 'Przeprowadzono rozmowę oceniającą.' },
         { date: '2026-11-13', text: 'Oceniający podpisał ocenę i przekazał do zapoznania.' },
@@ -350,7 +352,7 @@ function seed(): Rec[] {
       partI: { ...emptyPartI(), assessmentDue: '2026-11-30', confirmedByEvaluatorOn: '2024-11-30', acknowledgedByEmployeeOn: '2024-12-01' },
       decisions: { wykorzystywanie_wiedzy: 5, rzetelnosc: 5, organizacja_pracy: 5, wspolpraca: 7, komunikacja: 5 },
       iprz: 'Szkolenie z zarządzania projektami.',
-      signedOn: '2026-11-19', sentForAckOn: '2026-11-19',
+      assessmentTalkOn: '2026-11-18', signedOn: '2026-11-19', sentForAckOn: '2026-11-19',
     }),
   ]
 }
@@ -519,6 +521,7 @@ export function createV2(model: { competencies: { id: string; name: string; indi
       firstConditions: r.firstConditions,
       evaluation: evaluation(r),
       formalCheck: formalCheck(r),
+      assessmentTalkOn: r.assessmentTalkOn,
       signedByEvaluatorOn: r.signedOn,
       acknowledgedOn: r.acknowledgedOn,
       objectionDeadline: r.path === 'PERIODIC' && od ? deadline(od, 'Termin na sprzeciw do', `art. 83 ust. 1 ${USC}`) : null,
@@ -537,7 +540,8 @@ export function createV2(model: { competencies: { id: string; name: string; indi
       a.push('REPORT_SUBMITTED')
       if (r.firstConditions?.reportDue && r.firstConditions.reportDue < TODAY) a.push('START_ASSESSMENT')
     }
-    if (['ASSESSMENT', 'JUSTIFICATION', 'FIRST_ASSESSMENT', 'FIRST_CONDITIONS'].includes(r.stage) && !r.signedOn) a.push('SIGN_ASSESSMENT')
+    if (r.stage === 'JUSTIFICATION' && !r.signedOn) a.push('RECORD_ASSESSMENT_TALK')
+    if (['ASSESSMENT', 'JUSTIFICATION', 'FIRST_ASSESSMENT', 'FIRST_CONDITIONS'].includes(r.stage) && !r.signedOn && (r.path === 'FIRST' || r.assessmentTalkOn)) a.push('SIGN_ASSESSMENT')
     if (r.signedOn && !r.sentForAckOn) a.push('SEND_FOR_ACK')
     if (r.sentForAckOn && !r.acknowledgedOn) a.push('EMPLOYEE_ACK_ASSESSMENT')
     return a
@@ -616,7 +620,7 @@ export function createV2(model: { competencies: { id: string; name: string; indi
     return ok(detail(r))
   }
 
-  function action(r: Rec, a: string) {
+  function action(r: Rec, a: string, date?: string) {
     const advance = (from: StageId, to: StageId, text: string) => {
       r.done[from] = TODAY
       r.stage = to
@@ -646,8 +650,18 @@ export function createV2(model: { competencies: { id: string; name: string; indi
         if (r.stage !== 'OBSERVATION') return illegal()
         advance('OBSERVATION', 'ASSESSMENT', 'Rozpoczęto rozmowę oceniającą i sporządzanie oceny.')
         return ok(detail(r))
+      case 'RECORD_ASSESSMENT_TALK': {
+        if (r.stage !== 'JUSTIFICATION') return illegal()
+        const talk = date ?? TODAY
+        if (talk > TODAY) return conflict('Data rozmowy oceniającej nie może być z przyszłości.')
+        if (r.partI.acknowledgedByEmployeeOn && talk < r.partI.acknowledgedByEmployeeOn) return conflict('Data rozmowy oceniającej nie może być wcześniejsza niż potwierdzenie części I.')
+        r.assessmentTalkOn = talk
+        r.history.push({ date: TODAY, text: `Odnotowano rozmowę oceniającą ${talk}.` })
+        return ok(detail(r))
+      }
       case 'SIGN_ASSESSMENT': {
         if (!['ASSESSMENT', 'JUSTIFICATION', 'FIRST_ASSESSMENT', 'FIRST_CONDITIONS'].includes(r.stage)) return illegal()
+        if (r.path === 'PERIODIC' && !r.assessmentTalkOn) return conflict('Najpierw odnotuj rozmowę oceniającą (§10 rozp. PRM z 4.04.2016).')
         const errors = formalCheck(r).filter((i) => !i.ok)
         if (errors.length) return conflict(`Nie można zatwierdzić oceny: ${errors.map((e) => e.message).join(' ')}`)
         r.signedOn = TODAY
@@ -763,7 +777,7 @@ export function createV2(model: { competencies: { id: string; name: string; indi
         r.observations.sort((a, b) => String(a.date).localeCompare(String(b.date)))
         return ok(detail(r))
       }
-      if (method === 'POST' && m[2] === '/actions') return action(r, String(body.action))
+      if (method === 'POST' && m[2] === '/actions') return action(r, String(body.action), typeof body.date === 'string' ? body.date : undefined)
     }
     return null
   }

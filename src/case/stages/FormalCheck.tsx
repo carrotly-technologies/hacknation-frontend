@@ -16,8 +16,21 @@ export function SignedStatus({ detail }: { detail: CaseDetail }) {
   )
 }
 
-/** ✓/✗ list from the backend + the signing action, blocked while any item fails. The signed status is not shown here. */
-export function FormalCheck({ detail, action = 'SIGN_ASSESSMENT', label }: { detail: CaseDetail; action?: CaseAction; label: string }) {
+/**
+ * ✓/✗ list from the backend + the signing action, blocked while any item fails. The signed status is not shown here.
+ * Without `label` it is only a checklist (`title`), e.g. "Do sprawdzenia przed podpisem": signing happens elsewhere.
+ */
+export function FormalCheck({
+  detail,
+  action = 'SIGN_ASSESSMENT',
+  label,
+  title = 'Kontrola formalna',
+}: {
+  detail: CaseDetail
+  action?: CaseAction
+  label?: string
+  title?: string
+}) {
   const act = useCaseAction(detail.id)
   const items = [...detail.formalCheck, ...localChecks(detail)]
   const errors = items.filter((i) => !i.ok)
@@ -25,7 +38,7 @@ export function FormalCheck({ detail, action = 'SIGN_ASSESSMENT', label }: { det
   return (
     <section className="formal" aria-labelledby="formal-h">
       <div className="formal__head">
-        <h3 id="formal-h" className="h-section">Kontrola formalna</h3>
+        <h3 id="formal-h" className="h-section">{title}</h3>
         <span className={`tag ${errors.length ? 'tag--danger' : 'tag--ok'}`}>
           {errors.length ? `${errors.length} do poprawy` : 'bez uwag'}
         </span>
@@ -41,7 +54,7 @@ export function FormalCheck({ detail, action = 'SIGN_ASSESSMENT', label }: { det
           </li>
         ))}
       </ul>
-      {(!signed || !!act.error) && (
+      {label && (!signed || !!act.error) && (
         <div className="formal__foot">
           {!signed && (
             <>

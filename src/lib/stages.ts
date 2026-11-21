@@ -7,7 +7,7 @@ export const STAGE_SLUG: Record<StageId, string> = {
   OPENING_TALK: 'rozmowa-rozpoczynajaca',
   OBSERVATION: 'obserwacje',
   ASSESSMENT: 'formularz-kompetencji',
-  JUSTIFICATION: 'uzasadnienie',
+  JUSTIFICATION: 'weryfikacja-formularza',
   DOCUMENT: 'dokument',
   INTRO_TALK: 'rozmowa-wstepna',
   REPORT: 'sprawozdanie',
@@ -20,6 +20,7 @@ export const STAGE_SLUG: Record<StageId, string> = {
 const LEGACY_SLUG: Record<string, StageId> = {
   'wstepny-formularz': 'SHEET_PROPOSAL',
   ocena: 'ASSESSMENT',
+  uzasadnienie: 'JUSTIFICATION',
 }
 
 export function stageFromSlug(slug: string | undefined): StageId | null {
@@ -52,7 +53,7 @@ export const STAGE_SHORT: Record<StageId, string> = {
   OPENING_TALK: 'Rozmowa rozpoczynająca',
   OBSERVATION: 'Okres oceny',
   ASSESSMENT: 'Formularz oceny kompetencji',
-  JUSTIFICATION: 'Uzasadnienie i IPRZ',
+  JUSTIFICATION: 'Weryfikacja formularza',
   DOCUMENT: 'Dokument',
   INTRO_TALK: 'Rozmowa wstępna',
   REPORT: 'Sprawozdanie',

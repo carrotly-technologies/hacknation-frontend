@@ -147,6 +147,8 @@ export interface CaseDetail extends CaseSummary {
   firstConditions: FirstConditions | null
   evaluation: EvaluateResponse | null
   formalCheck: FormalCheckItem[]
+  /** Date of the assessment talk (§10 rozp. 2016), recorded in "Weryfikacja formularza" before signing. */
+  assessmentTalkOn: string | null
   signedByEvaluatorOn: string | null
   /** First handover to the assessed person (SEND_FOR_ACK). */
   sentForAckOn?: string | null
@@ -180,6 +182,7 @@ export type CaseAction =
   | 'CONFIRM_PART_I'
   | 'EMPLOYEE_ACK_PART_I'
   | 'START_ASSESSMENT'
+  | 'RECORD_ASSESSMENT_TALK'
   | 'SIGN_ASSESSMENT'
   | 'SEND_FOR_ACK'
   | 'EMPLOYEE_ACK_ASSESSMENT'
@@ -237,8 +240,14 @@ export const patchCase = (id: string, body: CasePatch) =>
   apiPatch<CaseDetail>(`/cases/${encodeURIComponent(id)}`, body)
 export const addObservation = (id: string, body: Omit<Observation, 'id'>) =>
   apiPost<CaseDetail>(`/cases/${encodeURIComponent(id)}/observations`, body)
-export const runCaseAction = (id: string, action: CaseAction) =>
-  apiPost<CaseDetail>(`/cases/${encodeURIComponent(id)}/actions`, { action })
+/** Body of POST /cases/:id/actions; `date` only for RECORD_ASSESSMENT_TALK (today when absent). */
+export interface CaseActionInput {
+  action: CaseAction
+  date?: string
+}
+
+export const runCaseAction = (id: string, input: CaseAction | CaseActionInput) =>
+  apiPost<CaseDetail>(`/cases/${encodeURIComponent(id)}/actions`, typeof input === 'string' ? { action: input } : input)
 export const getOspList = (signal?: AbortSignal) => apiGet<OspDoc[]>('/osp', signal)
 export const getHrOverview = (signal?: AbortSignal) => apiGet<HrOverview>('/hr/overview', signal)
 export const sendReminders = (caseIds: string[]) =>
