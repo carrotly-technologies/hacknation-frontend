@@ -1,4 +1,4 @@
-import { getUserId } from '../lib/session'
+import { getToken, notifyUnauthorized, setToken } from '../lib/session'
 
 // Empty VITE_API_URL = same origin, so requests go through the Vite dev proxy.
 const API_URL = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
@@ -23,8 +23,9 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init: RequestInit): Promise<T> {
+  const token = getToken()
   const headers = new Headers(init.headers)
-  headers.set('X-User-Id', getUserId())
+  if (token) headers.set('Authorization', `Bearer ${token}`)
   let res: Response
   try {
     res = await fetch(`${API_URL}/api${path}`, { ...init, headers })
@@ -34,6 +35,11 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   }
 
   if (!res.ok) {
+    // The token expired or was rejected: drop it and send the user to the sign-in page.
+    if (res.status === 401 && token) {
+      setToken(null)
+      notifyUnauthorized()
+    }
     throw new ApiError(await readErrorMessage(res), res.status)
   }
 

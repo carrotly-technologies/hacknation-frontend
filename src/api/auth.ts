@@ -1,5 +1,5 @@
 import type { Role } from './cases'
-import { apiGet, apiPatch } from './client'
+import { apiGet, apiPatch, apiPost } from './client'
 
 export interface UserView {
   id: string
@@ -12,8 +12,15 @@ export interface UserView {
   unit: string
 }
 
-/** The demo accounts for the account switcher (public, no header needed). */
-export const getDemoUsers = (signal?: AbortSignal) => apiGet<UserView[]>('/users/demo', signal)
+export interface LoginResponse {
+  accessToken: string
+  tokenType: 'Bearer'
+  expiresIn: number
+  user: UserView
+}
+
+export const login = (login: string, password: string) => apiPost<LoginResponse>('/auth/login', { login, password })
+export const logout = () => apiPost<void>('/auth/logout', undefined)
 
 export const getUsers = (signal?: AbortSignal) => apiGet<UserView[]>('/admin/users', signal)
 export const updateUserRole = (id: string, role: Role) =>

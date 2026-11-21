@@ -1,16 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { getUsers, updateUserRole, type UserView } from '../api/users'
+import { getUsers, updateUserRole, type UserView } from '../api/auth'
 import type { Role } from '../api/cases'
 import { errorMessage } from '../api/client'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { InlineAlert, Select, Snackbar, StatusBadge } from '../components/ui'
-import { demoUsersQueryKey, ROLE_LABEL, useMe } from '../lib/useAuth'
+import { ROLE_LABEL, useMe } from '../lib/useAuth'
 import { countLabel } from '../lib/format'
 
 const ROLE_OPTIONS = (Object.keys(ROLE_LABEL) as Role[]).map((r) => ({ value: r, label: ROLE_LABEL[r] }))
 
-/** ADMIN: accounts and their roles. A new role applies to that account's next request. */
+/** ADMIN: accounts and their roles. A new role applies when that user signs in again. */
 export function AdminUsersPage() {
   const me = useMe()
   const qc = useQueryClient()
@@ -20,8 +20,7 @@ export function AdminUsersPage() {
     mutationFn: ({ id, role }: { id: string; role: Role }) => updateUserRole(id, role),
     onSuccess: (u) => {
       qc.setQueryData<UserView[]>(['admin', 'users'], (list) => list?.map((x) => (x.id === u.id ? u : x)))
-      void qc.invalidateQueries({ queryKey: demoUsersQueryKey })
-      setSaved(`Zapisano: ${u.name} ma teraz rolę „${ROLE_LABEL[u.role]}”. Przełącz się na to konto w nagłówku, żeby zobaczyć zmianę.`)
+      setSaved(`Zapisano: ${u.name} ma teraz rolę „${ROLE_LABEL[u.role]}”. Zmiana obowiązuje od jej następnego logowania.`)
     },
   })
 
