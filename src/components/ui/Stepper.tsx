@@ -8,14 +8,16 @@ type Props = {
   unit?: string
   /** Name of the current step, shown after the counter ("Część 2 z 3: Ocena"). */
   name?: ReactNode
+  /** Hide the "Część 2 z 3: Ocena" line visually but keep it for screen readers (the bar stays). */
+  hideText?: boolean
 }
 
 /** "Krok X z Y" with a progress bar, above the question of a multi-step form. */
-export function Stepper({ current, total, unit = 'Krok', name }: Props) {
+export function Stepper({ current, total, unit = 'Krok', name, hideText = false }: Props) {
   const pct = Math.round((Math.min(current, total) / total) * 100)
   return (
     <div className={s.stepper}>
-      <p className={s.stepperText}>
+      <p className={hideText ? 'visually-hidden' : s.stepperText}>
         {unit} {current} z {total}
         {name && <>: {name}</>}
       </p>

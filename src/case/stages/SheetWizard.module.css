@@ -2,7 +2,7 @@
 .progress {
   display: grid;
   gap: var(--s-3);
-  max-width: var(--form-max);
+  min-width: 0;
 }
 
 /* the shared Stepper keeps its own bottom margin for one-question pages; here the grid gap spaces it */
@@ -11,12 +11,19 @@
 }
 
 .parts {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-2) var(--s-5);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* on wider screens the three parts sit side by side, spread evenly across the full width */
+@media (min-width: 600px) {
+  .parts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .part {

@@ -12,9 +12,9 @@ import s from './SheetWizard.module.css'
 
 /** The three parts of the periodic assessment sheet (A, B, C), as in "Podgląd arkusza". */
 const SHEET_PARTS = [
-  { roman: 'I', name: 'Kryteria oceny i termin' },
-  { roman: 'II', name: 'Ocena okresowa' },
-  { roman: 'III', name: 'Wniosek o kolejny stopień służbowy' },
+  { name: 'Kryteria oceny i termin' },
+  { name: 'Ocena okresowa' },
+  { name: 'Wniosek o kolejny stopień służbowy' },
 ] as const
 
 const TOTAL = SHEET_PARTS.length
@@ -61,18 +61,18 @@ export function SheetWizard(props: StageProps) {
   return (
     <StageLayout info={info} title={title}>
       <div className={s.progress}>
-        <Stepper unit="Część" current={part} total={TOTAL} name={SHEET_PARTS[part - 1].name} />
+        <Stepper unit="Część" current={part} total={TOTAL} name={SHEET_PARTS[part - 1].name} hideText />
         <ol className={s.parts} aria-label="Części arkusza">
           {SHEET_PARTS.map((p, i) => {
             const n = i + 1
             const state = n < part ? 'done' : n === part ? 'current' : 'todo'
             return (
-              <li key={p.roman} className={`${s.part} ${s[state]}`} aria-current={n === part ? 'step' : undefined}>
+              <li key={n} className={`${s.part} ${s[state]}`} aria-current={n === part ? 'step' : undefined}>
                 <span className={s.partMark} aria-hidden="true">
-                  {state === 'done' ? <Check size={14} strokeWidth={3} /> : p.roman}
+                  {state === 'done' ? <Check size={14} strokeWidth={3} /> : n}
                 </span>
                 <span className={s.partName}>
-                  <span className="visually-hidden">Część {p.roman}: </span>
+                  <span className="visually-hidden">Część {n}: </span>
                   {p.name}
                   {state === 'done' && <span className="visually-hidden"> (za Tobą)</span>}
                 </span>
