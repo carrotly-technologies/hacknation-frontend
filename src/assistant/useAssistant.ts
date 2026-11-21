@@ -27,8 +27,6 @@ export interface AssistantRequest {
 }
 
 export interface AssistantState {
-  /** FEATURE_ASSISTANT from GET /api/config: false = no button, no popup. */
-  enabled: boolean
   isOpen: boolean
   /** Opens the popup; with a request, also switches to its assistant and asks the question. */
   open: (request?: AssistantRequest) => void
@@ -44,7 +42,6 @@ export interface AssistantState {
 export const AssistantCtx = createContext<AssistantState | null>(null)
 
 const OFF: AssistantState = {
-  enabled: false,
   isOpen: false,
   open: () => {},
   close: () => {},
@@ -54,7 +51,7 @@ const OFF: AssistantState = {
   chat: { mode: 'FORMAL', setMode: () => {}, threads: { FORMAL: [], CONVERSATION: [] }, ask: () => {} },
 }
 
-/** The assistant of the signed-in session (AssistantProvider); turned off outside it. */
+/** The assistant of the signed-in session (AssistantProvider); does nothing outside it. */
 export function useAssistant(): AssistantState {
   return useContext(AssistantCtx) ?? OFF
 }

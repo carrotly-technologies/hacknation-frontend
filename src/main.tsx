@@ -14,7 +14,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import App from './App.tsx'
-import { prefetchConfig } from './lib/features'
 import { AuthProvider } from './lib/auth.tsx'
 import { initPreferences } from './lib/preferences'
 
@@ -23,7 +22,6 @@ const queryClient = new QueryClient({
     queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 10_000 },
   },
 })
-prefetchConfig(queryClient)
 initPreferences()
 
 createRoot(document.getElementById('root')!).render(

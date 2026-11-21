@@ -1256,8 +1256,8 @@
 
 /* Room at the end of every page, so the button does not cover "Dalej" / "Wstecz" at the bottom. The case file
    scrolls inside its workspace on wide screens, so there the room is at the end of the workspace. */
-.shell[data-fab] .main:not(:has(.case-work))::after,
-.shell[data-fab] .case-work::after {
+.shell .main:not(:has(.case-work))::after,
+.shell .case-work::after {
   content: '';
   display: block;
   flex: none;
@@ -1546,11 +1546,6 @@
   gap: var(--s-5);
   margin-top: var(--s-4);
   align-items: start;
-}
-
-/* Assistant feature flag off: only the sources list, across the full width */
-.knowledge--sources-only {
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .sources li {

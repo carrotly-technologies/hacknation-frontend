@@ -3,13 +3,9 @@ import { ExternalLink, FileText } from 'lucide-react'
 import { getDocuments } from '../api/docs'
 import { AssistantPanel } from '../assistant/AssistantPanel'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { useFeatures } from '../lib/features'
 
 export function KnowledgePage() {
-  const { assistant } = useFeatures()
-  const meta = assistant
-    ? 'Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki'
-    : 'Akty prawne, model kompetencji i poradniki, na których opiera się Kompas'
+  const meta = 'Asystent formalny i asystent rozmowy — bez kontekstu konkretnej teczki'
   return (
     <div className="page page--knowledge">
       <header className="page-head">
@@ -18,8 +14,8 @@ export function KnowledgePage() {
           <p className="page-head__meta" title={meta}>{meta}</p>
         </div>
       </header>
-      <div className={`knowledge ${assistant ? '' : 'knowledge--sources-only'}`}>
-        {assistant && <AssistantPanel context={{}} variant="page" />}
+      <div className="knowledge">
+        <AssistantPanel context={{}} variant="page" />
         <aside className="knowledge__sources panel">
           <div className="panel__head">
             <h2 className="h-section">Źródła asystenta</h2>

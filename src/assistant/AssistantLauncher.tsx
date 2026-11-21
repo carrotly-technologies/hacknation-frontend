@@ -10,7 +10,7 @@ const POPUP_ID = 'assistant-popup'
  * "Asystent AI": the floating button in the bottom right corner of every AppShell screen and the chat window it
  * opens. From 600px the window sits above the button and the page stays usable (non-modal <dialog>); below 600px it
  * fills the screen as a modal <dialog> (focus trap and inert page from the browser). Esc and "Zamknij" close it and
- * focus goes back to the button. Nothing is rendered when the assistant is turned off (FEATURE_ASSISTANT).
+ * focus goes back to the button.
  */
 export function AssistantLauncher() {
   const a = useAssistant()
@@ -41,7 +41,6 @@ export function AssistantLauncher() {
   // Leaving the shell (e.g. the sheet print view) closes the window; the conversation stays in the provider.
   useEffect(() => close, [close])
 
-  if (!a.enabled) return null
   return (
     <>
       <button

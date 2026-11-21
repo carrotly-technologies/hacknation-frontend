@@ -90,42 +90,38 @@ export function AssessmentTalkStage({ detail, model, criteria, stage, askAssista
         )}
       </section>
 
-      {(topics.length > 0 || askAssistant) && (
-        <section aria-labelledby="tematy-h" className={s.suggestion}>
-          <h3 id="tematy-h" className={s.suggestionTitle}>
-            <Lightbulb size={20} aria-hidden="true" className={s.suggestionIcon} />
-            Sugestia systemu: o czym porozmawiać
-          </h3>
-          {topics.length > 0 && (
-            <>
-              <ul className={layout.bullets}>
-                {topics.map((t) => (
-                  <li key={t.id}>
-                    {t.label}
-                    <span className={s.topicNote}>
-                      „{t.quote}” ({t.legalBasis})
-                    </span>
-                    {t.id === 'GOALS' && goals && <span className={s.topicNote}>Cele z części I: {goals}</span>}
-                  </li>
-                ))}
-              </ul>
-              <p className={layout.muted}>Na podstawie §10 rozporządzenia. To propozycja — rozmowę prowadzisz po swojemu.</p>
-            </>
-          )}
-          {askAssistant && (
-            <div>
-              <Button
-                variant="secondary"
-                icon={<MessageSquareText size={18} aria-hidden="true" />}
-                onClick={() => askAssistant({ mode: 'CONVERSATION', question: 'Przygotuj pytania do rozmowy oceniającej.' })}
-              >
-                Przygotuj pytania do rozmowy
-              </Button>
-              <p className={layout.muted}>Asystent zaproponuje pytania na podstawie kryteriów i obserwacji. Nie proponuje ocen.</p>
-            </div>
-          )}
-        </section>
-      )}
+      <section aria-labelledby="tematy-h" className={s.suggestion}>
+        <h3 id="tematy-h" className={s.suggestionTitle}>
+          <Lightbulb size={20} aria-hidden="true" className={s.suggestionIcon} />
+          Sugestia systemu: o czym porozmawiać
+        </h3>
+        {topics.length > 0 && (
+          <>
+            <ul className={layout.bullets}>
+              {topics.map((t) => (
+                <li key={t.id}>
+                  {t.label}
+                  <span className={s.topicNote}>
+                    „{t.quote}” ({t.legalBasis})
+                  </span>
+                  {t.id === 'GOALS' && goals && <span className={s.topicNote}>Cele z części I: {goals}</span>}
+                </li>
+              ))}
+            </ul>
+            <p className={layout.muted}>Na podstawie §10 rozporządzenia. To propozycja — rozmowę prowadzisz po swojemu.</p>
+          </>
+        )}
+        <div>
+          <Button
+            variant="secondary"
+            icon={<MessageSquareText size={18} aria-hidden="true" />}
+            onClick={() => askAssistant({ mode: 'CONVERSATION', question: 'Przygotuj pytania do rozmowy oceniającej.' })}
+          >
+            Przygotuj pytania do rozmowy
+          </Button>
+          <p className={layout.muted}>Asystent zaproponuje pytania na podstawie kryteriów i obserwacji. Nie proponuje ocen.</p>
+        </div>
+      </section>
 
       {!talk && (
         <section aria-labelledby="record-h" className={s.section}>

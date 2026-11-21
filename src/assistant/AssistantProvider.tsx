@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Outlet } from 'react-router'
 import type { AssistantContext } from '../api/assistant'
-import { useFeatures } from '../lib/features'
 import { AssistantCtx, useAssistantChat, type AssistantRequest, type AssistantState } from './useAssistant'
 
 const sameContext = (a: AssistantContext, b: AssistantContext) => a.caseId === b.caseId && a.stageId === b.stageId && a.label === b.label
@@ -13,7 +12,6 @@ const sameContext = (a: AssistantContext, b: AssistantContext) => a.caseId === b
  * (`AssistantLauncher`). Kept in memory only: questions may be about an employee, so nothing goes to storage.
  */
 export function AssistantProvider({ children }: { children?: ReactNode }) {
-  const enabled = useFeatures().assistant
   const chat = useAssistantChat()
   const [isOpen, setOpen] = useState(false)
   const [context, setContextState] = useState<AssistantContext>({})
@@ -29,21 +27,20 @@ export function AssistantProvider({ children }: { children?: ReactNode }) {
   const { ask, setMode } = chat
   const open = useCallback(
     (request?: AssistantRequest) => {
-      if (!enabled) return
       setOpen(true)
       if (request) {
         setMode(request.mode)
         ask(request.question, contextRef.current, request.mode)
       }
     },
-    [enabled, ask, setMode],
+    [ask, setMode],
   )
   const close = useCallback(() => setOpen(false), [])
   const toggle = useCallback(() => setOpen((o) => !o), [])
 
   const value = useMemo<AssistantState>(
-    () => ({ enabled, isOpen: enabled && isOpen, open, close, toggle, context, setContext, chat }),
-    [enabled, isOpen, open, close, toggle, context, setContext, chat],
+    () => ({ isOpen, open, close, toggle, context, setContext, chat }),
+    [isOpen, open, close, toggle, context, setContext, chat],
   )
   return <AssistantCtx.Provider value={value}>{children ?? <Outlet />}</AssistantCtx.Provider>
 }
