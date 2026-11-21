@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage'
 import { MorePage } from './pages/MorePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PersonPage } from './pages/PersonPage'
+import { PresentationPage } from './pages/PresentationPage'
 import { ServicesPage } from './pages/ServicesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { TeamPage } from './pages/TeamPage'
@@ -24,6 +25,8 @@ export default function App() {
       <Route path="/logowanie" element={<LoginPage />} />
       {/* Public: the assessed person opens the link from the evaluator, without an account or the app shell. */}
       <Route path="/zapoznanie/:token" element={<AckPage />} />
+      {/* Public: the project presentation (hacknation-frontend#116), no sign-in. */}
+      <Route path="/prezentacja" element={<PresentationPage />} />
       {/* The assistant's conversation lives for the signed-in session (also across the sheet print view). */}
       <Route
         element={
