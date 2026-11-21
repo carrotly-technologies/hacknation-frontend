@@ -19,7 +19,24 @@ const TABS: { mode: AssistantMode; label: string; blurb: string }[] = [
 
 let seq = 0
 
-export function AssistantPanel({ context, onClose, variant = 'dock' }: { context: AssistantContext; onClose?: () => void; variant?: 'dock' | 'page' }) {
+/** A question asked from outside the panel (e.g. "Przygotuj pytania do rozmowy" in step 5); a new `id` asks again. */
+export interface AssistantRequest {
+  id: number
+  mode: AssistantMode
+  question: string
+}
+
+export function AssistantPanel({
+  context,
+  onClose,
+  variant = 'dock',
+  request,
+}: {
+  context: AssistantContext
+  onClose?: () => void
+  variant?: 'dock' | 'page'
+  request?: AssistantRequest | null
+}) {
   const [mode, setMode] = useState<AssistantMode>('FORMAL')
   const [threads, setThreads] = useState<Record<AssistantMode, Msg[]>>({ FORMAL: [], CONVERSATION: [] })
   const [input, setInput] = useState('')
@@ -31,10 +48,9 @@ export function AssistantPanel({ context, onClose, variant = 'dock' }: { context
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [msgs.length, busy])
 
-  const ask = async (question: string) => {
+  const ask = async (question: string, m: AssistantMode = mode) => {
     const q = question.trim()
-    if (!q || busy) return
-    const m = mode
+    if (!q || threads[m].some((x) => x.pending)) return
     const userMsg: Msg = { id: ++seq, role: 'user', text: q }
     const pending: Msg = { id: ++seq, role: 'assistant', text: '', pending: true }
     setThreads((t) => ({ ...t, [m]: [...t[m], userMsg, pending] }))
@@ -51,6 +67,19 @@ export function AssistantPanel({ context, onClose, variant = 'dock' }: { context
       setThreads((t) => ({ ...t, [m]: t[m].map((x) => (x.id === pending.id ? { ...x, pending: false, text: 'Nie udało się połączyć z asystentem. Spróbuj ponownie.' } : x)) }))
     }
   }
+
+  // Latest `ask` for the effect below, so it runs once per request and not on every render.
+  const askRef = useRef(ask)
+  useEffect(() => {
+    askRef.current = ask
+  })
+  const handled = useRef<number | null>(null)
+  useEffect(() => {
+    if (!request || handled.current === request.id) return
+    handled.current = request.id
+    setMode(request.mode)
+    void askRef.current(request.question, request.mode)
+  }, [request])
 
   const submit = (e: FormEvent) => {
     e.preventDefault()

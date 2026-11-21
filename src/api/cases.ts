@@ -10,6 +10,7 @@ export type StageId =
   | 'OPENING_TALK'
   | 'OBSERVATION'
   | 'ASSESSMENT'
+  | 'ASSESSMENT_TALK'
   | 'JUSTIFICATION'
   | 'DOCUMENT'
   | 'INTRO_TALK'
@@ -127,6 +128,16 @@ export interface FormalCheckItem {
   legalBasis: string | null
 }
 
+/** One topic of the assessment talk (§10 pkt 1–3 rozp. PRM z 4.04.2016), sent by the API. */
+export interface AssessmentTalkTopic {
+  id: string
+  /** Short wording for the checklist. */
+  label: string
+  /** The point of §10 word for word. */
+  quote: string
+  legalBasis: string
+}
+
 export interface CaseDetail extends CaseSummary {
   evaluator: { firstName: string; lastName: string; position: string; unit: string }
   officeName: string
@@ -145,6 +156,10 @@ export interface CaseDetail extends CaseSummary {
   previousAssessment: PreviousAssessment | null
   promotionRequest: PromotionRequest
   firstConditions: FirstConditions | null
+  /** Date of the assessment talk (RECORD_ASSESSMENT_TALK); null until recorded. */
+  assessmentTalkOn: string | null
+  /** What the assessment talk covers (§10); empty for the first assessment. */
+  assessmentTalkTopics: AssessmentTalkTopic[]
   evaluation: EvaluateResponse | null
   formalCheck: FormalCheckItem[]
   signedByEvaluatorOn: string | null
@@ -180,6 +195,7 @@ export type CaseAction =
   | 'CONFIRM_PART_I'
   | 'EMPLOYEE_ACK_PART_I'
   | 'START_ASSESSMENT'
+  | 'RECORD_ASSESSMENT_TALK'
   | 'SIGN_ASSESSMENT'
   | 'SEND_FOR_ACK'
   | 'EMPLOYEE_ACK_ASSESSMENT'
@@ -237,8 +253,14 @@ export const patchCase = (id: string, body: CasePatch) =>
   apiPatch<CaseDetail>(`/cases/${encodeURIComponent(id)}`, body)
 export const addObservation = (id: string, body: Omit<Observation, 'id'>) =>
   apiPost<CaseDetail>(`/cases/${encodeURIComponent(id)}/observations`, body)
-export const runCaseAction = (id: string, action: CaseAction) =>
-  apiPost<CaseDetail>(`/cases/${encodeURIComponent(id)}/actions`, { action })
+/** An action with its extra fields: `date` (RRRR-MM-DD) only for RECORD_ASSESSMENT_TALK, today when missing. */
+export interface CaseActionInput {
+  action: CaseAction
+  date?: string
+}
+
+export const runCaseAction = (id: string, input: CaseAction | CaseActionInput) =>
+  apiPost<CaseDetail>(`/cases/${encodeURIComponent(id)}/actions`, typeof input === 'string' ? { action: input } : input)
 export const getOspList = (signal?: AbortSignal) => apiGet<OspDoc[]>('/osp', signal)
 export const getHrOverview = (signal?: AbortSignal) => apiGet<HrOverview>('/hr/overview', signal)
 export const sendReminders = (caseIds: string[]) =>

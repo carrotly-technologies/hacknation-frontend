@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import type { CaseDetail, StageId } from '../api/cases'
 import type { CompetencyModel } from '../api/kompas'
-import { AssistantPanel } from '../assistant/AssistantPanel'
+import { AssistantPanel, type AssistantRequest } from '../assistant/AssistantPanel'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { BackLink, StageStepper, StatusBadge } from '../components/ui'
 import { useCase } from '../lib/caseQueries'
@@ -16,6 +16,7 @@ import { AssessmentStage } from './stages/AssessmentStage'
 import { DocumentStage } from './stages/DocumentStage'
 import { FirstConditionsStage } from './stages/FirstConditionsStage'
 import { IntroTalkStage, ReportStage } from './stages/FirstPrepStages'
+import { AssessmentTalkStage } from './stages/AssessmentTalkStage'
 import { JustificationStage } from './stages/JustificationStage'
 import { ObservationStage } from './stages/ObservationStage'
 import { OspAnalysisStage } from './stages/OspAnalysisStage'
@@ -28,6 +29,8 @@ export interface StageProps {
   model: CompetencyModel
   criteria: CaseCriteria
   stage: StageId
+  /** Opens the assistant panel and asks a question there; missing when the assistant is turned off (FEATURE_ASSISTANT). */
+  askAssistant?: (request: Omit<AssistantRequest, 'id'>) => void
 }
 
 function readAssistantPref(): boolean {
@@ -56,6 +59,7 @@ export function CasePage() {
   const features = useFeatures()
   const [assistantPref, setAssistantOpen] = useState(readAssistantPref)
   const assistantOpen = features.assistant && assistantPref
+  const [assistantRequest, setAssistantRequest] = useState<AssistantRequest | null>(null)
   const workRef = useRef<HTMLElement>(null)
   useEffect(() => {
     workRef.current?.scrollTo({ top: 0 })
@@ -85,7 +89,13 @@ export function CasePage() {
   if (slug !== STAGE_SLUG[stage]) return <Navigate to={caseUrl(detail.id, stage)} replace />
 
   const criteria = caseCriteria(detail, sheets.data)
-  const props: StageProps = { detail, model: model.data, criteria, stage }
+  const askAssistant = features.assistant
+    ? (req: Omit<AssistantRequest, 'id'>) => {
+        if (!assistantPref) toggleAssistant()
+        setAssistantRequest((prev) => ({ ...req, id: (prev?.id ?? 0) + 1 }))
+      }
+    : undefined
+  const props: StageProps = { detail, model: model.data, criteria, stage, askAssistant }
   const name = `${detail.person.firstName} ${detail.person.lastName}`
   const sheetLabel = detail.path === 'FIRST' ? 'Arkusz pierwszej oceny' : detail.sheetId ? `Arkusz ${detail.sheetId}` : 'Arkusz nieustalony'
   const steps = caseSteps(detail)
@@ -142,6 +152,7 @@ export function CasePage() {
               label: `${STAGE_SHORT[stage]} · ${name} · ${sheetLabel}`,
             }}
             onClose={toggleAssistant}
+            request={assistantRequest}
           />
         )}
       </div>
@@ -162,6 +173,8 @@ function StageWorkspace(p: StageProps) {
     case 'ASSESSMENT':
     case 'FIRST_ASSESSMENT':
       return <AssessmentStage {...p} />
+    case 'ASSESSMENT_TALK':
+      return <AssessmentTalkStage {...p} />
     case 'JUSTIFICATION':
       return <JustificationStage {...p} />
     case 'FIRST_CONDITIONS':

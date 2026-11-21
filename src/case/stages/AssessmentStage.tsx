@@ -121,7 +121,8 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
     if (idx < all.length - 1) go(all[idx + 1])
     // Before the assessment talk the next step is not open yet: back to the stage in progress.
     else if (draft) navigate(caseUrl(detail.id, viewStage(detail.stages, detail.currentStage)))
-    else navigate(caseUrl(detail.id, isFirst ? 'FIRST_CONDITIONS' : 'JUSTIFICATION'))
+    // Periodic: step 5, "Rozmowa oceniająca"; after the talk was recorded straight back to step 6.
+    else navigate(caseUrl(detail.id, isFirst ? 'FIRST_CONDITIONS' : detail.assessmentTalkOn ? 'JUSTIFICATION' : 'ASSESSMENT_TALK'))
   }
 
   const generalObs = detail.observations.filter((o) => o.criterionId === selected && !o.indicatorId)
