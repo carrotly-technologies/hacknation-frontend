@@ -90,16 +90,19 @@ export function CompetencyScoresTable({
 /**
  * Average and band under the table, then the result as a badge: final (green / red) once every criterion is decided
  * and the result can no longer change, otherwise a neutral "Wstępnie …". No badge while there is no result yet.
+ * `showAverage={false}` leaves the average out (the first assessment before the backend has computed it).
  */
-export function ResultSummary({ result: r }: { result: LiveResult }) {
+export function ResultSummary({ result: r, showAverage = true }: { result: LiveResult; showAverage?: boolean }) {
   const final = r.complete && !r.provisional
   const word = r.result === 'POSITIVE' ? 'pozytywna' : 'negatywna'
   return (
     <div className={s.summary}>
-      <p>
-        Średnia: <span className="num">{fmtAvg(r.average)}</span>
-        {r.band && ` · ${r.band.label.toLowerCase()}`}
-      </p>
+      {showAverage && (
+        <p>
+          Średnia: <span className="num">{fmtAvg(r.average)}</span>
+          {r.band && ` · ${r.band.label.toLowerCase()}`}
+        </p>
+      )}
       {r.result && (
         <div>
           <StatusBadge tone={final ? (r.result === 'POSITIVE' ? 'success' : 'error') : 'neutral'}>

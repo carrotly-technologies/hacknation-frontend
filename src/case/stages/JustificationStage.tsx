@@ -7,14 +7,12 @@ import { liveResult } from '../../lib/result'
 import { caseUrl } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import s from './AssessmentTalkStage.module.css'
-import { CompetencyScoresTable, ResultSummary } from './CompetencyScores'
+import { AssessmentSummary } from './AssessmentSummary'
 import { FormalCheck } from './FormalCheck'
 import { SignAssessment } from './SignAssessment'
 import { StageError, StageLayout } from './StageLayout'
 import layout from './StageLayout.module.css'
 import { useDraft } from './useDraft'
-
-const ATTACHED_LABEL = { YES: 'TAK', NO: 'NIE', NOT_APPLICABLE: 'NIE DOTYCZY' } as const
 
 /**
  * Step 6, "Weryfikacja formularza" (Poradnik „Oceny okresowe w służbie cywilnej”, Tabela nr 1, etap IV: sporządzenie
@@ -39,7 +37,6 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
       </Link>
     )
   const attached = detail.promotionRequest.attached
-  const prev = detail.previousAssessment
 
   // Text still being typed is saved before signing, so the signature covers what is on screen.
   const saveBeforeSign = async () => {
@@ -70,56 +67,24 @@ export function JustificationStage({ detail, model, criteria, stage }: StageProp
         <h3 id="summary-h" className={s.heading}>Arkusz oceny</h3>
         <p className={layout.muted}>Podsumowanie wypełnionych części. Zmiany wprowadzisz w formularzu po kliknięciu „Popraw”.</p>
 
-        <h4 className={s.subheading}>Część I · Kryteria oceny i termin</h4>
-        <div className={s.summaryRow}>
-          <div>
-            Arkusz {detail.sheetId}; kryteria dodatkowe:{' '}
-            <span className={s.summaryValue}>{criteria.additional.map((c) => competencyName(model, c)).join(', ') || 'brak'}</span>; termin oceny:{' '}
-            <span className={s.summaryValue}>{fmtDate(detail.partI.assessmentDue)}</span>
-          </div>
-          <Link to={part(1)} aria-label="Zobacz część I arkusza">
-            Zobacz
-          </Link>
-        </div>
-        <p className={layout.muted}>Część I jest zatwierdzona, więc nie można jej już zmienić.</p>
-
-        <h4 className={s.subheading}>Część II · Ocena okresowa</h4>
-        <CompetencyScoresTable
+        <AssessmentSummary
           detail={detail}
           model={model}
-          criteria={criteria.all}
-          caption="Oceny cząstkowe w części II arkusza"
-          extra={
-            signed
-              ? []
-              : [{ header: 'Działanie', hiddenHeader: true, cell: (c) => fix(competency(c), `ocena cząstkowa kryterium ${competencyName(model, c)}`) }]
-          }
+          criteria={criteria}
+          partINote={<p className={layout.muted}>Część I jest zatwierdzona, więc nie można jej już zmienić.</p>}
+          actions={{
+            partI: (
+              <Link to={part(1)} aria-label="Zobacz część I arkusza">
+                Zobacz
+              </Link>
+            ),
+            partII: fix(part(2), 'część II arkusza'),
+            partIII: fix(attached === 'YES' ? part(3) : part(2), 'wniosek o kolejny stopień służbowy'),
+            criterion: signed
+              ? undefined
+              : { header: 'Działanie', cell: (c) => fix(competency(c), `ocena cząstkowa kryterium ${competencyName(model, c)}`) },
+          }}
         />
-        <ResultSummary result={r} />
-        <div className={s.summaryRow}>
-          <div>
-            Data przeprowadzenia rozmowy oceniającej: <span className={s.summaryValue}>{fmtDate(detail.assessmentTalkOn) || '—'}</span>
-            {detail.person.employment === 'URZEDNIK' && (
-              <>
-                ; poprzednia ocena:{' '}
-                <span className={s.summaryValue}>
-                  {prev?.result
-                    ? `${prev.result === 'POSITIVE' ? 'pozytywna' : 'negatywna'}${prev.level ? `, ${prev.level}` : ''}${prev.date ? `, ${fmtDate(prev.date)}` : ''}`
-                    : 'nie wpisano'}
-                </span>
-              </>
-            )}
-          </div>
-          {fix(part(2), 'część II arkusza')}
-        </div>
-
-        <h4 className={s.subheading}>Część III · Wniosek o kolejny stopień służbowy</h4>
-        <div className={s.summaryRow}>
-          <div>
-            Dołączono wniosek: <span className={s.summaryValue}>{attached ? ATTACHED_LABEL[attached] : 'nie zaznaczono'}</span>
-          </div>
-          {fix(attached === 'YES' ? part(3) : part(2), 'wniosek o kolejny stopień służbowy')}
-        </div>
       </section>
 
       <section aria-labelledby="writing-h" className={s.section}>
