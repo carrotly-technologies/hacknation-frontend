@@ -29,11 +29,12 @@ const STATUS_TEXT: Record<StageStepStatus, string> = {
 }
 
 /**
- * Horizontal process stepper (chevrons). Done steps are light green with a check icon, the current step is
- * tinted, future steps are outlined; the step on screen (in any state) has an --accent outline, a bold label,
- * aria-current="step" and the hidden text "(wyświetlany)". Each step is a
- * link, so the whole stepper works with Tab / Enter. When the stepper is too narrow for its labels (container query in
- * StageStepper.module.css) it turns into numbered dots plus the name of the shown step, without horizontal scrolling.
+ * Horizontal process stepper (chevrons). Done steps are light green with a check icon, future steps are grey,
+ * the current step is white with an --accent border while another step is shown; the step on screen (in any state)
+ * is light blue (--accent-subtle) with a bold --accent label, aria-current="step" and the hidden text
+ * "(wyświetlany)". Each step is a link, so the whole stepper works with Tab / Enter. When the stepper is too narrow
+ * for its labels (container query in StageStepper.module.css) it turns into numbered dots plus the name of the shown
+ * step, without horizontal scrolling.
  * Each word of a label carries its own text in `data-label`: the CSS reserves the width of the bold word, so making
  * a step bold (shown step) never moves a word to the next line or shifts the neighbouring steps.
  */
