@@ -604,84 +604,9 @@
   padding-top: 1px;
 }
 
-.verdict-tag {
-  display: inline-flex;
-  flex: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 7rem;
-  height: 2.25rem;
-  padding: 0 10px;
-  border: 1.5px solid;
-  border-radius: var(--radius);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  letter-spacing: 0.06em;
-  line-height: 1.1;
-}
-
-.verdict-tag--pos {
-  border-color: var(--ok);
-  background: var(--ok);
-  color: var(--on-ok);
-}
-
-.verdict-tag--neg {
-  border-color: var(--danger);
-  background: var(--danger);
-  color: var(--on-danger);
-}
-
-.verdict-tag.is-provisional.verdict-tag--pos {
-  background: var(--ok-bg);
-  color: var(--ok);
-}
-
-.verdict-tag.is-provisional.verdict-tag--neg {
-  background: var(--danger-bg);
-  color: var(--danger);
-}
-
-.verdict-tag--none {
-  border-color: var(--border-strong);
-  border-style: dashed;
-  color: var(--text-muted);
-  font-weight: var(--weight-medium);
-  letter-spacing: 0;
-}
-
-.verdict-tag__note {
-  font-size: 0.6875rem;
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.02em;
-  text-transform: none;
-}
-
 /* =========================================================
    Justification
    ========================================================= */
-.result-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: var(--s-5);
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg-subtle);
-}
-
-.result-strip__avg {
-  font-weight: var(--weight-semibold);
-}
-
-.textarea--doc {
-  font-size: var(--text-base);
-  line-height: var(--leading-loose);
-}
-
 .field__label .tag {
   margin-left: 6px;
   vertical-align: 1px;
@@ -723,34 +648,6 @@
   gap: 6px;
   font-size: var(--text-sm);
   line-height: 1.4;
-}
-
-/* FIRST conditions */
-.cond-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s-4);
-}
-
-.cond {
-  min-width: 0;
-  margin: 0;
-  padding: var(--s-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.cond__legend {
-  float: left;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 0;
-  font-weight: var(--weight-semibold);
-}
-
-.cond .field__hint {
-  clear: both;
-  margin-top: 10px;
 }
 
 .radio-row {
@@ -1681,7 +1578,6 @@
    ========================================================= */
 .topbar__brand,
 .timeline__meta,
-.result-strip,
 .sources__text {
   min-width: 0;
 }
@@ -1896,7 +1792,6 @@
     width: 100% !important;
   }
 
-  .cond-grid,
   .doc-flow,
   .obs-form__sdr {
     grid-template-columns: minmax(0, 1fr);
