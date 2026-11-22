@@ -270,12 +270,13 @@ export function PresentationPage() {
   useEffect(() => {
     const prev = document.title
     document.title = 'Prezentacja — Kompas Kompetencji'
-    const page = document.createElement('style')
-    page.textContent = `@page { size: ${W}px ${H}px; margin: 0; }`
-    document.head.append(page)
+    // A constructed stylesheet, not a <style> element: the Content-Security-Policy (nginx.conf) blocks inline styles.
+    const page = new CSSStyleSheet()
+    page.replaceSync(`@page { size: ${W}px ${H}px; margin: 0; }`)
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, page]
     return () => {
       document.title = prev
-      page.remove()
+      document.adoptedStyleSheets = document.adoptedStyleSheets.filter((s) => s !== page)
     }
   }, [])
 

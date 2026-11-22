@@ -23,8 +23,15 @@ FROM nginx:1.30-alpine AS runtime
 # (net.ipv4.ip_unprivileged_port_start=0).
 RUN apk upgrade --no-cache \
   && sed -i -e 's,^pid .*,pid /tmp/nginx.pid;,' -e '/^user /d' /etc/nginx/nginx.conf \
-  && chown -R nginx:nginx /var/cache/nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+  && chown -R nginx:nginx /var/cache/nginx /etc/nginx/conf.d
+# The API address the Content-Security-Policy lets the app connect to (connect-src). Defaults to the
+# VITE_API_URL build arg; empty = the same origin only. Can be overridden at `docker run -e`.
+ARG VITE_API_URL=""
+ENV CSP_CONNECT_SRC=$VITE_API_URL \
+    NGINX_ENVSUBST_FILTER=CSP_
+# A template: the image's entrypoint substitutes ${CSP_CONNECT_SRC} into conf.d/default.conf at start
+# (conf.d belongs to the "nginx" user above, so it can write there).
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 USER nginx
 EXPOSE 80

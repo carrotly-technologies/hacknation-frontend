@@ -17,6 +17,9 @@ cp .env.example .env   # optional
 
 Both are read at build time (`npm run build`, Docker build args).
 
+The Docker image also reads `CSP_CONNECT_SRC` at container start (default: the `VITE_API_URL` build arg): the API
+address the Content-Security-Policy lets the app connect to (see Deploy).
+
 ## Run
 
 Start the backend first (`npm run start:dev` in `hacknation-backend`, port 3000), then:
@@ -138,6 +141,15 @@ as the `hacknation-frontend` application, built from this repo's `Dockerfile`
 - TLS (1.2+) terminates at the Coolify proxy; `nginx.conf` adds
   `Strict-Transport-Security: max-age=31536000; includeSubDomains` to every response (RODO, see
   hacknation-backend `docs/rodo/dpia.md`).
+- Security headers (OWASP ASVS L2, checklist in hacknation-backend `docs/security/asvs-l2.md`): `nginx.conf` sends on
+  every response a `Content-Security-Policy` without `unsafe-inline` (`script-src 'self'`, `style-src 'self'`,
+  `connect-src 'self'` plus the API, `frame-ancestors 'none'`, `object-src 'none'`), `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` and a `Permissions-Policy` that turns off
+  camera, microphone and geolocation. No inline `<script>` or `<style>`: the theme script that runs before the first
+  paint is `public/preferences-init.js`.
+- `nginx.conf` is a template (`/etc/nginx/templates/`): at container start nginx fills `${CSP_CONNECT_SRC}`, the API
+  address the CSP allows, which defaults to the `VITE_API_URL` build arg. Override it with
+  `docker run -e CSP_CONNECT_SRC=https://api.example.gov.pl` when the API moves; empty = same origin only.
 
 Build and run the image locally:
 

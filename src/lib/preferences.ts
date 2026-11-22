@@ -4,7 +4,7 @@ import { useCallback, useSyncExternalStore } from 'react'
  * Appearance settings (/ustawienia): theme, text size and high contrast.
  * Kept only in this browser's localStorage (UI preferences, no personal data) and applied to <html>:
  * `data-theme` ("light" | "dark"; none = follow the system), `data-contrast="high"` and `style.fontSize`.
- * The inline script in index.html applies the same key before the first paint, so keep the two in step.
+ * public/preferences-init.js (loaded by index.html) applies the same key before the first paint, so keep the two in step.
  */
 export type Theme = 'system' | 'light' | 'dark'
 export type TextSize = 100 | 125 | 150
@@ -98,7 +98,7 @@ export function usePreferences(): [Preferences, (patch: Partial<Preferences>) =>
   return [prefs, update]
 }
 
-/** Re-applies the stored settings at app start (the inline script in index.html already did it once). */
+/** Re-applies the stored settings at app start (public/preferences-init.js already did it once). */
 export function initPreferences(): void {
   applyPreferences(snapshot())
 }
