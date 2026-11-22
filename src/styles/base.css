@@ -446,12 +446,6 @@ a:hover {
   margin-top: 2px;
 }
 
-.notice--info {
-  border-color: var(--accent-border);
-  border-left-color: var(--accent);
-  background: var(--accent-faint);
-}
-
 .notice--warn {
   border-color: var(--warn-border);
   border-left-color: var(--warn);
@@ -462,32 +456,6 @@ a:hover {
   border-color: var(--danger-border);
   border-left-color: var(--danger);
   background: var(--danger-bg);
-}
-
-.notice--ok {
-  border-color: var(--ok-border);
-  border-left-color: var(--ok);
-  background: var(--ok-bg);
-}
-
-/* ---------- Definition list ---------- */
-.dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 6px var(--s-3);
-  font-size: var(--text-sm);
-}
-
-.dl dt,
-.dl dd {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dl dt {
-  color: var(--text-muted);
 }
 
 /* ---------- Loading / errors ---------- */

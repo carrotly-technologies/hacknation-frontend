@@ -36,8 +36,3 @@ export function MutationError({ error }: { error: unknown }) {
     </p>
   )
 }
-
-/** Explains why an action is disabled, right next to it. */
-export function BlockedReason({ children }: { children: ReactNode }) {
-  return <p className="blocked-reason">{children}</p>
-}

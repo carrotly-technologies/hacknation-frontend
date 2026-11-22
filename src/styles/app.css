@@ -544,21 +544,6 @@
   padding-bottom: 0;
 }
 
-.stage-pad--narrow {
-  max-width: 880px;
-}
-
-.block-h {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin: var(--s-6) 0 var(--s-3);
-}
-
-.block-h:first-child {
-  margin-top: 0;
-}
-
 .blocked-reason {
   margin-top: 8px;
   max-width: 620px;
@@ -681,11 +666,6 @@
   color: var(--accent);
 }
 
-.dl--lg {
-  max-width: 420px;
-  font-size: var(--text-base);
-}
-
 .bullets {
   padding-left: 18px;
   list-style: disc outside;
@@ -702,14 +682,6 @@
 /* =========================================================
    OSP analysis
    ========================================================= */
-
-.confirm-box {
-  margin-top: var(--s-6);
-  padding: var(--s-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg-subtle);
-}
 
 .steps {
   display: flex;
