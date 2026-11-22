@@ -21,6 +21,8 @@ export type AuthState = {
   user: Me | null | undefined
   meError: Error | null
   signIn: (login: string, password: string) => Promise<Me>
+  /** Ends the simulated login.gov.pl flow: exchanges the one-time artifact for a session. */
+  signInWithLoginGov: (artifact: string, state: string) => Promise<Me>
   signOut: () => Promise<void>
 }
 

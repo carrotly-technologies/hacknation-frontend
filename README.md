@@ -30,7 +30,14 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
 
 - `/logowanie` — sign-in with login and password; the role (supervisor, HR, admin) comes from the account
   (demo accounts: backend README; below the form one card per demo account signs in with one click,
-  list in `src/lib/demoAccounts.ts`, hidden with `VITE_DEMO_ACCOUNTS=false`). The token sits in `sessionStorage` and goes with every API call
+  list in `src/lib/demoAccounts.ts`, hidden with `VITE_DEMO_ACCOUNTS=false`).
+  Above the form, „Zaloguj przez login.gov.pl” runs a **simulation** of the Węzeł Krajowy flow (backend README,
+  „Sign-in through login.gov.pl”): `POST /api/auth/login-gov/start` → `/mock-login-gov` (public mock identity
+  provider outside the app shell: a visible „Symulacja: to nie jest prawdziwy login.gov.pl” banner, no official logos,
+  no password fields; step 1 method, step 2 demo person) → `/logowanie/login-gov?artifact=…&state=…`, which exchanges
+  the one-time artifact for a token and opens the role's start page (errors: message on `/logowanie`). The `state` is
+  kept in `sessionStorage` (`kompas.loginGovState`) to bind the return to the tab that started it. Hidden together with
+  the demo accounts (`VITE_DEMO_ACCOUNTS=false`). The token sits in `sessionStorage` and goes with every API call
   (`Authorization: Bearer`); a 401 sends you back to sign-in. Routes and the menu depend on the role, and a
   route for another role redirects to your start page (`src/lib/useAuth.ts`, `src/shell/RequireAuth.tsx`);
 - `/admin/uzytkownicy` — admin only: accounts and their roles;

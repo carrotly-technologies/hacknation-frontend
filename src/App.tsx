@@ -7,7 +7,9 @@ import { AdminUsersPage } from './pages/AdminUsersPage'
 import { DemoFormPage } from './pages/DemoFormPage'
 import { HrPage } from './pages/HrPage'
 import { KnowledgePage } from './pages/KnowledgePage'
+import { LoginGovReturnPage } from './pages/LoginGovReturnPage'
 import { LoginPage } from './pages/LoginPage'
+import { MockLoginGovPage } from './pages/MockLoginGovPage'
 import { MorePage } from './pages/MorePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PersonPage } from './pages/PersonPage'
@@ -24,6 +26,9 @@ export default function App() {
   return (
     <Routes>
       <Route path="/logowanie" element={<LoginPage />} />
+      {/* Simulated login.gov.pl (hacknation-backend#67): the mock identity provider and the return page, both public. */}
+      <Route path="/mock-login-gov" element={<MockLoginGovPage />} />
+      <Route path="/logowanie/login-gov" element={<LoginGovReturnPage />} />
       {/* Public: the assessed person opens the link from the evaluator, without an account or the app shell. */}
       <Route path="/zapoznanie/:token" element={<AckPage />} />
       {/* Public: the project presentation (hacknation-frontend#116), no sign-in. */}

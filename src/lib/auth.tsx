@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { login as apiLogin, logout as apiLogout } from '../api/auth'
+import { exchangeLoginGov, login as apiLogin, logout as apiLogout, type LoginResponse } from '../api/auth'
 import { getMe } from '../api/cases'
 import { AuthCtx, LOGIN_PATH, meQueryKey, type AuthState } from './useAuth'
 import { getToken, onUnauthorized, setToken } from './session'
@@ -38,16 +38,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [clear, navigate, location.pathname, location.search],
   )
 
-  const signIn = useCallback(
-    async (login: string, password: string) => {
-      const res = await apiLogin(login, password)
+  /** Stores the token like any sign-in and loads /api/me. */
+  const adopt = useCallback(
+    async (res: LoginResponse) => {
       qc.clear()
       setToken(res.accessToken)
       setTokenState(res.accessToken)
-      const user = await qc.fetchQuery({ queryKey: meQueryKey, queryFn: ({ signal }) => getMe(signal), staleTime: Infinity })
-      return user
+      return qc.fetchQuery({ queryKey: meQueryKey, queryFn: ({ signal }) => getMe(signal), staleTime: Infinity })
     },
     [qc],
+  )
+
+  const signIn = useCallback(async (login: string, password: string) => adopt(await apiLogin(login, password)), [adopt])
+
+  const signInWithLoginGov = useCallback(
+    async (artifact: string, state: string) => adopt(await exchangeLoginGov(artifact, state)),
+    [adopt],
   )
 
   const signOut = useCallback(async () => {
@@ -66,9 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: !token ? null : me.data,
       meError: me.error,
       signIn,
+      signInWithLoginGov,
       signOut,
     }),
-    [token, me.data, me.error, signIn, signOut],
+    [token, me.data, me.error, signIn, signInWithLoginGov, signOut],
   )
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
 }
