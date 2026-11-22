@@ -16,6 +16,7 @@ import {
   InlineAlert,
   RadioGroup,
   RadioMatrix,
+  ResultPanel,
   SearchBar,
   Select,
   Snackbar,
@@ -317,6 +318,25 @@ export function UiPage() {
         </div>
       </Section>
 
+      <Section id="wynik" title="Panel wyniku" note="ResultPanel: wynik jest czytelny bez koloru (nagłówek i ikona). Wstępny wynik ma neutralny styl i mówi, czego brakuje.">
+        <div className={s.stack}>
+          <ResultPanel
+            result="POSITIVE"
+            summary="Ocena łączna 5,80"
+            reason="Ocena łączna co najmniej 5 pkt, najwyżej jedna ocena 3 pkt, warunki egzaminu i sprawozdania spełnione."
+          />
+          <ResultPanel result="NEGATIVE" summary="Średnia 3,60 · poniżej oczekiwań" reason="Średnia 3,60 nie przekracza 4 pkt." />
+          <ResultPanel
+            result="POSITIVE"
+            provisional
+            summary="Średnia 5,40 · na poziomie oczekiwań"
+            missing="Brakuje ocen cząstkowych 3 z 8 kryteriów."
+            reason="Wstępnie, po 5 z 8 kryteriów. Średnia powyżej 4 pkt i żadna ocena cząstkowa nie wynosi 1 pkt."
+          />
+          <ResultPanel result={null} missing="Brakuje ocen cząstkowych 8 z 8 kryteriów." />
+        </div>
+      </Section>
+
       <Section id="karty" title="Karty i wiersze">
         <div className={s.grid2}>
           <Card title="Karta informacyjna">Treść karty: krótko, prostym językiem.</Card>
@@ -502,6 +522,9 @@ export function UiPage() {
                   <StatusBadge tone="warning">Termin</StatusBadge>
                   <StatusBadge tone="error">Błąd</StatusBadge>
                 </div>
+                <ResultPanel result="POSITIVE" summary="Średnia 5,40" />
+                <ResultPanel result="NEGATIVE" summary="Średnia 3,60" />
+                <ResultPanel result="NEGATIVE" provisional missing="Brakuje ocen cząstkowych 2 z 5 kryteriów." />
                 <Card title="Karta">Tekst drugorzędny</Card>
                 <StageStepper label={`Etapy (${t === 'light' ? 'jasny' : 'ciemny'})`} steps={demoSteps(2)} />
               </div>

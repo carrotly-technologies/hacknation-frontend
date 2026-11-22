@@ -52,6 +52,7 @@ may scroll sideways (WCAG 1.4.4, 1.4.10); on phones buttons wrap their label.
 | `ErrorSummary` | errors at the top of the form, links to fields, takes focus after a failed submit. |
 | `InlineAlert` | info / success / warning / error, icon + text. |
 | `StatusBadge` | short status with a dot and text. |
+| `ResultPanel` | assessment result: positive (green, check) / negative (red, cross) / provisional or none (neutral, info), with summary, missing and reason. Used for the result instead of a badge. |
 | `Card` | content card; with `to` the whole card is a link (service tile). `collapsible` (+ `defaultOpen`, `subtitle`): the same card, closed by default, whose heading is a full-width `<button aria-expanded aria-controls>` (min. 48px, hover + focus ring, chevron rotates 180°, no animation with reduced motion); use it for long secondary content in a column of cards ("Opis stanowiska" on the employee profile). |
 | `InfoList` + `InfoRow` | label/value rows, optional action ("Zmień"). |
 | `Accordion` | native `<details>`; for content pages, never inside forms. |
