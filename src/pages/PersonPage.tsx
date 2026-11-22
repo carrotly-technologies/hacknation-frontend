@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
 import type { Person } from '../api/cases'
-import { getPerson, updatePerson, type HistoryItem, type PersonOsp, type PersonProfile, type UpdatePerson } from '../api/people'
+import { createCase, getPerson, updatePerson, type HistoryItem, type PersonOsp, type PersonProfile, type UpdatePerson } from '../api/people'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import {
   BackLink,
@@ -196,20 +196,78 @@ function EditPerson({ person, name }: { person: Person; name: string }) {
 function AssessmentButton({ profile }: { profile: PersonProfile }) {
   const label = assessmentAction(profile)
   const current = profile.currentCase
+  const me = useMe()
+  const qc = useQueryClient()
+  const navigate = useNavigate()
+  const [confirming, setConfirming] = useState(false)
+  const name = `${profile.person.firstName} ${profile.person.lastName}`
+  const start = useMutation({
+    mutationFn: () => createCase(profile.person.id),
+    onSuccess: (created) => {
+      setConfirming(false)
+      qc.invalidateQueries()
+      // the evaluator lands on the new case; HR stays on the profile (the case belongs to the supervisor)
+      if (me.role === 'SUPERVISOR') navigate(caseUrl(created.id, created.currentStage))
+    },
+  })
+  const canStart = !!profile.canStartCase
+  // with a case still open (e.g. the objection term runs) the new cycle is a second, quieter button
+  const startLabel = current ? 'Rozpocznij nowy cykl oceny' : label
+
+  const dialog = (
+    <Dialog
+      open={confirming}
+      onClose={() => setConfirming(false)}
+      title={`${startLabel}: ${name}`}
+      actions={
+        <>
+          <Button type="button" variant="text" onClick={() => setConfirming(false)}>
+            Anuluj
+          </Button>
+          <Button type="button" onClick={() => start.mutate()} loading={start.isPending}>
+            Rozpocznij
+          </Button>
+        </>
+      }
+    >
+      <p>
+        System założy nową teczkę oceny i wyliczy jej terminy z przepisów (m.in. termin rozmowy rozpoczynającej). Pierwszy krok to{' '}
+        {profile.nextAssessment === 'PIERWSZA' && !current ? 'rozmowa wstępna' : 'analiza opisu stanowiska'}.
+      </p>
+      {start.isError && (
+        <InlineAlert tone="error" title="Nie udało się rozpocząć oceny">
+          {start.error.message} Odśwież stronę i spróbuj ponownie.
+        </InlineAlert>
+      )}
+    </Dialog>
+  )
+
   if (current) {
     return (
-      <ButtonLink variant="primary" to={caseUrl(current.id, current.currentStage)} className={s.action}>
-        {label}
-      </ButtonLink>
+      <div className={s.action}>
+        <ButtonLink variant="primary" to={caseUrl(current.id, current.currentStage)}>
+          {label}
+        </ButtonLink>
+        {canStart && (
+          <Button type="button" variant="secondary" onClick={() => setConfirming(true)}>
+            {startLabel}
+          </Button>
+        )}
+        {dialog}
+      </div>
     )
   }
-  // Creating a new case is a separate task: the button is visible but inactive for now.
   return (
     <div className={s.action}>
-      <Button variant="primary" disabled aria-describedby="person-action-hint">
+      <Button variant="primary" disabled={!canStart} aria-describedby={canStart ? undefined : 'person-action-hint'} onClick={() => setConfirming(true)}>
         {label}
       </Button>
-      <p id="person-action-hint" className={s.hint}>Wkrótce</p>
+      {!canStart && (
+        <p id="person-action-hint" className={s.hint}>
+          Nowej oceny nie można teraz rozpocząć.
+        </p>
+      )}
+      {dialog}
     </div>
   )
 }
