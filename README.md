@@ -34,6 +34,11 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   (`Authorization: Bearer`); a 401 sends you back to sign-in. Routes and the menu depend on the role, and a
   route for another role redirects to your start page (`src/lib/useAuth.ts`, `src/shell/RequireAuth.tsx`);
 - `/admin/uzytkownicy` — admin only: accounts and their roles;
+- `/admin/dziennik` — admin only: the append-only event log „Dziennik zdarzeń” (`GET /api/admin/audit*`,
+  `src/api/audit.ts`): date and time, who (name and role, or the assessed person via the link), action (Polish name
+  from the API) with the names of the changed fields, resource, result; filters by person, action (also „Wszystkie
+  akcje w ocenie”) and local date range, 50 entries per page; „Sprawdź integralność” shows the result of
+  `GET /api/admin/audit/verify` (success, or the id of the first broken entry);
 
 - `/zespol` — my team: a table of people (name and position, hire date, current assessment step, nearest deadline; overdue first); a row opens the employee profile;
 - `/pracownik/:personId` — employee profile (`GET /api/people/:personId`, `src/api/people.ts`): name and position,
