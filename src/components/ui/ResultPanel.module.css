@@ -1,0 +1,75 @@
+/* ResultPanel: the assessment result (positive / negative / provisional) as a full-width panel */
+.panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-4) var(--s-5);
+  border: var(--border-w) solid var(--panel-border);
+  border-left: 4px solid var(--panel-fg);
+  border-radius: var(--radius-xs);
+  background: var(--panel-bg);
+  color: var(--text);
+}
+
+.positive {
+  --panel-fg: var(--ok);
+  --panel-bg: var(--ok-bg);
+  --panel-border: var(--ok-border);
+}
+
+.negative {
+  --panel-fg: var(--danger);
+  --panel-bg: var(--danger-bg);
+  --panel-border: var(--danger-border);
+}
+
+.neutral {
+  --panel-fg: var(--border-strong);
+  --panel-bg: var(--bg-subtle);
+  --panel-border: var(--border);
+}
+
+.icon {
+  margin-top: var(--s-0);
+  color: var(--panel-fg);
+}
+
+.neutral .icon {
+  color: var(--text-secondary);
+}
+
+.body {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.heading {
+  color: var(--panel-fg);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.neutral .heading {
+  color: var(--text);
+}
+
+.summary {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading);
+}
+
+.text {
+  font-size: var(--text-body);
+  line-height: var(--leading);
+}
+
+@media (max-width: 599px) {
+  .panel {
+    padding: var(--s-3) var(--s-4);
+  }
+}

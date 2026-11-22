@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { CaseDetail } from '../../api/cases'
 import type { CompetencyModel } from '../../api/kompas'
-import { StatusBadge } from '../../components/ui'
+import { ResultPanel } from '../../components/ui'
 import { fmtAvg } from '../../lib/format'
 import { competencyName } from '../../lib/model'
 import type { LiveResult } from '../../lib/result'
@@ -88,8 +88,9 @@ export function CompetencyScoresTable({
 }
 
 /**
- * Average and band under the table, then the result as a badge: final (green / red) once every criterion is decided
- * and the result can no longer change, otherwise a neutral "Wstępnie …". No badge while there is no result yet.
+ * The result under the table as a `ResultPanel`: average and band in its summary line, then what is still missing and
+ * the reason. Final (green / red) once every criterion is decided and the result can no longer change, otherwise a
+ * neutral "Wstępnie: …"; without any decision "Wynik pojawi się po uzupełnieniu ocen".
  * `showAverage={false}` leaves the average out (the first assessment before the backend has computed it);
  * `averageLabel` renames it (the first assessment calls it "Ocena łączna").
  */
@@ -103,22 +104,21 @@ export function ResultSummary({
   averageLabel?: string
 }) {
   const final = r.complete && !r.provisional
-  const word = r.result === 'POSITIVE' ? 'pozytywna' : 'negatywna'
   return (
-    <div className={s.summary}>
-      {showAverage && (
-        <p>
-          {averageLabel}: <span className="num">{fmtAvg(r.average)}</span>
-          {r.band && ` · ${r.band.label.toLowerCase()}`}
-        </p>
-      )}
-      {r.result && (
-        <div>
-          <StatusBadge tone={final ? (r.result === 'POSITIVE' ? 'success' : 'error') : 'neutral'}>
-            {final ? `Ocena ${word}` : `Wstępnie ${word}`}
-          </StatusBadge>
-        </div>
-      )}
-    </div>
+    <ResultPanel
+      result={r.result}
+      provisional={!final}
+      summary={
+        showAverage &&
+        r.average !== null && (
+          <>
+            {averageLabel} <span className="num">{fmtAvg(r.average)}</span>
+            {r.band && ` · ${r.band.label.toLowerCase()}`}
+          </>
+        )
+      }
+      missing={r.missing}
+      reason={r.result && r.reason}
+    />
   )
 }

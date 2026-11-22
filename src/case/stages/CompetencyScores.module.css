@@ -67,12 +67,6 @@
   display: none;
 }
 
-.summary {
-  display: grid;
-  gap: var(--s-2);
-  justify-items: start;
-}
-
 @media (max-width: 599px) {
   .table .level {
     display: none;

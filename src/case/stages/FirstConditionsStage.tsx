@@ -53,11 +53,11 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
         <p className={layout.muted}>Uzupełniane automatycznie z dat.</p>
       </section>
 
-      <section aria-labelledby="result-h" className={s.section}>
-        <h3 id="result-h" className={s.heading}>Wynik oceny</h3>
+      {/* Not a <section>: the panel is itself the "Wynik oceny" region. */}
+      <div className={s.section}>
+        <h3 className={s.heading}>Wynik oceny</h3>
         <ResultSummary result={r} averageLabel="Ocena łączna" />
-        <p className={layout.muted}>{r.reason}</p>
-      </section>
+      </div>
 
       <section aria-labelledby="writing-h" className={s.section}>
         <h3 id="writing-h" className={s.heading}>Uzasadnienie i rozwój</h3>

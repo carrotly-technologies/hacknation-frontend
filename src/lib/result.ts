@@ -15,6 +15,8 @@ export interface LiveResult {
   provisional: boolean
   reason: string
   legal: string
+  /** What is still missing for a final result (partial assessments, the FIRST exam answer); null when nothing is. */
+  missing: string | null
 }
 
 const R16 = 'rozp. PRM z 4.04.2016'
@@ -25,6 +27,18 @@ const R15 = 'rozp. PRM z 23.07.2015'
  * exact average. When the backend has computed `evaluation` (all decisions present) it takes precedence.
  */
 export function liveResult(detail: CaseDetail, criteria: string[], model: CompetencyModel | undefined): LiveResult {
+  return { ...compute(detail, criteria, model), missing: missingFor(detail, criteria) }
+}
+
+function missingFor(detail: CaseDetail, criteria: string[]): string | null {
+  const left = criteria.filter((c) => detail.decisions[c] === undefined || detail.decisions[c] === null).length
+  const parts: string[] = []
+  if (left) parts.push(`ocen cząstkowych ${left} z ${criteria.length} kryteriów`)
+  if (detail.path === 'FIRST' && !detail.firstConditions?.examPassed) parts.push('odpowiedzi, czy oceniany zaliczył egzamin ze służby przygotowawczej')
+  return parts.length ? `Brakuje ${parts.join(' i ')}.` : null
+}
+
+function compute(detail: CaseDetail, criteria: string[], model: CompetencyModel | undefined): Omit<LiveResult, 'missing'> {
   const pts = criteria.map((c) => detail.decisions[c]).filter((p): p is number => p !== undefined && p !== null)
   const decided = pts.length
   const total = criteria.length
