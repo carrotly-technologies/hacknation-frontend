@@ -10,6 +10,8 @@ export type DemoAccount = {
   name: string
   role: Role
   description: string
+  /** Fictional PESEL (valid check digit) of the seed account, used only by the simulated login.gov.pl page. */
+  pesel: string
 }
 
 /**
@@ -23,10 +25,10 @@ export const DEMO_PASSWORD = DEMO_ACCOUNTS_ENABLED ? 'Kompas2026!' : ''
 
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = DEMO_ACCOUNTS_ENABLED
   ? [
-      { login: 'k.wisniewska', name: 'Karolina Wiśniewska', role: 'SUPERVISOR', description: 'Zespół z 7 teczkami ocen' },
-      { login: 'a.szymanczak', name: 'Agnieszka Szymańczak', role: 'SUPERVISOR', description: 'Zespół z 2 teczkami ocen' },
-      { login: 'j.kuchta', name: 'Jolanta Kuchta', role: 'SUPERVISOR', description: 'Zespół z 2 teczkami ocen' },
-      { login: 'a.cieslak-dyjecinska', name: 'Agata Cieślak-Dyjecińska', role: 'HR', description: 'Monitoring ocen w całym urzędzie' },
-      { login: 'admin', name: 'Marek Zając', role: 'ADMIN', description: 'Konta użytkowników i ich role' },
+      { login: 'k.wisniewska', name: 'Karolina Wiśniewska', role: 'SUPERVISOR', description: 'Zespół z 7 teczkami ocen', pesel: '78031504123' },
+      { login: 'a.szymanczak', name: 'Agnieszka Szymańczak', role: 'SUPERVISOR', description: 'Zespół z 2 teczkami ocen', pesel: '71112205469' },
+      { login: 'j.kuchta', name: 'Jolanta Kuchta', role: 'SUPERVISOR', description: 'Zespół z 2 teczkami ocen', pesel: '85060912483' },
+      { login: 'a.cieslak-dyjecinska', name: 'Agata Cieślak-Dyjecińska', role: 'HR', description: 'Monitoring ocen w całym urzędzie', pesel: '90022703645' },
+      { login: 'admin', name: 'Marek Zając', role: 'ADMIN', description: 'Konta użytkowników i ich role', pesel: '68093017792' },
     ]
   : []

@@ -1,34 +1,42 @@
-import { LogIn } from 'lucide-react'
+import { Landmark, LogIn } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { startLoginGov } from '../api/auth'
 import { ApiError, errorMessage } from '../api/client'
 import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
 import { DEMO_ACCOUNTS, DEMO_ACCOUNTS_ENABLED, DEMO_PASSWORD } from '../lib/demoAccounts'
+import { rememberLoginGovState, type LoginGovFailure } from '../lib/loginGov'
 import { HOME_BY_ROLE, LOGIN_PATH, ROLE_LABEL, useAuth } from '../lib/useAuth'
 import { BrandMark } from '../components/BrandMark'
 import s from './LoginPage.module.css'
 
 /**
  * Sign-in with login and password. The role comes from the account.
- * Below the form: one-click sign-in as a demo account (POC, hidden with VITE_DEMO_ACCOUNTS=false).
+ * Above the form: the simulated login.gov.pl sign-in; below it: one-click sign-in as a demo account
+ * (both POC only, hidden with VITE_DEMO_ACCOUNTS=false, as the simulation signs in as a demo person).
  */
 export function LoginPage() {
   const { user, signIn } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
+  const location = useLocation()
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<FormError[]>([])
-  const [failure, setFailure] = useState<string | null>(null)
+  // A failed login.gov.pl return lands here with its message.
+  const [failure, setFailure] = useState<string | null>(
+    () => (location.state as LoginGovFailure | null)?.loginGovError ?? null,
+  )
   const [busy, setBusy] = useState(false)
   /** Login of the demo account being signed in, if any. */
   const [demoBusy, setDemoBusy] = useState<string | null>(null)
+  const [govBusy, setGovBusy] = useState(false)
 
   const next = safeNext(params.get('next'))
 
   if (user) return <Navigate to={next ?? HOME_BY_ROLE[user.role]} replace />
 
-  const pending = busy || demoBusy !== null
+  const pending = busy || demoBusy !== null || govBusy
 
   /** Shared by the form and the demo cards; throws nothing, shows the failure in the alert. */
   const attempt = async (l: string, p: string): Promise<boolean> => {
@@ -68,6 +76,22 @@ export function LoginPage() {
     setDemoBusy(null)
   }
 
+  /** Like Węzeł Krajowy: the API starts the flow (state) and says where to go. */
+  const onLoginGov = async () => {
+    if (pending) return
+    setErrors([])
+    setFailure(null)
+    setGovBusy(true)
+    try {
+      const { redirectUrl, state } = await startLoginGov()
+      rememberLoginGovState(state)
+      window.location.assign(redirectUrl)
+    } catch (err) {
+      setFailure(errorMessage(err))
+      setGovBusy(false)
+    }
+  }
+
   const fieldError = (id: string) => errors.find((x) => x.id === id)?.message
 
   return (
@@ -85,6 +109,23 @@ export function LoginPage() {
           <InlineAlert tone="error" live title="Nie udało się zalogować" className={s.alert}>
             {failure}
           </InlineAlert>
+        )}
+
+        {DEMO_ACCOUNTS_ENABLED && (
+          <div className={s.gov}>
+            <Button
+              variant="secondary"
+              loading={govBusy}
+              disabled={pending && !govBusy}
+              onClick={() => void onLoginGov()}
+              icon={<Landmark size={20} aria-hidden="true" />}
+              fullWidth
+            >
+              Zaloguj przez login.gov.pl
+            </Button>
+            <p className={s.govHint}>Symulacja logowania urzędowego (profil zaufany, mObywatel, bank) na potrzeby pokazu.</p>
+            <p className={s.divider}>albo login i hasło</p>
+          </div>
         )}
 
         <form className={s.form} onSubmit={onSubmit} noValidate>
@@ -116,7 +157,7 @@ export function LoginPage() {
           <Button
             type="submit"
             loading={busy}
-            disabled={demoBusy !== null}
+            disabled={demoBusy !== null || govBusy}
             icon={<LogIn size={20} aria-hidden="true" />}
             fullWidth
           >

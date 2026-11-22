@@ -48,6 +48,23 @@
   gap: var(--s-4);
 }
 
+.gov {
+  margin-bottom: var(--s-6);
+}
+
+.govHint {
+  margin-top: var(--s-2);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.divider {
+  margin-top: var(--s-6);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
 .alert {
   margin-bottom: var(--s-4);
 }
