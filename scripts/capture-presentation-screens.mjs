@@ -4,7 +4,7 @@
 //   frontend: npm run dev                        (this repo, port 5173)
 //   then:     npx playwright install chromium    (once)
 //             npm run presentation:screens       (APP_URL=http://localhost:5173 by default)
-// The script resets the demo data (POST /api/demo/reset) before and after, signs in as the demo supervisor
+// The script resets the demo data (POST /api/demo/reset, as admin) before and after, signs in as the demo supervisor
 // j.kaminska and walks one case to the signature so the link for the assessed person exists.
 import { mkdir, stat } from 'node:fs/promises'
 import path from 'node:path'
@@ -28,7 +28,9 @@ async function api(method, route, token, body) {
 }
 
 const { accessToken: token } = await api('POST', '/auth/login', null, { login: LOGIN, password: PASSWORD })
-await api('POST', '/demo/reset', token)
+// the demo reset is ADMIN/HR only
+const { accessToken: adminToken } = await api('POST', '/auth/login', null, { login: 'admin', password: PASSWORD })
+await api('POST', '/demo/reset', adminToken)
 
 // Slide 5: indicator answers in the first competency of c-001, so the system shows its suggestion.
 await api('PATCH', '/cases/c-001', token, {
@@ -124,5 +126,5 @@ await shot(p, 'zapoznanie')
 await p.context().close()
 
 await browser.close()
-await api('POST', '/demo/reset', token)
+await api('POST', '/demo/reset', adminToken)
 console.log(`Screenshots saved in ${OUT}`)
