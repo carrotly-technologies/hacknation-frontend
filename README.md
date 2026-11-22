@@ -68,8 +68,8 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
 - `/ui` — design-system catalogue, `/wniosek-demo` — step-by-step form pattern, `/wiecej`, `/uslugi`
   (helper pages: they work under their addresses but are not linked from the navigation).
 
-API contract: `notatki/api-kontrakt-v1.md` and `api-kontrakt-v2.md` (+ `availableActions` extension).
-The assistant is a stub: wire `askAssistant()` in `src/api/assistant.ts`. Data fetching uses TanStack
+API contract: the route tables in the backend README. Submission docs (project description, use of AI,
+architecture): `docs/zgloszenie/` in hacknation-backend. Data fetching uses TanStack
 Query, routing react-router; design tokens live in `src/styles/tokens.css`,
 components in `src/components/ui/`; see `docs/DESIGN.md`.
 
