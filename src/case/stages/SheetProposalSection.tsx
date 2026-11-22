@@ -1,41 +1,35 @@
 import { useState } from 'react'
-import { Button, Card, InlineAlert, RadioGroup } from '../../components/ui'
+import { Button, Card, RadioGroup } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { competencyName, findCompetency, useSheets } from '../../lib/model'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
 import { SheetCriteriaEditor } from './SheetCriteriaEditor'
-import { StageError, StageLayout } from './StageLayout'
+import { StageError } from './StageLayout'
 import layout from './StageLayout.module.css'
 import s from './SheetProposalStage.module.css'
 
 /**
- * "Proponowany formularz" (design frame 2): the sheet proposed from the job description (all periodic
- * sheets as locked radios, the proposed one checked) and the competencies chosen for assessment, one
- * below the other, each as a non-clickable full-width card listing its indicators. At the end, "Akceptuj formularz" moves the case on to the opening talk;
- * "Wprowadź poprawki" opens the editor of the sheet and the additional criteria.
+ * „Wynik analizy”, the lower part of step 1 „Analiza stanowiska” (backend stage SHEET_PROPOSAL, hacknation-frontend#153):
+ * the sheet the system picked from the job description (all periodic sheets as locked radios, the picked one checked)
+ * and the mandatory criteria, one below the other, each as a non-clickable full-width card listing its indicators.
+ * „Akceptuj formularz” moves the case on to step 2 „Formularz oceny”; „Wprowadź poprawki” opens the editor of the
+ * sheet and the additional criteria. Additional criteria are never picked for the evaluator.
  */
-export function SheetProposalStage({ detail, model, criteria, stage }: StageProps) {
-  const info = detail.stages.find((x) => x.id === stage)!
+export function SheetProposalSection({ detail, model, criteria, headingId }: Pick<StageProps, 'detail' | 'model' | 'criteria'> & { headingId: string }) {
+  const info = detail.stages.find((x) => x.id === 'SHEET_PROPOSAL')
   const act = useCaseAction(detail.id)
   const [editing, setEditing] = useState(false)
-  const done = info.status === 'DONE'
+  const done = info?.status === 'DONE'
   const canEdit = !done && allows(detail, 'ACCEPT_SHEET')
 
   const sheets = useSheets()
   const periodic = (sheets.data ?? []).filter((x) => x.kind === 'PERIODIC')
 
   return (
-    <StageLayout
-      info={info}
-      status={
-        done && (
-          <InlineAlert tone="success" title="Formularz zaakceptowany">
-            Arkusz {detail.sheetId}, kryteria dodatkowe: {criteria.additional.map((c) => competencyName(model, c)).join(', ') || 'brak'}.
-          </InlineAlert>
-        )
-      }
-    >
+    <section aria-labelledby={headingId} className={s.result}>
+      <h3 id={headingId} className={s.resultLabel}>Wynik analizy</h3>
+
       {!editing && (
         <RadioGroup
           id="proposed-sheet"
@@ -60,7 +54,7 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
         <SheetCriteriaEditor detail={detail} model={model} onDone={() => setEditing(false)} />
       ) : (
         <section aria-labelledby="questions-h">
-          <h3 id="questions-h" className={s.questionsLabel}>Pytania kompetencyjne wybrane na podstawie analizy opisu stanowiska</h3>
+          <h4 id="questions-h" className={s.questionsLabel}>Pytania kompetencyjne wybrane na podstawie analizy opisu stanowiska</h4>
           {criteria.all.length === 0 ? (
             <p className={layout.muted}>Wybierz arkusz, aby zobaczyć pytania.</p>
           ) : (
@@ -69,7 +63,7 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
                 const indicators = findCompetency(model, id)?.indicators ?? []
                 return (
                   <li key={id}>
-                    <Card as="h4" title={competencyName(model, id)} className={s.competency}>
+                    <Card as="h5" title={competencyName(model, id)} className={s.competency}>
                       {indicators.length > 0 && (
                         <ul className={s.indicators}>
                           {indicators.map((ind) => (
@@ -98,6 +92,6 @@ export function SheetProposalStage({ detail, model, criteria, stage }: StageProp
       )}
 
       <StageError error={act.error} />
-    </StageLayout>
+    </section>
   )
 }

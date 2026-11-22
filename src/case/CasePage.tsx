@@ -21,7 +21,6 @@ import { AssessmentTalkStage } from './stages/AssessmentTalkStage'
 import { JustificationStage } from './stages/JustificationStage'
 import { ObservationStage } from './stages/ObservationStage'
 import { OspAnalysisStage } from './stages/OspAnalysisStage'
-import { SheetProposalStage } from './stages/SheetProposalStage'
 import { SheetWizard } from './stages/SheetWizard'
 import { StageNotOpen } from './stages/StageNotOpen'
 
@@ -61,7 +60,7 @@ export function CasePage() {
   const detail = q.data
   const stage = stageFromSlug(slug)
   if (!stage || !detail.stages.some((st) => st.id === stage)) return <Navigate to={caseUrl(detail.id, viewStage(detail.stages, detail.currentStage))} replace />
-  // A stage shown in another stage's view (the assessment period → the sheet of step 3), e.g. an old /obserwacje link.
+  // A stage shown in another stage's view (the assessment period → the sheet of step 2, the proposed sheet → step 1), e.g. an old /obserwacje link.
   const shown = viewStage(detail.stages, stage)
   if (shown !== stage) return <Navigate to={caseUrl(detail.id, shown)} replace />
   if (slug !== STAGE_SLUG[stage]) return <Navigate to={caseUrl(detail.id, stage)} replace />
@@ -128,10 +127,10 @@ function assistantContext(detail: CaseDetail | undefined, stage: StageId | null 
 
 function StageWorkspace(p: StageProps) {
   switch (p.stage) {
+    // Step 1 „Analiza stanowiska”: the proposed sheet is its „Wynik analizy” section (SHEET_PROPOSAL redirects here).
     case 'OSP_ANALYSIS':
-      return <OspAnalysisStage {...p} />
     case 'SHEET_PROPOSAL':
-      return <SheetProposalStage {...p} />
+      return <OspAnalysisStage {...p} stage="OSP_ANALYSIS" />
     case 'OPENING_TALK':
       return <SheetWizard {...p} />
     case 'OBSERVATION':

@@ -1,3 +1,21 @@
+/* „Wynik analizy” in step 1: under the job-description cards, its own heading */
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+}
+
+.resultLabel {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.list .competency > h5 {
+  font-size: var(--text-body);
+  overflow-wrap: anywhere;
+}
+
 .questionsLabel {
   margin-bottom: var(--s-4);
   font-size: var(--text-lg);

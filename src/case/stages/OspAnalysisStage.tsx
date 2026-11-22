@@ -1,36 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { SheetId } from '../../api/kompas'
 import { Button, Card, Field, InlineAlert, Select } from '../../components/ui'
 import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
 import { competencyName, useSheets } from '../../lib/model'
 import { allows } from '../../lib/stages'
 import type { StageProps } from '../CasePage'
+import { SheetProposalSection } from './SheetProposalSection'
 import { StageError, StageLayout } from './StageLayout'
 import s from './StageLayout.module.css'
 
 /**
- * "Analiza opisu stanowiska" (design frame 1): the job description in three cards (description,
- * the employee's tasks, competencies) and one action. The system's proposal is not shown here: accepting
- * saves the suggested sheet as the draft (mandatory criteria only; additional criteria are the supervisor's
- * own choice), and "Proponowany formularz" shows it for review. When no sheet can be suggested, a sheet
- * picker sits above the action.
+ * Step 1 „Analiza stanowiska” (backend stages OSP_ANALYSIS and SHEET_PROPOSAL, hacknation-frontend#153). The job
+ * description sits in three collapsed cards (description, the employee's tasks, competencies) for a look; the main
+ * action under them is „Przeprowadź analizę”. It saves the sheet the system picked (or the one chosen in the picker
+ * when the job description does not settle it) with its mandatory criteria only, and the „Wynik analizy” section
+ * then shows on the same screen (no navigation, `follow: false`). The result is shown only after the click, so the
+ * analysis is the evaluator's own step even though the system knows it at once.
  */
-export function OspAnalysisStage({ detail, model, stage }: StageProps) {
+export function OspAnalysisStage({ detail, model, criteria, stage }: StageProps) {
   const info = detail.stages.find((x) => x.id === stage)!
+  const proposal = detail.stages.find((x) => x.id === 'SHEET_PROPOSAL')
   const sheets = useSheets()
   const patch = usePatchCase(detail.id)
-  const act = useCaseAction(detail.id)
-  const done = info.status === 'DONE'
+  const act = useCaseAction(detail.id, { follow: false })
+  const analysed = info.status === 'DONE'
+  const accepted = proposal?.status === 'DONE'
   const osp = detail.osp
   const suggested = detail.ospAnalysis?.suggestedSheet ?? null
   const [chosen, setChosen] = useState<SheetId | ''>(detail.sheetId ?? '')
   const sheetId = detail.sheetId ?? suggested?.sheetId ?? (chosen || null)
+  const resultId = useId()
 
-  const accept = async () => {
+  // The result appears below the cards: bring it into view right after the analysis (not on a later visit).
+  const ran = useRef(false)
+  useEffect(() => {
+    if (analysed && ran.current) document.getElementById(resultId)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [analysed, resultId])
+
+  const analyse = async () => {
     if (!sheetId) return
-    // The proposal becomes the draft sheet with its mandatory criteria only: no additional criteria are
-    // picked for the supervisor, they add them by hand in "Proponowany formularz" if they want any.
-    await patch.mutateAsync({ sheetId })
+    ran.current = true
+    // The proposal becomes the draft sheet with its mandatory criteria only: no additional criteria are picked
+    // for the supervisor, they add them by hand with „Wprowadź poprawki” if they want any.
+    if (detail.sheetId !== sheetId) await patch.mutateAsync({ sheetId })
     act.mutate('ACCEPT_OSP_ANALYSIS')
   }
 
@@ -46,28 +58,21 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
     <StageLayout
       info={info}
       status={
-        done && (
-          <InlineAlert tone="success" title="Analiza zatwierdzona">
-            Proponowany formularz: arkusz {detail.sheetId}.
+        accepted && (
+          <InlineAlert tone="success" title="Formularz zaakceptowany">
+            Arkusz {detail.sheetId}, kryteria dodatkowe: {criteria.additional.map((c) => competencyName(model, c)).join(', ') || 'brak'}.
           </InlineAlert>
         )
       }
-      actions={
-        done ? null : (
-          <Button loading={patch.isPending || act.isPending} disabled={!sheetId || !allows(detail, 'ACCEPT_OSP_ANALYSIS')} onClick={accept}>
-            Zatwierdź analizę
-          </Button>
-        )
-      }
     >
-      <Card as="h3" title="Opis stanowiska">
+      <Card collapsible as="h3" title="Opis stanowiska">
         <div className={s.cardContent}>
           <p className={s.text}>{osp.purpose}</p>
           <p className={s.text}>Liczba podległych pracowników: {osp.subordinates}</p>
         </div>
       </Card>
 
-      <Card as="h3" title="Zadania pracownika">
+      <Card collapsible as="h3" title="Zadania pracownika">
         <ul className={s.bullets}>
           {osp.mainTasks.map((t, i) => (
             <li key={i}>{t}</li>
@@ -75,7 +80,7 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
         </ul>
       </Card>
 
-      <Card as="h3" title="Kompetencje">
+      <Card collapsible as="h3" title="Kompetencje">
         <ul className={s.bullets}>
           {osp.softCompetencies.map((c) => (
             <li key={c}>{competencyName(model, c)}</li>
@@ -86,22 +91,31 @@ export function OspAnalysisStage({ detail, model, stage }: StageProps) {
         </ul>
       </Card>
 
-      {!suggested && !detail.sheetId && (
-        <Field label="Arkusz oceny" hint="Z opisu stanowiska nie da się ustalić arkusza. Wybierz go sam.">
-          {(p) => (
-            <Select
-              {...p}
-              value={chosen}
-              placeholder="Wybierz arkusz"
-              disabled={done}
-              onChange={(e) => setChosen(e.target.value as SheetId)}
-              options={(sheets.data ?? []).filter((x) => x.kind === 'PERIODIC').map((x) => ({ value: x.id, label: `Arkusz ${x.id}` }))}
-            />
+      {!analysed && (
+        <>
+          {!suggested && !detail.sheetId && (
+            <Field label="Arkusz oceny" hint="Z opisu stanowiska nie da się ustalić arkusza. Wybierz go sam.">
+              {(p) => (
+                <Select
+                  {...p}
+                  value={chosen}
+                  placeholder="Wybierz arkusz"
+                  onChange={(e) => setChosen(e.target.value as SheetId)}
+                  options={(sheets.data ?? []).filter((x) => x.kind === 'PERIODIC').map((x) => ({ value: x.id, label: `Arkusz ${x.id}` }))}
+                />
+              )}
+            </Field>
           )}
-        </Field>
+          <div>
+            <Button loading={patch.isPending || act.isPending} disabled={!sheetId || !allows(detail, 'ACCEPT_OSP_ANALYSIS')} onClick={analyse}>
+              Przeprowadź analizę
+            </Button>
+          </div>
+          <StageError error={patch.error ?? act.error} />
+        </>
       )}
 
-      <StageError error={patch.error ?? act.error} />
+      {analysed && proposal && <SheetProposalSection detail={detail} model={model} criteria={criteria} headingId={resultId} />}
     </StageLayout>
   )
 }

@@ -8,7 +8,7 @@ import s from './Surface.module.css'
 type Props = {
   title?: ReactNode
   /** Heading level of the title; defaults to h3. */
-  as?: 'h2' | 'h3' | 'h4'
+  as?: 'h2' | 'h3' | 'h4' | 'h5'
   icon?: ReactNode
   children?: ReactNode
   /** Makes the whole card a link (service tile). */
@@ -79,7 +79,7 @@ export function Card({ title, as: H = 'h3', icon, children, to, onClick, loading
 }
 
 type CollapsibleProps = Pick<Props, 'title' | 'subtitle' | 'children' | 'defaultOpen' | 'forceState' | 'className' | 'bodyClassName'> & {
-  as: 'h2' | 'h3' | 'h4'
+  as: 'h2' | 'h3' | 'h4' | 'h5'
 }
 
 /** The plain card's look; the heading wraps a disclosure button (aria-expanded), Enter / Space toggle it natively. */

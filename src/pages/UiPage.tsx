@@ -41,7 +41,7 @@ import s from './UiPage.module.css'
 
 const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'tertiary', 'text']
 
-const STEP_LABELS = ['Analiza opisu stanowiska', 'Proponowany formularz', 'Formularz oceny', 'Formularz oceny kompetencji', 'Weryfikacja formularza', 'Ocena końcowa']
+const STEP_LABELS = ['Analiza stanowiska', 'Formularz oceny', 'Formularz oceny kompetencji', 'Rozmowa oceniająca', 'Weryfikacja formularza', 'Ocena końcowa']
 
 const PART_LABELS = ['Ocena okresowa', 'Cele i zadania', 'Podsumowanie i podpisy']
 const COMPETENCY_LABELS = [

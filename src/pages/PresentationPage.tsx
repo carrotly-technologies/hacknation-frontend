@@ -98,16 +98,16 @@ const SLIDES: Slide[] = [
     ),
   },
   {
-    title: 'Analiza opisu stanowiska',
+    title: 'Analiza stanowiska',
     body: (
       <>
         <Copy
-          eyebrow="Krok 1 z 7 · Analiza opisu stanowiska"
+          eyebrow="Krok 1 z 6 · Analiza stanowiska"
           title="Opis stanowiska podpowiada, co oceniać."
           lede="Kompas pokazuje zadania i kompetencje z opisu stanowiska i proponuje arkusz oceny. Przełożony to zatwierdza."
         />
         <div {...enter(3, s.art)}>
-          <Laptop src={shot('analiza-osp')} alt="Etap „Analiza opisu stanowiska” w teczce: opis stanowiska i zadania pracownika" />
+          <Laptop src={shot('analiza-osp')} alt="Etap „Analiza stanowiska” w teczce: opis stanowiska i zadania pracownika" />
         </div>
       </>
     ),
@@ -117,7 +117,7 @@ const SLIDES: Slide[] = [
     body: (
       <>
         <Copy
-          eyebrow="Krok 4 z 7 · Formularz oceny kompetencji"
+          eyebrow="Krok 3 z 6 · Formularz oceny kompetencji"
           title="Kompas sugeruje. Decyduje przełożony."
           lede="Z ocen wskaźników zachowań system liczy sugerowany poziom. Ostateczną ocenę zawsze wybiera przełożony."
         />
@@ -166,7 +166,7 @@ const SLIDES: Slide[] = [
     body: (
       <>
         <Copy
-          eyebrow="Krok 7 z 7 · Ocena końcowa"
+          eyebrow="Krok 6 z 6 · Ocena końcowa"
           title="Podpis, link, gotowe."
           lede="Oceniany czyta arkusz na telefonie i potwierdza zapoznanie, bez zakładania konta. Arkusz pobierzesz jako PDF lub DOCX."
         />

@@ -6,7 +6,7 @@
   - compact (< 58rem): numbered dots joined by a line, the name of the shown step under them.
   The thresholds are in rem, so enlarged text (/ustawienia, 125% / 150%) switches to the compact variant before
   a word stops fitting. They are sized for the seven periodic steps (longest two-line label „Formularz oceny
-  kompetencji”, longest words „Proponowany”, „Weryfikacja”, „kompetencji” in bold); fewer steps get wider chevrons.
+  kompetencji”, longest words „Weryfikacja”, „kompetencji” in bold); fewer steps get wider chevrons.
 */
 .root {
   --chev: 14px;

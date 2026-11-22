@@ -1,11 +1,12 @@
 import { Link } from 'react-router'
 import type { CaseDetail, StageId } from '../../api/cases'
 import { InlineAlert } from '../../components/ui'
-import { caseUrl, stageTitle } from '../../lib/stages'
+import { caseUrl, stageTitle, viewStage } from '../../lib/stages'
 import { StageHeader } from './common'
 
 const WHAT: Partial<Record<StageId, string>> = {
-  SHEET_PROPOSAL: 'Przejrzysz formularz zaproponowany na podstawie opisu stanowiska i zaakceptujesz go albo wprowadzisz zmiany (arkusz, kryteria dodatkowe).',
+  OSP_ANALYSIS: 'Przeprowadzisz analizę opisu stanowiska. System wybierze arkusz B albo C i przygotuje szkic formularza, który zaakceptujesz albo poprawisz (arkusz, kryteria dodatkowe).',
+  SHEET_PROPOSAL: 'Przeprowadzisz analizę opisu stanowiska. System wybierze arkusz B albo C i przygotuje szkic formularza, który zaakceptujesz albo poprawisz (arkusz, kryteria dodatkowe).',
   OPENING_TALK: 'Omówisz z ocenianym obowiązki z opisu stanowiska, kryteria, oczekiwania i ewentualne cele. Zatwierdzenie części I blokuje kryteria i ustala termin oceny.',
   OBSERVATION: 'Przez cały okres oceny zapisujesz obserwacje: sytuacja, działanie, rezultat. Pojawią się one w rubryce przy właściwych wskaźnikach.',
   ASSESSMENT: 'W formularzu oceny kompetencji ocenisz wskaźniki behawioralne każdego kryterium. System zaproponuje poziom, a decyzję o ocenie cząstkowej podejmiesz Ty.',
@@ -33,7 +34,7 @@ export function StageNotOpen({ detail, stage }: { detail: CaseDetail; stage: Sta
         }
       />
       <div className="stage-pad">
-        <Link className="btn btn--primary" to={caseUrl(detail.id, detail.currentStage)}>
+        <Link className="btn btn--primary" to={caseUrl(detail.id, viewStage(detail.stages, detail.currentStage))}>
           Przejdź do bieżącego etapu
         </Link>
       </div>
