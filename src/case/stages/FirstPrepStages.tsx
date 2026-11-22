@@ -1,13 +1,16 @@
-import { Check } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { DeadlineText } from '../../components/Deadline'
-import { InlineAlert } from '../../components/ui'
+import { Button, Checkbox, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../../components/ui'
 import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
 import { addDaysIso, fmtDate } from '../../lib/format'
 import type { StageProps } from '../CasePage'
 import { BlockedReason, MutationError, StageHeader } from './common'
 import { allows } from '../../lib/stages'
+import { StageError, StageLayout } from './StageLayout'
+import t from './CompetencyScores.module.css'
+import s from './FirstPrepStages.module.css'
 
+/** Topics of the introductory talk, §3 rozp. PRM z 23.07.2015 (first assessment). */
 const INTRO_ITEMS = [
   'Zapoznanie z trybem pierwszej oceny i jej elementami (rzetelność, wykorzystywanie wiedzy, organizacja pracy, komunikacja, współpraca)',
   'Omówienie głównych obowiązków wynikających z opisu stanowiska pracy',
@@ -15,63 +18,128 @@ const INTRO_ITEMS = [
   'Wyznaczenie terminu na złożenie sprawozdania (po upływie 8 miesięcy od nawiązania stosunku pracy)',
 ]
 
+const FORM_ID = 'intro-talk-form'
+const CONFIRM_ID = 'intro-talk-confirm'
+const DUE_ID = 'intro-talk-report-due'
+
+/**
+ * Step 1 of the first assessment, "Rozmowa wstępna": the §3 topics as a plain table, one confirmation that all of
+ * them were discussed, and the report due date (not earlier than 8 months after hiring, §4 ust. 1 rozp. 2015).
+ */
 export function IntroTalkStage({ detail, stage }: StageProps) {
-  const info = detail.stages.find((s) => s.id === stage)!
+  const info = detail.stages.find((x) => x.id === stage)!
   const done = info.status === 'DONE'
   const act = useCaseAction(detail.id)
   const patch = usePatchCase(detail.id)
-  const [checked, setChecked] = useState<boolean[]>(INTRO_ITEMS.map(() => done))
   const minReport = addDaysIso(detail.person.hiredOn, 243)
   const [due, setDue] = useState(detail.firstConditions?.reportDue ?? minReport)
-  const missing = checked.filter((c) => !c).length
+  const [confirmed, setConfirmed] = useState(done)
+  const [errors, setErrors] = useState<FormError[]>([])
+  const errorFor = (id: string) => errors.find((e) => e.id === id)?.message
+  const clearError = (id: string) => setErrors((v) => (v.some((e) => e.id === id) ? v.filter((e) => e.id !== id) : v))
 
-  const complete = async () => {
-    await patch.mutateAsync({ firstConditions: { reportDue: due } })
-    act.mutate('COMPLETE_INTRO_TALK')
+  const validate = (): FormError[] => {
+    const e: FormError[] = []
+    if (!confirmed) e.push({ id: CONFIRM_ID, message: 'Potwierdź, że omówiono z ocenianym wszystkie zagadnienia z §3 rozporządzenia' })
+    if (!due) e.push({ id: DUE_ID, message: 'Wpisz termin złożenia sprawozdania' })
+    else if (due < minReport) e.push({ id: DUE_ID, message: `Termin złożenia sprawozdania nie może być wcześniejszy niż ${fmtDate(minReport)}` })
+    return e
+  }
+
+  const onSubmit = async (ev: FormEvent) => {
+    ev.preventDefault()
+    const e = validate()
+    setErrors(e)
+    if (e.length) return
+    try {
+      await patch.mutateAsync({ firstConditions: { reportDue: due } })
+      await act.mutateAsync('COMPLETE_INTRO_TALK')
+    } catch {
+      // shown by StageError
+    }
   }
 
   return (
-    <div className="stage">
-      <StageHeader
-        title={info.name}
-        status={
-          done && (
-            <InlineAlert tone="success" title="Rozmowa wstępna zakończona">
-              Rozmowa wstępna odbyła się {fmtDate(info.completedOn)}. Termin sprawozdania: {fmtDate(detail.firstConditions?.reportDue)}.
-            </InlineAlert>
-          )
-        }
-      />
-      <div className="stage-pad stage-pad--narrow">
-        <ol className="topics">
-          {INTRO_ITEMS.map((t, i) => (
-            <li key={t} className={`topic ${checked[i] ? 'is-done' : ''}`}>
-              <span className="topic__mark" aria-hidden="true">{checked[i] ? <Check size={12} strokeWidth={3} /> : i + 1}</span>
-              <label className="topic__check">
-                <input type="checkbox" className="checkbox" checked={checked[i]} disabled={done} onChange={(e) => setChecked((s) => s.map((v, j) => (j === i ? e.target.checked : v)))} />
-                {t}
-              </label>
-            </li>
-          ))}
-        </ol>
-        <h3 className="h-section block-h">Termin złożenia sprawozdania</h3>
-        <div className="due-row">
-          <input type="date" className="input" style={{ width: 180 }} min={minReport} value={due} readOnly={done} onChange={(e) => setDue(e.target.value)} aria-label="Termin sprawozdania" />
-          <span className="faint small">Najwcześniej {fmtDate(minReport)} (8 miesięcy od zatrudnienia), tak by ocena zmieściła się w oknie z art. 38 ust. 1 ustawy. §4 ust. 1 rozp. 2015.</span>
-        </div>
-        {done ? (
-          <MutationError error={act.error ?? patch.error} />
-        ) : (
-          <div className="confirm-box">
-            <button type="button" className="btn btn--primary" disabled={missing > 0 || act.isPending || !allows(detail, 'COMPLETE_INTRO_TALK')} onClick={complete}>
-              Zatwierdź rozmowę wstępną
-            </button>
-            {missing > 0 && <BlockedReason>Zaznacz wszystkie zagadnienia ({missing} pozostało) — każde z nich wymaga §3 rozp. 2015.</BlockedReason>}
-            <MutationError error={act.error ?? patch.error} />
-          </div>
-        )}
-      </div>
-    </div>
+    <StageLayout
+      info={info}
+      status={
+        done && (
+          <InlineAlert tone="success" title="Rozmowa wstępna zakończona">
+            Rozmowa wstępna odbyła się {fmtDate(info.completedOn)}. Termin sprawozdania: {fmtDate(detail.firstConditions?.reportDue)}.
+          </InlineAlert>
+        )
+      }
+      actions={
+        !done && (
+          <Button type="submit" form={FORM_ID} loading={patch.isPending || act.isPending} disabled={!allows(detail, 'COMPLETE_INTRO_TALK')}>
+            Zatwierdź rozmowę wstępną
+          </Button>
+        )
+      }
+    >
+      <form id={FORM_ID} noValidate onSubmit={onSubmit} className={s.form}>
+        <ErrorSummary errors={errors} />
+
+        <table className={t.table}>
+          <caption className={t.caption}>Zagadnienia rozmowy wstępnej (§3 rozp. PRM z 23.07.2015)</caption>
+          <thead>
+            <tr>
+              <th scope="col" className={s.lp}>
+                Lp.
+              </th>
+              <th scope="col">Zagadnienie do omówienia</th>
+            </tr>
+          </thead>
+          <tbody>
+            {INTRO_ITEMS.map((item, i) => (
+              <tr key={item}>
+                <th scope="row" className={s.lp}>
+                  {i + 1}.
+                </th>
+                <td>{item}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <Checkbox
+          id={CONFIRM_ID}
+          label="Omówiłem(-am) z ocenianym wszystkie zagadnienia z §3 rozporządzenia"
+          checked={done || confirmed}
+          disabled={done}
+          required={!done}
+          invalid={!!errorFor(CONFIRM_ID)}
+          onChange={(e) => {
+            setConfirmed(e.target.checked)
+            if (e.target.checked) clearError(CONFIRM_ID)
+          }}
+        />
+
+        <Field
+          id={DUE_ID}
+          label="Termin złożenia sprawozdania"
+          hint={`Najwcześniej ${fmtDate(minReport)} — 8 miesięcy od zatrudnienia (§4 ust. 1 rozp. 2015).`}
+          error={errorFor(DUE_ID)}
+        >
+          {(p) => (
+            <TextInput
+              {...p}
+              type="date"
+              width={20}
+              min={minReport}
+              value={due}
+              readOnly={done}
+              onChange={(e) => {
+                setDue(e.target.value)
+                clearError(DUE_ID)
+              }}
+            />
+          )}
+        </Field>
+
+        <StageError error={patch.error ?? act.error} />
+      </form>
+    </StageLayout>
   )
 }
 

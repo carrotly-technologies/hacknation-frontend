@@ -1,0 +1,15 @@
+/* "Rozmowa wstępna" (first assessment, step 1): topics table, confirmation and report due date */
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+  max-width: 820px;
+  min-width: 0;
+}
+
+/* "Lp." column: as narrow as the number */
+.lp {
+  width: 1%;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
