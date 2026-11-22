@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { DeadlineText } from '../../components/Deadline'
-import { Button, Checkbox, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../../components/ui'
+import { Button, Card, Checkbox, ErrorSummary, Field, InfoList, InfoRow, InlineAlert, TextInput, type FormError } from '../../components/ui'
 import { useCaseAction, usePatchCase } from '../../lib/caseQueries'
 import { addDaysIso, fmtDate } from '../../lib/format'
 import type { StageProps } from '../CasePage'
-import { BlockedReason, MutationError, StageHeader } from './common'
 import { allows } from '../../lib/stages'
 import { StageError, StageLayout } from './StageLayout'
 import t from './CompetencyScores.module.css'
 import s from './FirstPrepStages.module.css'
+import layout from './StageLayout.module.css'
 
 /** Topics of the introductory talk, §3 rozp. PRM z 23.07.2015 (first assessment). */
 const INTRO_ITEMS = [
@@ -143,69 +143,89 @@ export function IntroTalkStage({ detail, stage }: StageProps) {
   )
 }
 
+const REPORT_ITEMS = [
+  'zadania wynikające z opisu stanowiska i inne istotne zadania wykonywane w przepracowanym okresie,',
+  'problemy, które wystąpiły, i sposób ich rozwiązania,',
+  'zdobyte umiejętności i wiedza,',
+  'wnioski usprawniające pracę.',
+]
+
+/**
+ * Step 2 of the first assessment, "Sprawozdanie": the dates of the step in a card, what the report contains (§6 rozp.
+ * 2015), and the two ways forward: the report was submitted, or the deadline passed without it.
+ */
 export function ReportStage({ detail, stage }: StageProps) {
-  const info = detail.stages.find((s) => s.id === stage)!
+  const info = detail.stages.find((x) => x.id === stage)!
   const done = info.status === 'DONE'
   const act = useCaseAction(detail.id)
   const fc = detail.firstConditions
+  const canStart = allows(detail, 'START_ASSESSMENT')
+  const pending = (a: 'REPORT_SUBMITTED' | 'START_ASSESSMENT') => act.isPending && act.variables === a
+
   return (
-    <div className="stage">
-      <StageHeader
-        title={info.name}
-        status={
-          done && (
-            <InlineAlert tone="success" title="Sprawozdanie złożone">
-              Pracownik złożył sprawozdanie {fmtDate(fc?.reportSubmittedOn)}.
-            </InlineAlert>
-          )
-        }
-      />
-      <div className="stage-pad stage-pad--narrow">
-        <dl className="dl dl--lg">
-          <dt>Zatrudnienie</dt>
-          <dd className="num">{fmtDate(detail.person.hiredOn)}</dd>
-          <dt>Rozmowa wstępna</dt>
-          <dd className="num">{fmtDate(detail.stages.find((s) => s.id === 'INTRO_TALK')?.completedOn)}</dd>
-          <dt>Termin sprawozdania</dt>
-          <dd>{info.deadline && !done ? <DeadlineText deadline={info.deadline} /> : <span className="num">{fmtDate(fc?.reportDue)}</span>}</dd>
-          <dt>Złożono</dt>
-          <dd className="num">{fmtDate(fc?.reportSubmittedOn)}</dd>
-        </dl>
+    <StageLayout
+      info={info}
+      status={
+        done && (
+          <InlineAlert tone="success" title="Sprawozdanie złożone">
+            Pracownik złożył sprawozdanie {fmtDate(fc?.reportSubmittedOn)}.
+          </InlineAlert>
+        )
+      }
+      actions={
+        !done && (
+          <>
+            <Button variant="secondary" loading={pending('START_ASSESSMENT')} disabled={act.isPending || !canStart} onClick={() => act.mutate('START_ASSESSMENT')}>
+              Termin minął — przejdź do oceny
+            </Button>
+            <Button
+              loading={pending('REPORT_SUBMITTED')}
+              disabled={act.isPending || !allows(detail, 'REPORT_SUBMITTED')}
+              onClick={() => act.mutate('REPORT_SUBMITTED')}
+            >
+              Pracownik złożył sprawozdanie
+            </Button>
+          </>
+        )
+      }
+    >
+      <Card title="Terminy" as="h3">
+        <InfoList>
+          <InfoRow label="Zatrudnienie" value={fmtDate(detail.person.hiredOn)} />
+          <InfoRow label="Rozmowa wstępna" value={fmtDate(detail.stages.find((x) => x.id === 'INTRO_TALK')?.completedOn)} />
+          <InfoRow
+            label="Termin złożenia sprawozdania"
+            value={info.deadline && !done ? <DeadlineText deadline={info.deadline} /> : fmtDate(fc?.reportDue)}
+          />
+          <InfoRow label="Data złożenia" value={fmtDate(fc?.reportSubmittedOn)} />
+        </InfoList>
+      </Card>
 
-        <h3 className="h-section block-h">Co zawiera sprawozdanie <span className="legal">§6 rozp. PRM z 23.07.2015</span></h3>
-        <ul className="bullets">
-          <li>zadania wynikające z opisu stanowiska i inne istotne zadania wykonywane w przepracowanym okresie,</li>
-          <li>problemy, które wystąpiły, i sposób ich rozwiązania,</li>
-          <li>zdobyte umiejętności i wiedza,</li>
-          <li>wnioski usprawniające pracę.</li>
+      <section aria-labelledby="report-contents-h" className={s.section}>
+        <h3 id="report-contents-h" className={s.heading}>
+          Co zawiera sprawozdanie
+        </h3>
+        <ul className={`${layout.bullets} ${layout.text}`}>
+          {REPORT_ITEMS.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
         </ul>
+        <p className={s.note}>Podstawa: §6 rozp. PRM z 23.07.2015.</p>
+      </section>
 
-        <div className="notice notice--info" style={{ marginTop: 16 }}>
-          <div>
-            Rozmowę oceniającą przeprowadza się <strong>niezwłocznie</strong> po złożeniu sprawozdania albo po upływie terminu na jego złożenie (§7 pkt 1 rozp. 2015). Przy usprawiedliwionej nieobecności możesz przedłużyć termin — pisemnie, z kopią do arkusza (§5).
-          </div>
-        </div>
+      <InlineAlert tone="info">
+        Rozmowę oceniającą przeprowadza się <strong>niezwłocznie</strong> po złożeniu sprawozdania albo po upływie terminu na jego złożenie (§7 pkt 1
+        rozp. 2015). Przy usprawiedliwionej nieobecności możesz przedłużyć termin — pisemnie, z kopią do arkusza (§5).
+      </InlineAlert>
 
-        {done ? (
-          <MutationError error={act.error} />
-        ) : (
-          <div className="confirm-box">
-            <div className="btn-row">
-              <button type="button" className="btn btn--primary" disabled={act.isPending || !allows(detail, 'REPORT_SUBMITTED')} onClick={() => act.mutate('REPORT_SUBMITTED')}>
-                Pracownik złożył sprawozdanie
-              </button>
-              <button type="button" className="btn" disabled={act.isPending || !allows(detail, 'START_ASSESSMENT')} onClick={() => act.mutate('START_ASSESSMENT')}>
-                Termin minął — przejdź do oceny
-              </button>
-            </div>
-            <BlockedReason>
-              W wersji demonstracyjnej datą złożenia będzie dzisiejsza data (docelowo sprawozdanie wpłynie przez EZD).
-              {!allows(detail, 'START_ASSESSMENT') && ' Ocenę bez sprawozdania można rozpocząć dopiero po upływie wyznaczonego terminu.'}
-            </BlockedReason>
-            <MutationError error={act.error} />
-          </div>
-        )}
-      </div>
-    </div>
+      {!done && (
+        <p className={s.note}>
+          W wersji demonstracyjnej datą złożenia będzie dzisiejsza data (docelowo sprawozdanie wpłynie przez EZD).
+          {!canStart && ' Ocenę bez sprawozdania można rozpocząć dopiero po upływie wyznaczonego terminu.'}
+        </p>
+      )}
+
+      <StageError error={act.error} />
+    </StageLayout>
   )
 }
