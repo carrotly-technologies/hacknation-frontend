@@ -427,6 +427,7 @@
   --control-h: 3rem;
   --control-h-sm: 2.25rem;
   --tap: 2.75rem; /* minimum touch target */
+  --choice-box: 1.5rem; /* checkbox and radio box (Choice.module.css, RadioMatrix) */
   --duration: 0.15s;
   /* Width of the content of every main page (PageLayout) and of the case file header */
   --content-max: 1200px;
