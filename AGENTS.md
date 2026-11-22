@@ -26,7 +26,7 @@ Rozwiązanie powinno być:
    - Komunikacja z API tylko przez `src/api/*`; zmiana kontraktu = zmiana w jednym miejscu.
    - `npm run build` i `npm run lint` muszą przechodzić przed merge.
 5. **Zgodne z przepisami**: ustawa o służbie cywilnej i ochrona danych osobowych.
-   - Minimalizacja danych: w `localStorage` trzymamy tylko preferencje UI (dziś `kompas.prefs`: motyw, rozmiar tekstu, kontrast), nigdy danych osobowych ani treści ocen; token logowania tylko w `sessionStorage` (`kompas.token`). Bez narzędzi analitycznych i trackerów zewnętrznych.
+   - Minimalizacja danych: w `localStorage` trzymamy tylko preferencje UI (dziś `kompas.prefs`: motyw, rozmiar tekstu, kontrast), nigdy danych osobowych ani treści ocen; token logowania tylko w `sessionStorage` (`kompas.token`), obok losowy identyfikator karty do dziennika aktywności (`kompas.session`) i token podglądu `/aktywnosc` (`kompas.monitorToken`). Dziennik aktywności jest własny (backend `src/monitor`, 30 dni, bez treści żądań); bez narzędzi analitycznych i trackerów zewnętrznych.
    - Dane pracowników pokazujemy tylko roli, która ma do nich prawo (przełożony: własny zespół, HR: monitoring).
    - AI jest doradcze: sugestia systemu jest wyraźnie oznaczona jako sugestia, a ostateczny poziom zawsze wybiera przełożony. UI nigdy nie zatwierdza oceny automatycznie.
    - Odpowiedzi asystenta pokazują źródło. Brak odpowiedzi w bazie wiedzy jest komunikowany wprost.

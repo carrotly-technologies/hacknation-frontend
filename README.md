@@ -67,6 +67,16 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   at most 10 slides on a 16:9 canvas scaled to the window (upright phones get a 9:16 layout); ←/→, space,
   PageUp/PageDown, Home/End, swipe and the dots change the slide, `#N` in the URL opens slide N, `F` toggles full
   screen. Printing gives one slide per 1920×1080 page; the exported deck is `docs/prezentacja.pdf` (see "Presentation");
+- `/aktywnosc` — the team's view of the activity log (public, outside the app shell, not linked anywhere;
+  hacknation-backend#75): a token form (the backend's `MONITOR_TOKEN`, kept in `sessionStorage` `kompas.monitorToken`;
+  a wrong token or an unset one gives 404 and the form again), then the sessions (account login, IP, browser and system
+  parsed from the User-Agent, first and last activity, pages / API calls / errors), filters by date, IP and account in
+  the URL, refreshed every 10 s; `?sesja=<id>` shows one session as a timeline (time, screen or API call, method and
+  path, status coloured for 4xx/5xx, duration), screens highlighted (`src/pages/ActivityPage.tsx`, `src/api/monitor.ts`).
+  Every API call carries `X-Session-Id`, a random UUID per tab in `sessionStorage` `kompas.session`
+  (`src/lib/activity.ts`), and every route change sends `POST /api/telemetry/pageview` in the background
+  (`src/lib/usePageviews.ts`; never blocks or shows an error; `/aktywnosc` itself is not reported). The footer of the
+  app shell, `/logowanie` and `/zapoznanie/:token` says „Aplikacja rejestruje aktywność w celach analitycznych.”;
 - `/hr` — HR monitoring with counters, filters and (simulated) reminders; a row opens the case file read-only (`/teczka/:id`, fields and actions disabled for HR); `/baza-wiedzy` — assistant and its sources;
 - "Asystent AI" — a floating button in the bottom right corner of every screen in the app shell (not on
   `/zapoznanie/:token` or the sheet print view) opens the chat in a popup (about 400×600 above the button; full screen

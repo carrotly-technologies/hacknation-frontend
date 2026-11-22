@@ -8,6 +8,7 @@ import { Button, Checkbox, Dialog, ErrorSummary, Field, InlineAlert, TextArea, t
 import { fmtDate } from '../lib/format'
 import { caseCriteria } from '../lib/model'
 import { SheetDocument } from '../sheet/SheetDocument'
+import { ActivityNotice } from '../components/ActivityNotice'
 import { BrandMark } from '../components/BrandMark'
 import s from './AckPage.module.css'
 
@@ -84,6 +85,7 @@ export function AckPage() {
           <span>Kompas Kompetencji</span>
         </div>
         {body}
+        <ActivityNotice />
       </div>
     </main>
   )

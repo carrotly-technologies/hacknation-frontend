@@ -1,0 +1,262 @@
+.root {
+  min-height: 100dvh;
+  padding: var(--s-6) var(--page-pad-x, var(--s-4)) var(--s-12);
+  background: var(--bg-app);
+}
+
+.inner {
+  display: grid;
+  gap: var(--s-6);
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+}
+
+.h2 {
+  margin-bottom: var(--s-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+}
+
+.lead {
+  max-width: var(--measure);
+  margin-top: var(--s-2);
+  color: var(--text-secondary);
+}
+
+.card {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 100%;
+  padding: var(--s-6);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.card:has(> .form) {
+  max-width: 32rem;
+}
+
+.alert {
+  margin: 0;
+}
+
+.form {
+  display: grid;
+  gap: var(--s-4);
+  justify-items: start;
+}
+
+.form > * {
+  width: 100%;
+}
+
+.form > button {
+  width: auto;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+  align-items: end;
+  gap: var(--s-4);
+}
+
+.clear {
+  justify-self: start;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--s-8);
+}
+
+.table td {
+  vertical-align: top;
+}
+
+.open {
+  color: var(--link);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.open:hover {
+  color: var(--link-hover);
+}
+
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+}
+
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.raw {
+  display: block;
+  color: var(--text-muted);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.timeline {
+  display: grid;
+  gap: var(--s-1);
+  padding: 0;
+  list-style: none;
+}
+
+.event {
+  display: grid;
+  grid-template-columns: 5.5rem 4.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-w) solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+}
+
+/* A visited screen stands out from the API calls it triggered. */
+.pageview {
+  border-color: var(--accent-border, var(--accent));
+  border-left-color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.time {
+  color: var(--text-secondary);
+}
+
+.kind {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.pageview .kind {
+  color: var(--accent);
+}
+
+.what {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.method {
+  margin-right: var(--s-2);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.path {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--text-sm);
+}
+
+.pageview .path {
+  font-weight: var(--weight-semibold);
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  white-space: nowrap;
+}
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linkButton:focus-visible {
+  border-radius: var(--radius-xs);
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+@media (max-width: 767px) {
+  .event {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+
+  .what {
+    grid-column: 1 / -1;
+  }
+
+  .result {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}

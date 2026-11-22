@@ -7,6 +7,7 @@ import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormErr
 import { DEMO_ACCOUNTS, DEMO_ACCOUNTS_ENABLED, DEMO_PASSWORD } from '../lib/demoAccounts'
 import { rememberLoginGovState, type LoginGovFailure } from '../lib/loginGov'
 import { HOME_BY_ROLE, LOGIN_PATH, ROLE_LABEL, useAuth } from '../lib/useAuth'
+import { ActivityNotice } from '../components/ActivityNotice'
 import { BrandMark } from '../components/BrandMark'
 import s from './LoginPage.module.css'
 
@@ -189,6 +190,7 @@ export function LoginPage() {
           </section>
         )}
       </div>
+      <ActivityNotice />
     </main>
   )
 }
