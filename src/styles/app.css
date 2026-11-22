@@ -1835,10 +1835,22 @@
 
 /* One neutral sentence about the activity log (hacknation-backend#75): app shell, sign-in, the assessed person's page */
 .activity-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 var(--s-6);
   padding: var(--s-4) var(--page-pad-x, var(--s-4));
   color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;
+}
+
+/* 44px target (WCAG 2.5.5 practice, DESIGN.md) */
+.activity-notice__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
 }
 
 /* A page that fills the window (PageLayout `fill`, from 1024px) leaves room for the notice instead of overflowing */

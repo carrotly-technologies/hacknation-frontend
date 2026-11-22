@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { AssistantProvider } from './assistant/AssistantProvider'
 import { CasePage } from './case/CasePage'
 import { usePageviews } from './lib/usePageviews'
+import { AccessibilityStatementPage } from './pages/AccessibilityStatementPage'
 import { AckPage } from './pages/AckPage'
 import { ActivityPage } from './pages/ActivityPage'
 import { AdminAuditPage } from './pages/AdminAuditPage'
@@ -34,6 +35,8 @@ export default function App() {
       <Route path="/logowanie/login-gov" element={<LoginGovReturnPage />} />
       {/* Public: the assessed person opens the link from the evaluator, without an account or the app shell. */}
       <Route path="/zapoznanie/:token" element={<AckPage />} />
+      {/* Public: the accessibility statement (ustawa o dostępności cyfrowej, art. 10), linked in the footer and on sign-in. */}
+      <Route path="/deklaracja-dostepnosci" element={<AccessibilityStatementPage />} />
       {/* Public: the project presentation (hacknation-frontend#116), no sign-in. */}
       <Route path="/prezentacja" element={<PresentationPage />} />
       {/* Public, not linked anywhere: the team's view of the activity log; opens only with MONITOR_TOKEN (hacknation-backend#75). */}

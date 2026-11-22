@@ -282,9 +282,9 @@ function Pending({ data, onConfirm, pending, error }: { data: AckPending; onConf
         </InlineAlert>
       )}
 
-      <div className="paper-preview" aria-label="Arkusz oceny (tylko do odczytu)">
+      <section className="paper-preview" aria-label="Arkusz oceny (tylko do odczytu)">
         <SheetDocument detail={detail} model={model} criteria={criteria} />
-      </div>
+      </section>
 
       <form className={s.card} noValidate onSubmit={onSubmit}>
         <h2 className={s.h2}>Potwierdzenie zapoznania</h2>

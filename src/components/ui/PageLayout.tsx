@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import { cx } from './cx'
 import s from './PageLayout.module.css'
 
@@ -18,6 +19,8 @@ type Props = {
   fill?: boolean
   children?: ReactNode
   className?: string
+  /** Browser tab title ("… — Kompas Kompetencji"); by default the h1 when it is plain text. */
+  documentTitle?: string
 }
 
 /**
@@ -25,7 +28,8 @@ type Props = {
  * `--content-max` (1200px) centred on the screen, so the h1 and the content start at the same place on every tab,
  * then the header (h1, meta line, actions) and the content with fixed gaps.
  */
-export function PageLayout({ title, meta, actions, back, fill, children, className }: Props) {
+export function PageLayout({ title, meta, actions, back, fill, children, className, documentTitle }: Props) {
+  useDocumentTitle(documentTitle ?? (typeof title === 'string' ? title : null))
   return (
     <div className={cx(s.root, fill && s.fill, className)} data-page-fill={fill || undefined}>
       {back && <div className={s.back}>{back}</div>}
