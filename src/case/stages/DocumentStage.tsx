@@ -57,8 +57,27 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
     </InlineAlert>
   )
 
+  const objection = detail.objection
+  const objectionStatus = objection && (
+    <InlineAlert tone="warning" title={`Oceniany wniósł sprzeciw ${fmtDate(objection.submittedOn)}`}>
+      <p>Sprzeciw do dyrektora generalnego urzędu (art. 83 ust. 1 ustawy). Treść zastrzeżeń jest poniżej.</p>
+    </InlineAlert>
+  )
+
   return (
-    <StageLayout info={info} status={status}>
+    <StageLayout
+      info={info}
+      status={
+        objectionStatus ? (
+          <div className={s.stack}>
+            {objectionStatus}
+            {status}
+          </div>
+        ) : (
+          status
+        )
+      }
+    >
       <Card title="Podsumowanie oceny" as="h3">
         <div className={summary.card}>
           <AssessmentSummary detail={detail} model={model} criteria={criteria} withWriting />
@@ -85,6 +104,16 @@ export function DocumentStage({ detail, model, criteria, stage }: StageProps) {
         </InfoList>
         {!isFirst && detail.objectionDeadline && <p className={s.legal}>Termin na sprzeciw: {detail.objectionDeadline.legalBasis}</p>}
       </Card>
+
+      {objection && (
+        <Card title="Zastrzeżenia ocenianego" as="h3">
+          <div className={s.stack}>
+            <p className={layout.muted}>Przekazane {fmtDate(objection.submittedOn)} przez link dla ocenianego. Tylko do odczytu.</p>
+            {/* user input: rendered as text, never as HTML */}
+            <p className={s.objectionText}>{objection.text}</p>
+          </div>
+        </Card>
+      )}
 
       <Card title="Zapoznanie ocenianego z oceną" as="h3">
         <div className={s.stack}>

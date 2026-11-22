@@ -170,6 +170,8 @@ export interface CaseDetail extends CaseSummary {
   ackLinkExpiresOn?: string | null
   acknowledgedOn: string | null
   objectionDeadline: Deadline | null
+  /** The assessed person's objection (POST /api/ack/:token/objection), visible to the evaluator and HR. */
+  objection?: { text: string; submittedOn: string } | null
   history: { date: string; text: string }[]
   /** Legal actions right now (backend extension of the v2 contract). */
   availableActions?: CaseAction[]
@@ -227,7 +229,12 @@ export interface TeamResponse {
   todo: TodoItem[]
 }
 
-export type HrCase = CaseSummary & { evaluatorName: string; lastReminderOn: string | null }
+export type HrCase = CaseSummary & {
+  evaluatorName: string
+  lastReminderOn: string | null
+  /** Date the assessed person filed an objection ("Sprzeciw"), else null. */
+  objectionSubmittedOn?: string | null
+}
 
 export interface HrOverview {
   counters: {
