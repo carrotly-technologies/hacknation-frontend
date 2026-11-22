@@ -70,6 +70,7 @@ test.beforeAll(async () => {
     { name: 'monitoring HR', path: '/hr', as: HR },
     { name: 'teczka tylko do odczytu (HR)', path: `/teczka/${periodic('ASSESSMENT').id}/formularz-kompetencji`, as: HR },
     { name: 'użytkownicy (admin)', path: '/admin/uzytkownicy', as: ADMIN },
+    { name: 'dziennik zdarzeń (admin)', path: '/admin/dziennik', as: ADMIN },
   ]
 })
 

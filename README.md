@@ -123,7 +123,7 @@ Playwright with `@axe-core/playwright` (`e2e/`, `playwright.config.ts`):
 
 - `e2e/a11y.spec.ts`: axe-core (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) must find 0 violations on every main
   screen (sign-in, statement, acknowledgement, team, profile, every case stage and form part, sheet, knowledge base,
-  settings, HR, admin) in the light, dark and high-contrast (light and dark) themes;
+  settings, HR, admin users and event log) in the light, dark and high-contrast (light and dark) themes;
 - `e2e/keyboard.spec.ts`: the assessment path from sign-in to the link for the assessed person with the keyboard only
   (skip link, visible focus on every stop, the sign dialog's focus trap, Esc and focus return, menus and the assistant).
 

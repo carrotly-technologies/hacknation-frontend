@@ -17,7 +17,7 @@ Wynik tej listy jest podstawą deklaracji dostępności (`/deklaracja-dostepnosc
 Ekrany w teście axe: `/logowanie`, `/deklaracja-dostepnosci`, `/zapoznanie/:token`, `/zespol`, profil pracownika,
 teczka: każdy etap ze `src/case/stages/` (ścieżka okresowa i pierwsza ocena, etap otwarty, zakończony i jeszcze
 nieotwarty), „Formularz oceny” części I–III, „Formularz oceny kompetencji”, podgląd arkusza, teczka tylko do odczytu
-(HR), `/baza-wiedzy`, `/ustawienia`, `/hr`, `/admin/uzytkownicy`; w teście klawiatury także otwarte okno podpisu
+(HR), `/baza-wiedzy`, `/ustawienia`, `/hr`, `/admin/uzytkownicy`, `/admin/dziennik`; w teście klawiatury także otwarte okno podpisu
 i okno asystenta AI.
 
 Statusy: **spełnione**, **n.d.** (nie dotyczy: w aplikacji nie ma takich treści), **wyjątek** (znana niezgodność,
@@ -102,7 +102,7 @@ wpisana w deklaracji jako treść niedostępna).
 ## Ręczny test z czytnikiem ekranu (do wykonania)
 
 Środowisko: Windows + NVDA (aktualna wersja) w Chrome lub Firefox oraz macOS + VoiceOver w Safari. Dane demonstracyjne
-(`POST /api/demo/reset`), konto przełożonego `j.kaminska`. Każdy krok: zapisać, co czytnik odczytał, i czy było
+(`POST /api/demo/reset`), konto przełożonego `k.wisniewska`. Każdy krok: zapisać, co czytnik odczytał, i czy było
 zrozumiałe bez patrzenia na ekran.
 
 1. **Logowanie**: tytuł karty „Logowanie — Kompas Kompetencji”; etykiety „Login”, „Hasło”; wysłanie pustego

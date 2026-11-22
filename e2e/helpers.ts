@@ -3,8 +3,8 @@ import { expect, type Page } from '@playwright/test'
 
 /** Demo seed of hacknation-backend (README there): every account has the same password. */
 export const PASSWORD = 'Kompas2026!'
-export const SUPERVISOR = 'j.kaminska'
-export const HR = 'a.lis'
+export const SUPERVISOR = 'k.wisniewska'
+export const HR = 'a.cieslak-dyjecinska'
 export const ADMIN = 'admin'
 
 export const apiUrl = (path: string) => `${(process.env.A11Y_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')}${path}`
