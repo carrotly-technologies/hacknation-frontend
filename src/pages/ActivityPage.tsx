@@ -1,11 +1,11 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { LogOut, RefreshCw } from 'lucide-react'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { LogOut, RefreshCw, Trash2 } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { ApiError, errorMessage } from '../api/client'
-import { getSession, getSessions, type RequestLogEntry, type SessionSummary } from '../api/monitor'
+import { clearSessions, getSession, getSessions, type RequestLogEntry, type SessionSummary } from '../api/monitor'
 import { BrandMark } from '../components/BrandMark'
-import { BackLink, Button, EmptyState, Field, InfoList, InfoRow, InlineAlert, Spinner, StatusBadge, TextInput } from '../components/ui'
+import { BackLink, Button, Dialog, EmptyState, Field, InfoList, InfoRow, InlineAlert, Spinner, StatusBadge, TextInput } from '../components/ui'
 import { getMonitorToken, setMonitorToken } from '../lib/activity'
 import { countLabel } from '../lib/format'
 import { describeUserAgent } from '../lib/userAgent'
@@ -175,6 +175,7 @@ function SessionList({ token, onRejected }: { token: string; onRejected: () => v
             Sesje (jedna karta przeglądarki), najnowsza aktywność na górze. <RefreshInfo updatedAt={q.dataUpdatedAt} fetching={q.isFetching} />
           </p>
         </div>
+        <ClearAll token={token} onRejected={onRejected} />
       </header>
 
       <form className={s.filters} role="search" aria-label="Filtry sesji" onSubmit={(e) => e.preventDefault()}>
@@ -271,6 +272,61 @@ function SessionList({ token, onRejected }: { token: string; onRejected: () => v
           )}
         </>
       )}
+    </>
+  )
+}
+
+/** "Wyczyść wszystko": deletes the whole activity log after a confirmation (e.g. before handing the app over). */
+function ClearAll({ token, onRejected }: { token: string; onRejected: () => void }) {
+  const [open, setOpen] = useState(false)
+  const client = useQueryClient()
+  const clear = useMutation({
+    mutationFn: () => clearSessions(token),
+    onSuccess: () => {
+      setOpen(false)
+      void client.invalidateQueries({ queryKey: ['monitor'] })
+    },
+    onError: (err) => {
+      if (isRejected(err)) onRejected()
+    },
+  })
+  const close = () => {
+    if (clear.isPending) return
+    setOpen(false)
+    clear.reset()
+  }
+  return (
+    <>
+      <Button variant="secondary" size="small" destructive icon={<Trash2 size={18} aria-hidden="true" />} onClick={() => setOpen(true)}>
+        Wyczyść wszystko
+      </Button>
+      {clear.isSuccess && (
+        <p className="faint small" role="status">
+          Usunięto {countLabel(clear.data.removed, 'wpis', 'wpisy', 'wpisów')}.
+        </p>
+      )}
+      <Dialog
+        open={open}
+        onClose={close}
+        title="Wyczyścić całą aktywność?"
+        actions={
+          <>
+            <Button variant="secondary" onClick={close} disabled={clear.isPending}>
+              Anuluj
+            </Button>
+            <Button destructive loading={clear.isPending} onClick={() => clear.mutate()}>
+              Usuń wszystko
+            </Button>
+          </>
+        }
+      >
+        <p>Usunie wszystkie sesje i wpisy dziennika aktywności. Tego nie można cofnąć.</p>
+        {clear.isError && !isRejected(clear.error) && (
+          <InlineAlert tone="error" title="Nie udało się wyczyścić aktywności">
+            {errorMessage(clear.error)}
+          </InlineAlert>
+        )}
+      </Dialog>
     </>
   )
 }

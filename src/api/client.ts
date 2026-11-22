@@ -93,6 +93,10 @@ export function apiPatch<T>(path: string, body: unknown, signal?: AbortSignal): 
   return request<T>(path, withBody('PATCH', body, signal))
 }
 
+export function apiDelete<T>(path: string, headers?: HeadersInit): Promise<T> {
+  return request<T>(path, { method: 'DELETE', headers })
+}
+
 /**
  * Reports a screen of the app to the activity log. Fire and forget: never throws, never blocks the UI, no sign-in
  * needed; `keepalive` lets it finish when the tab is closing.

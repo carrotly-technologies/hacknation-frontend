@@ -1,4 +1,4 @@
-import { apiGet } from './client'
+import { apiDelete, apiGet } from './client'
 
 // Activity monitor (backend src/monitor, GET /api/monitor/*): only with X-Monitor-Token = MONITOR_TOKEN, else 404.
 
@@ -83,4 +83,9 @@ export function getSessions(token: string, filters: SessionFilters, signal?: Abo
 
 export function getSession(token: string, sessionId: string, signal?: AbortSignal): Promise<SessionDetail> {
   return apiGet<SessionDetail>(`/monitor/sessions/${encodeURIComponent(sessionId)}`, signal, tokenHeader(token))
+}
+
+/** Deletes the whole activity log (e.g. after the demo); returns how many entries were removed. */
+export function clearSessions(token: string): Promise<{ removed: number }> {
+  return apiDelete<{ removed: number }>('/monitor/sessions', tokenHeader(token))
 }
