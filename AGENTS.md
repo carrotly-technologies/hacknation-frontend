@@ -9,7 +9,7 @@ Pełna lista sześciu wymagań z opisu zadania wraz z regułami dla backendu jes
 Rozwiązanie powinno być:
 
 1. **Neutralne technologicznie**: możliwe do uruchomienia w różnych środowiskach IT, niezależnie od oprogramowania urzędu, i niewymagające płatnych licencji.
-   - Zależności tylko open source na licencjach permisywnych (MIT, Apache-2.0, BSD, ISC); fonty i ikony również (Open Sans przez `@fontsource`, `lucide-react`).
+   - Zależności tylko open source na licencjach permisywnych (MIT, Apache-2.0, BSD, ISC); fonty i ikony również (Open Sans i Tinos przez `@fontsource`, `lucide-react`).
    - Działa w każdej aktualnej przeglądarce (Chrome, Edge, Firefox, Safari), bez wtyczek i bez API dostępnych tylko w jednej przeglądarce.
    - Build to statyczne pliki (`dist/`) serwowane przez dowolny serwer HTTP; obraz Docker z nginx (`Dockerfile`, `nginx.conf`) to tylko jedna z opcji.
 2. **Łatwe do wdrożenia w każdym urzędzie**: proste w uruchomieniu, gotowe po krótkiej konfiguracji, niewymagające szkolenia.
