@@ -119,28 +119,31 @@
   color: var(--ok);
 }
 
-/* current: tinted accent */
+/* current (in progress) while another step is shown: white fill, --accent border and text */
 .current {
-  background: var(--accent-border);
+  background: var(--accent);
   color: var(--accent);
 }
 
 .current::before {
-  background: var(--accent-subtle);
+  background: var(--bg-surface);
 }
 
-/* The step shown on the page, in every state (done / current / todo): an --accent outline that follows the chevron
-   (the step's own background is the outline colour, ::before is the fill inset by the outline width, both under the
-   same clip-path) + bold label below. Only the inset changes, so the step box and the line breaks stay the same.
-   The current step that is not shown keeps only its light blue fill. Contrast of --accent against the fills and the
-   surface is >= 3:1 in every theme (WCAG 1.4.11). */
+/* The step shown on the page, in every state (done / current / todo): the light blue look of the active step
+   (--accent-subtle fill, --accent-border border, --accent text, bold label below, ✓ of a done step in --accent).
+   Only colours change, so the step box and the line breaks stay the same. --accent on --accent-subtle and on
+   --bg-surface is >= 4.5:1 in every theme. */
 .active {
-  --stepper-outline: calc(var(--border-w-strong) + var(--border-w));
-  background: var(--accent);
+  background: var(--accent-border);
+  color: var(--accent);
 }
 
 .active::before {
-  inset: var(--stepper-outline);
+  background: var(--accent-subtle);
+}
+
+.active .marker {
+  color: var(--accent);
 }
 
 /* The width of every word is the width of its bold version (hidden bold copy in ::after, height 0), and the spaces
@@ -163,7 +166,7 @@
   user-select: none;
 }
 
-/* the step shown on the page: bolder label + outline + aria-current (not colour alone), no underline */
+/* the step shown on the page: bolder label + aria-current (not colour alone), no underline */
 .active .word {
   font-weight: var(--weight-bold);
 }
@@ -172,7 +175,7 @@ a.step:hover::before {
   filter: brightness(0.96);
 }
 
-a.todo:hover::before {
+a.todo:not(.active):hover::before {
   background: var(--bg-hover);
   filter: none;
 }
@@ -282,13 +285,10 @@ a.step:visited .label {
     border-color: var(--ok);
   }
 
-  .current::before {
-    border-color: var(--accent);
-  }
-
-  /* the shown dot: thicker --accent ring outside its state border (drawn outside the box, no layout change) */
+  /* in progress: white centre, --accent ring; the shown dot: light blue fill (from .active::before), --accent ring */
+  .current::before,
   .active::before {
-    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 calc(2px + var(--stepper-outline)) var(--accent);
+    border-color: var(--accent);
   }
 
   .label {
