@@ -1,5 +1,5 @@
-import { apiGet, apiPatch } from './client'
-import type { CaseStatus, Path, Person, StageId } from './cases'
+import { apiGet, apiPatch, apiPost } from './client'
+import type { CaseDetail, CaseStatus, Path, Person, StageId } from './cases'
 
 /** Contract of GET /api/people/:personId (backend src/people/people.types.ts). */
 
@@ -52,6 +52,8 @@ export interface PersonProfile {
   history: HistoryItem[]
   currentCase: { id: string; path: Path; currentStage: StageId } | null
   nextAssessment: 'OKRESOWA' | 'PIERWSZA'
+  /** POST /api/cases would start a new case now (the backend decides path and deadlines). */
+  canStartCase?: boolean
 }
 
 export const getPerson = (personId: string, signal?: AbortSignal) =>
@@ -62,3 +64,6 @@ export type UpdatePerson = Pick<Person, 'position' | 'unit' | 'employment' | 'hi
 
 export const updatePerson = (personId: string, data: UpdatePerson) =>
   apiPatch<PersonProfile>(`/people/${encodeURIComponent(personId)}`, data)
+
+/** POST /api/cases: a new assessment case for the person (path, cycle start and deadlines from the backend rules). */
+export const createCase = (personId: string) => apiPost<CaseDetail>('/cases', { personId })
