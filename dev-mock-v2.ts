@@ -166,7 +166,7 @@ const obs = (date: string, criterionId: string, indicatorId: string | null, kind
 function base(p: Partial<Rec> & Pick<Rec, 'id' | 'person' | 'path' | 'stage' | 'cycleStart'>): Rec {
   return {
     mine: true,
-    evaluatorName: 'Joanna Kowalczyk',
+    evaluatorName: 'Karolina Wiśniewska',
     sheetId: null,
     cycleLabel: p.path === 'FIRST' ? 'Pierwsza ocena' : 'Ocena okresowa',
     done: {},
@@ -494,7 +494,7 @@ export function createV2(model: { competencies: { id: string; name: string; indi
     const od = objectionDue(r)
     return {
       ...summary(r),
-      evaluator: { firstName: 'Joanna', lastName: 'Kowalczyk', position: 'naczelnik wydziału', unit: UNIT },
+      evaluator: { firstName: 'Karolina', lastName: 'Wiśniewska', position: 'naczelnik wydziału', unit: UNIT },
       officeName: OFFICE,
       osp,
       ospAnalysis: r.path === 'PERIODIC' && osp
@@ -691,8 +691,8 @@ export function createV2(model: { competencies: { id: string; name: string; indi
 
   type MockUser = { id: string; login: string; name: string; firstName: string; lastName: string; role: 'SUPERVISOR' | 'HR' | 'ADMIN'; position: string; unit: string }
   const MOCK_USERS: MockUser[] = [
-    { id: 'u-kowalczyk', login: 'j.kaminska', name: 'Joanna Kowalczyk', firstName: 'Joanna', lastName: 'Kowalczyk', role: 'SUPERVISOR', position: 'naczelnik wydziału', unit: UNIT },
-    { id: 'u-lis', login: 'a.lis', name: 'Agnieszka Lis', firstName: 'Agnieszka', lastName: 'Lis', role: 'HR', position: 'Specjalistka ds. kadr', unit: 'Biuro Dyrektora Generalnego' },
+    { id: 'u-kowalczyk', login: 'k.wisniewska', name: 'Karolina Wiśniewska', firstName: 'Karolina', lastName: 'Wiśniewska', role: 'SUPERVISOR', position: 'naczelnik wydziału', unit: UNIT },
+    { id: 'u-lis', login: 'a.cieslak-dyjecinska', name: 'Agata Cieślak-Dyjecińska', firstName: 'Agata', lastName: 'Cieślak-Dyjecińska', role: 'HR', position: 'Specjalistka ds. kadr', unit: 'Biuro Dyrektora Generalnego' },
     { id: 'u-admin', login: 'admin', name: 'Marek Zając', firstName: 'Marek', lastName: 'Zając', role: 'ADMIN', position: 'Administrator systemu', unit: 'Biuro Informatyki' },
   ]
   let mockUserId = MOCK_USERS[0].id

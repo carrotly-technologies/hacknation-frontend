@@ -5,7 +5,7 @@
 //   then:     npx playwright install chromium    (once)
 //             npm run presentation:screens       (APP_URL=http://localhost:5173 by default)
 // The script resets the demo data (POST /api/demo/reset, as admin) before and after, signs in as the demo supervisor
-// j.kaminska and walks one case to the signature so the link for the assessed person exists.
+// k.wisniewska and walks one case to the signature so the link for the assessed person exists.
 import { mkdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { chromium } from 'playwright'
@@ -14,7 +14,7 @@ const APP_URL = (process.env.APP_URL ?? 'http://localhost:5173').replace(/\/$/, 
 const API = `${APP_URL}/api`
 const OUT = path.join(import.meta.dirname, '..', 'public', 'prezentacja')
 const MAX_BYTES = 400_000 // per image, so the deck loads fast
-const LOGIN = 'j.kaminska'
+const LOGIN = 'k.wisniewska'
 const PASSWORD = 'Kompas2026!' // demo password from the backend README (src/lib/demoAccounts.ts)
 
 async function api(method, route, token, body) {

@@ -54,7 +54,7 @@ const SLIDES: Slide[] = [
               Jeden przełożony.
             </>
           }
-          lede="Joanna Kamińska, naczelniczka wydziału, ocenia cały zespół. Zobacz, jak pomaga jej Kompas."
+          lede="Karolina Wiśniewska, naczelniczka wydziału, ocenia cały zespół. Zobacz, jak pomaga jej Kompas."
         />
         <div {...enter(3, s.art)}>
           <FoldersIllustration />
