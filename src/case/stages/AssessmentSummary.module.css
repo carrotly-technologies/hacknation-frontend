@@ -1,0 +1,30 @@
+/* Read-only summary of the assessment ("Weryfikacja formularza", "Ocena końcowa") */
+.clampBox {
+  display: grid;
+  gap: var(--s-1);
+  justify-items: start;
+  min-width: 0;
+  margin-bottom: var(--s-2);
+}
+
+.text {
+  max-width: 70ch;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* 3 lines, then "Pokaż całość" */
+.clamped {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* The summary card at the top of "Ocena końcowa" */
+.card {
+  display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+}

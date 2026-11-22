@@ -1,10 +1,12 @@
 import { useId, useState } from 'react'
+import { useNavigate } from 'react-router'
 import type { CaseDetail } from '../../api/cases'
 import { Button, Dialog, InlineAlert } from '../../components/ui'
 import { useCaseAction } from '../../lib/caseQueries'
 import { fmtDate } from '../../lib/format'
 import { officePlace } from '../../lib/office'
-import { allows } from '../../lib/stages'
+import { scrollPageToTop } from '../../lib/scrollPage'
+import { allows, caseUrl } from '../../lib/stages'
 import { StageError } from './StageLayout'
 
 /** Why "Podpisz ocenę" is not active yet, or null when it is. The backend decides; this only explains it. */
@@ -21,7 +23,8 @@ function blockedReason(detail: CaseDetail, formalCheck: boolean): string | null 
  * "Weryfikacja formularza". Signing is the assessment "na piśmie" (§11 rozp. PRM z 4.04.2016): only after the
  * assessment talk (§10), and the backend refuses it while the formal check fails. `beforeSign` saves text that is
  * still on screen, so the signature covers it; such a form passes `formalCheck={false}`, because unsaved text may
- * fix the check (the backend answers with the failing items). After signing it shows the evaluator's signature.
+ * fix the check (the backend answers with the failing items). After signing it opens "Ocena końcowa"; a signed case
+ * shows the evaluator's signature here.
  */
 export function SignAssessment({
   detail,
@@ -33,8 +36,10 @@ export function SignAssessment({
   /** Inactive while the formal check of the saved case has errors. */
   formalCheck?: boolean
 }) {
-  // follow: false: the user stays where they signed and sees the signature; the case moves on to "Ocena końcowa".
+  // After signing the case moves on to "Ocena końcowa" and so does the screen, from the top (an explicit navigate:
+  // signing in part II starts from the sheet wizard, not from the case's current stage). On an error it stays here.
   const sign = useCaseAction(detail.id, { follow: false })
+  const navigate = useNavigate()
   const [confirm, setConfirm] = useState(false)
   const hintId = useId()
   const signed = detail.signedByEvaluatorOn
@@ -53,7 +58,11 @@ export function SignAssessment({
     setConfirm(false)
     try {
       await beforeSign?.()
-      await sign.mutateAsync('SIGN_ASSESSMENT')
+      const signedCase = await sign.mutateAsync('SIGN_ASSESSMENT')
+      if (signedCase.stages.some((x) => x.id === 'DOCUMENT')) {
+        navigate(caseUrl(detail.id, 'DOCUMENT'))
+        scrollPageToTop()
+      }
     } catch {
       // the error is shown under the button
     }
