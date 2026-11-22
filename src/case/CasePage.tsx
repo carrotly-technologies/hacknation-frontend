@@ -6,11 +6,12 @@ import type { CaseDetail, StageId } from '../api/cases'
 import type { CompetencyModel } from '../api/kompas'
 import { useAssistant, useAssistantContext, type AssistantRequest } from '../assistant/useAssistant'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { BackLink, PageLayout, Snackbar, Spinner, StageStepper, StatusBadge } from '../components/ui'
+import { BackLink, InlineAlert, PageLayout, Snackbar, Spinner, StageStepper, StatusBadge } from '../components/ui'
 import { useCase, useSheetDownload } from '../lib/caseQueries'
 import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/model'
 import { personUrl } from '../lib/people'
 import { scrollPageToTop } from '../lib/scrollPage'
+import { useMe } from '../lib/useAuth'
 import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, viewStage } from '../lib/stages'
 import s from './CasePage.module.css'
 import { AssessmentStage } from './stages/AssessmentStage'
@@ -43,6 +44,9 @@ const STATUS_TONE = {
 export function CasePage() {
   const { id = '', stage: slug } = useParams()
   const q = useCase(id)
+  const me = useMe()
+  // HR sees every case read-only (monitoring); only the case's evaluator edits it.
+  const readOnly = me.role !== 'SUPERVISOR'
   const model = useModel()
   const sheets = useSheets()
   const assistant = useAssistant()
@@ -77,7 +81,7 @@ export function CasePage() {
       <header className={s.head}>
         <div className={s.inner}>
           <div className={s.headTop}>
-            <BackLink to={personUrl(detail.person.id)} />
+            {readOnly ? <BackLink to="/hr">Monitoring ocen</BackLink> : <BackLink to={personUrl(detail.person.id)} />}
             <div className={s.actions}>
               <Link className="btn" to={`/teczka/${detail.id}/arkusz`}>
                 <FileText size={15} strokeWidth={1.75} aria-hidden="true" />
@@ -107,7 +111,15 @@ export function CasePage() {
       <div className={s.body}>
         <section className={`case-work ${s.work}`} aria-label={`Etap: ${STAGE_SHORT[stage]}`}>
           <div className={`${s.inner} ${s.workInner}`}>
-            {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
+            {readOnly && (
+              <InlineAlert tone="info" title="Podgląd tylko do odczytu">
+                Teczkę prowadzi oceniający ({detail.evaluator.firstName} {detail.evaluator.lastName}). Jako HR możesz przeglądać etapy i pobrać arkusz, ale nie zmieniasz oceny.
+              </InlineAlert>
+            )}
+            {/* A disabled fieldset turns off every field and button of the stage for HR at once. */}
+            <fieldset disabled={readOnly} className={s.workFieldset}>
+              {canOpenStage(detail, stage) ? <StageWorkspace {...props} /> : <StageNotOpen detail={detail} stage={stage} />}
+            </fieldset>
           </div>
         </section>
       </div>

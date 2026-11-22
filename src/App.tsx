@@ -35,7 +35,8 @@ export default function App() {
           </RequireAuth>
         }
       >
-        <Route element={<RequireRole roles={['SUPERVISOR']} />}>
+        {/* HR reads cases (the API allows it); the case file shows them read-only. */}
+        <Route element={<RequireRole roles={['SUPERVISOR', 'HR']} />}>
           <Route path="/teczka/:id/arkusz" element={<SheetPage />} />
         </Route>
         <Route element={<AppShell />}>
@@ -43,6 +44,8 @@ export default function App() {
           <Route element={<RequireRole roles={['SUPERVISOR']} />}>
             <Route path="/zespol" element={<TeamPage />} />
             <Route path="/pracownik/:personId" element={<PersonPage />} />
+          </Route>
+          <Route element={<RequireRole roles={['SUPERVISOR', 'HR']} />}>
             <Route path="/teczka/:id/:stage?" element={<CasePage />} />
           </Route>
           <Route element={<RequireRole roles={['HR']} />}>
