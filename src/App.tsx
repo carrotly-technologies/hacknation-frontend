@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { AssistantProvider } from './assistant/AssistantProvider'
 import { CasePage } from './case/CasePage'
 import { AckPage } from './pages/AckPage'
+import { AdminAuditPage } from './pages/AdminAuditPage'
 import { AdminUsersPage } from './pages/AdminUsersPage'
 import { DemoFormPage } from './pages/DemoFormPage'
 import { HrPage } from './pages/HrPage'
@@ -53,6 +54,7 @@ export default function App() {
           </Route>
           <Route element={<RequireRole roles={['ADMIN']} />}>
             <Route path="/admin/uzytkownicy" element={<AdminUsersPage />} />
+            <Route path="/admin/dziennik" element={<AdminAuditPage />} />
             <Route path="/admin" element={<Navigate to="/admin/uzytkownicy" replace />} />
           </Route>
           <Route path="/baza-wiedzy" element={<KnowledgePage />} />

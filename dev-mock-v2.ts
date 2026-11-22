@@ -719,6 +719,32 @@ export function createV2(model: { competencies: { id: string; name: string; indi
       u.role = String((body as { role?: unknown }).role) as MockUser['role']
       return ok(u)
     }
+    // Event log (hacknation-backend#70): a fixed sample, no filters; verify always passes.
+    if (method === 'GET' && path === '/api/admin/audit/actions') {
+      return ok([
+        { action: 'LOGIN', label: 'Logowanie' },
+        { action: 'LOGIN_FAILED', label: 'Nieudane logowanie' },
+        { action: 'CASE_PATCH', label: 'Zmiana danych w ocenie' },
+        { action: 'CASE_ACTION:SEND_FOR_ACK', label: 'Akcja w ocenie: Przekaż do zapoznania' },
+      ])
+    }
+    if (method === 'GET' && path === '/api/admin/audit/verify') return ok({ ok: true, count: 3 })
+    if (method === 'GET' && path === '/api/admin/audit') {
+      const entry = (seq: number, actorId: string | null, action: string, actionLabel: string, resourceType: string, resourceId: string | null, changedFields: string[], result: string) => {
+        const u = MOCK_USERS.find((x) => x.id === actorId)
+        return {
+          id: `mock-audit-${seq}`, seq, at: `2026-11-21T0${seq + 7}:15:00.000Z`, actorId, actorName: u?.name ?? null, actorRole: u?.role ?? null,
+          action, actionLabel, resourceType, resourceTypeLabel: resourceType === 'CASE' ? 'Ocena' : 'Konto użytkownika', resourceId,
+          changedFields, ip: '127.0.0.1', result, prevHash: '0'.repeat(64), hash: '0'.repeat(64),
+        }
+      }
+      const items = [
+        entry(3, MOCK_USERS[0].id, 'CASE_PATCH', 'Zmiana danych w ocenie', 'CASE', 'c-001', ['ratings'], 'OK'),
+        entry(2, null, 'LOGIN_FAILED', 'Nieudane logowanie', 'USER', null, [], 'DENIED'),
+        entry(1, 'u-admin', 'LOGIN', 'Logowanie', 'USER', 'u-admin', [], 'OK'),
+      ]
+      return ok({ items, total: items.length, page: 1, pageSize: 50 })
+    }
     if (method === 'GET' && path === '/api/team') {
       const mine = store.filter((r) => r.mine)
       const todos = mine.map(todo).filter((t) => t !== null).sort((a, b) => (a.deadline.date ?? '').localeCompare(b.deadline.date ?? ''))

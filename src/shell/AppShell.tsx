@@ -5,6 +5,7 @@ import {
   type LucideIcon,
   Menu,
   RotateCcw,
+  ScrollText,
   Settings,
   TableProperties,
   UserCog,
@@ -172,14 +173,16 @@ type NavItem = { to: string; label: string; Icon: LucideIcon; match: string[] }
  * `/ustawienia` is the gear icon next to the user menu (on phones: an item in the "Menu" dropdown).
  */
 function navItems(role: Role): NavItem[] {
-  const byRole: Partial<Record<Role, NavItem>> = {
-    SUPERVISOR: { to: '/zespol', label: 'Mój zespół', Icon: Users, match: ['/zespol', '/teczka'] },
-    HR: { to: '/hr', label: 'Monitoring', Icon: TableProperties, match: ['/hr'] },
-    ADMIN: { to: '/admin/uzytkownicy', label: 'Użytkownicy', Icon: UserCog, match: ['/admin'] },
+  const byRole: Partial<Record<Role, NavItem[]>> = {
+    SUPERVISOR: [{ to: '/zespol', label: 'Mój zespół', Icon: Users, match: ['/zespol', '/teczka'] }],
+    HR: [{ to: '/hr', label: 'Monitoring', Icon: TableProperties, match: ['/hr'] }],
+    ADMIN: [
+      { to: '/admin/uzytkownicy', label: 'Użytkownicy', Icon: UserCog, match: ['/admin/uzytkownicy'] },
+      { to: '/admin/dziennik', label: 'Dziennik zdarzeń', Icon: ScrollText, match: ['/admin/dziennik'] },
+    ],
   }
-  const own = byRole[role]
   return [
-    ...(own ? [own] : []),
+    ...(byRole[role] ?? []),
     { to: '/baza-wiedzy', label: 'Baza wiedzy', Icon: BookOpen, match: ['/baza-wiedzy'] },
   ]
 }
