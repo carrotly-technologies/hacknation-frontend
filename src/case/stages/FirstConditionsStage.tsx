@@ -1,20 +1,28 @@
 import type { ExamPassed } from '../../api/cases'
+import { Field, InfoList, InfoRow, RadioGroup, TextArea } from '../../components/ui'
 import { usePatchCase } from '../../lib/caseQueries'
-import { fmtAvg, fmtDate } from '../../lib/format'
+import { fmtDate } from '../../lib/format'
 import { liveResult } from '../../lib/result'
 import type { StageProps } from '../CasePage'
-import { MutationError, StageHeader } from './common'
+import s from './AssessmentTalkStage.module.css'
+import { ResultSummary } from './CompetencyScores'
 import { FormalCheck, SignedStatus } from './FormalCheck'
+import { StageError, StageLayout } from './StageLayout'
+import layout from './StageLayout.module.css'
 import { useDraft } from './useDraft'
 
 const EXAM: { v: ExamPassed; label: string; hint?: string }[] = [
-  { v: 'YES', label: 'TAK' },
-  { v: 'NO', label: 'NIE' },
-  { v: 'NOT_APPLICABLE', label: 'NIE DOTYCZY', hint: 'absolwent KSAP, zatrudnienie na zastępstwo lub na wyższym stanowisku' },
+  { v: 'YES', label: 'Tak' },
+  { v: 'NO', label: 'Nie' },
+  { v: 'NOT_APPLICABLE', label: 'Nie dotyczy', hint: 'Absolwent KSAP, zatrudnienie na zastępstwo lub na wyższym stanowisku.' },
 ]
 
+/**
+ * Step "Warunki pierwszej oceny": the preparatory-service exam as one radio question, the report as a read-only
+ * summary filled in from the dates, the result as in steps 5–6, then the justification and development conclusions.
+ */
 export function FirstConditionsStage({ detail, model, criteria, stage }: StageProps) {
-  const info = detail.stages.find((s) => s.id === stage)!
+  const info = detail.stages.find((x) => x.id === stage)!
   const patch = usePatchCase(detail.id)
   const locked = !!detail.signedByEvaluatorOn
   const fc = detail.firstConditions
@@ -25,80 +33,54 @@ export function FirstConditionsStage({ detail, model, criteria, stage }: StagePr
   const onTime = fc?.reportSubmittedOn && fc.reportDue ? fc.reportSubmittedOn <= fc.reportDue : null
 
   return (
-    <div className="stage">
-      <StageHeader title={info.name} status={locked && <SignedStatus detail={detail} />} />
-      <div className="stage-pad">
-        <div className="cond-grid">
-          <fieldset className="cond" disabled={locked}>
-            <legend className="cond__legend">Oceniany zaliczył egzamin ze służby przygotowawczej</legend>
-            <div className="radio-row">
-              {EXAM.map((o, i) => (
-                <label key={o.v} className={`radio-pill ${fc?.examPassed === o.v ? 'is-on' : ''}`}>
-                  <input
-                    id={i === 0 ? 'exam1' : undefined}
-                    type="radio"
-                    name="exam"
-                    checked={fc?.examPassed === o.v}
-                    onChange={() => patch.mutate({ firstConditions: { examPassed: o.v } })}
-                  />
-                  {o.label}
-                </label>
-              ))}
-            </div>
-            <p className="field__hint">NIE DOTYCZY: {EXAM[2].hint}. §10 ust. 1 pkt 1 i ust. 3 rozp. PRM z 23.07.2015.</p>
-          </fieldset>
+    <StageLayout info={info} status={locked && <SignedStatus detail={detail} />}>
+      <RadioGroup
+        id="exam1"
+        name="exam"
+        legend="Oceniany zaliczył egzamin ze służby przygotowawczej"
+        options={EXAM.map((o) => ({ value: o.v, label: o.label, hint: o.hint, disabled: locked }))}
+        value={fc?.examPassed ?? ''}
+        onChange={(v) => patch.mutate({ firstConditions: { examPassed: v as ExamPassed } })}
+      />
 
-          <div className="cond">
-            <p className="cond__legend">Sprawozdanie złożone w wyznaczonym terminie</p>
-            <dl className="dl">
-              <dt>Termin</dt>
-              <dd className="num">{fmtDate(fc?.reportDue)}</dd>
-              <dt>Złożono</dt>
-              <dd className="num">{fmtDate(fc?.reportSubmittedOn)}</dd>
-              <dt>W terminie</dt>
-              <dd>
-                {onTime === null ? <span className="faint">—</span> : onTime ? <span className="tag tag--ok">TAK</span> : <span className="tag tag--danger">NIE</span>}
-              </dd>
-            </dl>
-            <p className="field__hint">Wyliczane z dat. §10 ust. 1 pkt 2 rozp. PRM z 23.07.2015.</p>
-          </div>
-        </div>
+      <section aria-labelledby="report-h" className={s.section}>
+        <h3 id="report-h" className={s.heading}>Sprawozdanie złożone w wyznaczonym terminie</h3>
+        <InfoList>
+          <InfoRow label="Termin złożenia sprawozdania" value={fmtDate(fc?.reportDue)} />
+          <InfoRow label="Data złożenia" value={fmtDate(fc?.reportSubmittedOn)} />
+          <InfoRow label="Złożone w terminie" value={onTime === null ? '—' : onTime ? 'Tak' : 'Nie'} />
+        </InfoList>
+        <p className={layout.muted}>Uzupełniane automatycznie z dat.</p>
+      </section>
 
-        <div className="result-strip" style={{ marginTop: 20 }}>
-          <span className={`verdict-tag ${r.result === 'POSITIVE' ? 'verdict-tag--pos' : r.result ? 'verdict-tag--neg' : 'verdict-tag--none'} ${r.provisional ? 'is-provisional' : ''}`}>
-            {r.result === 'POSITIVE' ? 'POZYTYWNA' : r.result === 'NEGATIVE' ? 'NEGATYWNA' : 'brak wyniku'}
-            {r.provisional && r.result && <span className="verdict-tag__note">wstępnie</span>}
-          </span>
-          <span className="result-strip__avg num">ocena łączna {fmtAvg(r.average)}</span>
-          <span className="muted small">{r.reason}</span>
-        </div>
+      <section aria-labelledby="result-h" className={s.section}>
+        <h3 id="result-h" className={s.heading}>Wynik oceny</h3>
+        <ResultSummary result={r} averageLabel="Ocena łączna" />
+        <p className={layout.muted}>{r.reason}</p>
+      </section>
 
-        <div className="field" style={{ marginTop: 20 }}>
-          <label className="field__label" htmlFor="just1">
-            Uzasadnienie
-            {!negative && <span className="field__optional"> (opcjonalne)</span>}
-          </label>
-          <textarea id="just1" className="textarea textarea--doc" rows={6} readOnly={locked} value={just.value} onChange={(e) => just.change(e.target.value)} onBlur={just.flush} />
-        </div>
-        <div className="field" style={{ marginTop: 16 }}>
-          <label className="field__label" htmlFor="dev1">
-            Wnioski dotyczące rozwoju zawodowego
-            {!negative && <span className="field__optional"> (opcjonalne)</span>}
-          </label>
-          <textarea
-            id="dev1"
-            className="textarea textarea--doc"
-            rows={4}
-            readOnly={locked || negative}
-            value={dev.value}
-            onChange={(e) => dev.change(e.target.value)}
-            onBlur={dev.flush}
-            placeholder={negative ? 'Przy ocenie negatywnej nie wpisuje się wniosków rozwojowych (§10 ust. 6 rozp. 2015).' : 'Zakres wiedzy i umiejętności do rozwinięcia, formy rozwoju.'}
-          />
-        </div>
-        <MutationError error={patch.error} />
-        <FormalCheck detail={detail} criteria={criteria} fields={{ justification: 'just1', iprz: 'dev1', conditions: 'exam1' }} label="Zatwierdź pierwszą ocenę i podpisz" />
-      </div>
-    </div>
+      <section aria-labelledby="writing-h" className={s.section}>
+        <h3 id="writing-h" className={s.heading}>Uzasadnienie i rozwój</h3>
+        <Field id="just1" label="Uzasadnienie" optional={!negative}>
+          {(p) => <TextArea {...p} rows={6} readOnly={locked} value={just.value} onChange={(e) => just.change(e.target.value)} onBlur={just.flush} />}
+        </Field>
+        <Field id="dev1" label="Wnioski dotyczące rozwoju zawodowego" optional={!negative}>
+          {(p) => (
+            <TextArea
+              {...p}
+              rows={4}
+              readOnly={locked || negative}
+              value={dev.value}
+              onChange={(e) => dev.change(e.target.value)}
+              onBlur={dev.flush}
+              placeholder={negative ? 'Przy ocenie negatywnej nie wpisuje się wniosków rozwojowych.' : 'Zakres wiedzy i umiejętności do rozwinięcia, formy rozwoju.'}
+            />
+          )}
+        </Field>
+        <StageError error={patch.error} />
+      </section>
+
+      <FormalCheck detail={detail} criteria={criteria} fields={{ justification: 'just1', iprz: 'dev1', conditions: 'exam1' }} label="Zatwierdź pierwszą ocenę i podpisz" />
+    </StageLayout>
   )
 }
