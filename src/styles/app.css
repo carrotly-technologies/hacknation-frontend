@@ -291,6 +291,28 @@
   outline: none;
 }
 
+/* Footer at the end of every page in the shell (scrolls with the content), aligned with PageLayout */
+.app-footer {
+  max-width: calc(var(--content-max) + 2 * var(--page-pad-x));
+  margin-inline: auto;
+  padding: 0 var(--page-pad-x) var(--s-4);
+  font-size: var(--text-sm);
+}
+
+.app-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-6);
+  padding-top: var(--s-2);
+  border-top: var(--border-w) solid var(--border);
+}
+
+.app-footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}
+
 /* Skip link: first focusable element, visible only on keyboard focus */
 .skip-link {
   position: absolute;

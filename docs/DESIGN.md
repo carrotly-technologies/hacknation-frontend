@@ -56,7 +56,7 @@ may scroll sideways (WCAG 1.4.4, 1.4.10); on phones buttons wrap their label.
 | `Card` | content card; with `to` the whole card is a link (service tile). `collapsible` (+ `defaultOpen`, `subtitle`): the same card, closed by default, whose heading is a full-width `<button aria-expanded aria-controls>` (min. 48px, hover + focus ring, chevron rotates 180°, no animation with reduced motion); use it for long secondary content in a column of cards ("Opis stanowiska" on the employee profile). |
 | `InfoList` + `InfoRow` | label/value rows, optional action ("Zmień"). |
 | `Accordion` | native `<details>`; for content pages, never inside forms. |
-| `Dialog` | native `<dialog>` (focus trap, Esc); bottom sheet on phones. |
+| `Dialog` | native `<dialog>`: Tab cycles inside it, Esc closes, focus returns to the control that opened it (or to `<main>` when that one is gone); bottom sheet on phones. |
 | `Snackbar` | short confirmation with optional action, in a polite live region. |
 | `EmptyState`, `Spinner`, `Stepper`, `SearchBar` | empty lists, loading, "Krok X z Y" + progress bar (`unit`, `name`: "Część 2 z 3: Ocena okresowa"), search form. |
 | `StageStepper` | horizontal process stepper (chevrons): done = light green + ✓, future = grey outline, the current step while another one is shown = white with an `--accent` border and text; the step on screen (any state, also done, then with an `--accent` ✓) = `--accent-subtle` fill, `--accent-border` border, `--accent` bold label, no extra outline, `aria-current="step"` and hidden "(wyświetlany)"; every step is a link; < 768px numbered dots + "Krok X z Y: name". |
@@ -79,7 +79,9 @@ import { Button, ErrorSummary, Field, TextInput } from '../components/ui'
 
 ## Layout
 
-`AppShell`: skip link "Przejdź do treści"; top bar with the product name, the main links, the settings gear
+`AppShell`: skip link "Przejdź do treści"; a footer at the end of the content with "Deklaracja dostępności"; after a
+route change a focus left on `<body>` moves to `<main>`; every page sets the tab title through `useDocumentTitle`
+(`PageLayout` does it from a text `title`); top bar with the product name, the main links, the settings gear
 (`/ustawienia`) and `UserMenu`; below 1024px the links go under a "Menu" button, and below 768px the gear moves
 into that menu as "Ustawienia". No horizontal scrolling.
 
@@ -98,7 +100,7 @@ the source list and the messages scroll inside (keyboard-focusable regions), no 
 4. **Progressive disclosure**: conditional fields under the chosen radio option; no accordions in forms.
 5. **Plain language**; label above the field, hint under the label, never a placeholder as the label.
 6. **"Wstecz"** always keeps what was typed.
-7. **Accessibility** (WCAG 2.1 AA): contrast ≥ 4.5:1, visible focus ring on every interactive element, 44px touch targets, everything works with the keyboard, colour is never the only cue.
+7. **Accessibility** (WCAG 2.1 AA): contrast ≥ 4.5:1, visible focus ring on every interactive element, 44px touch targets, everything works with the keyboard, colour is never the only cue. A scrollable area gets `tabIndex={0}` and a name. `npm run test:a11y` checks new screens (add them to `e2e/a11y.spec.ts`); status per criterion in `docs/wcag.md`.
 
 ## Case screen (design "Kompas kompetencji", frames 1–2)
 

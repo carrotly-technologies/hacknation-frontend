@@ -62,6 +62,20 @@ export function AppShell() {
     }
   }
 
+  // After a page change focus must not fall to the top of the document (the clicked link may be gone): the main area
+  // takes it, so Tab goes on from the new content (WCAG 2.4.3). A focus that is still on the page stays where it is.
+  const shownPath = useRef(location.pathname)
+  useEffect(() => {
+    // not on the first render: on load Tab starts at the skip link
+    if (shownPath.current === location.pathname) return
+    shownPath.current = location.pathname
+    const id = requestAnimationFrame(() => {
+      const active = document.activeElement
+      if (!active || active === document.body) document.getElementById('main')?.focus({ preventScroll: true })
+    })
+    return () => cancelAnimationFrame(id)
+  }, [location.pathname])
+
   const userRole = me.position || ROLE_LABEL[me.role]
   const settingsActive = isUnder(location.pathname, '/ustawienia')
 
@@ -161,6 +175,11 @@ export function AppShell() {
       <main className="main" id="main" tabIndex={-1}>
         <Outlet />
         <ActivityNotice />
+        <footer className="app-footer">
+          <div className="app-footer__inner">
+            <Link to="/deklaracja-dostepnosci">Deklaracja dostępności</Link>
+          </div>
+        </footer>
       </main>
       <AssistantLauncher />
     </div>

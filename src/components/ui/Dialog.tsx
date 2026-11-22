@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import s from './Overlay.module.css'
 
 type Props = {
@@ -11,22 +11,36 @@ type Props = {
   actions?: ReactNode
 }
 
-/** Modal on native <dialog>: focus trap, Esc and inert background come from the browser. Bottom sheet on phones. */
+/**
+ * Modal on native <dialog>: focus trap, Esc and inert background come from the browser. Bottom sheet on phones.
+ * Tab and Shift+Tab cycle inside the dialog (the browser alone would let focus leave to its own toolbar).
+ * On close (Esc, a button, the backdrop) focus goes back to the control that opened it (WCAG 2.4.3); when that control
+ * is gone (e.g. the page changed), to the main area, so focus never drops to the top of the document.
+ */
 export function Dialog({ open, onClose, title, children, actions }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
+  const returnTo = useRef<HTMLElement | null>(null)
   const titleId = useId()
   useEffect(() => {
     const d = ref.current
     if (!d) return
-    if (open && !d.open) d.showModal()
-    else if (!open && d.open) d.close()
+    if (open && !d.open) {
+      returnTo.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      d.showModal()
+    } else if (!open && d.open) d.close()
   }, [open])
+  // closing while unmounting (the page changed under an open dialog) still gives focus back
+  useEffect(() => () => restoreFocus(returnTo), [])
   return (
     <dialog
       ref={ref}
       className={s.dialog}
       aria-labelledby={titleId}
-      onClose={onClose}
+      onClose={() => {
+        onClose()
+        restoreFocus(returnTo)
+      }}
+      onKeyDown={(e) => trapTab(e, ref.current)}
       onClick={(e) => {
         // click on the backdrop closes the dialog
         if (e.target === ref.current) onClose()
@@ -46,4 +60,37 @@ export function Dialog({ open, onClose, title, children, actions }: Props) {
       </div>
     </dialog>
   )
+}
+
+function restoreFocus(returnTo: { current: HTMLElement | null }) {
+  const el = returnTo.current
+  returnTo.current = null
+  if (!el) return
+  // after React has re-rendered: the opener may become disabled or be replaced (signing moves to the next step)
+  requestAnimationFrame(() => {
+    const active = document.activeElement
+    if (active && active !== document.body && active.isConnected && !active.closest('dialog')) return
+    if (el.isConnected && !el.matches(':disabled')) el.focus()
+    else document.getElementById('main')?.focus({ preventScroll: true })
+  })
+}
+
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+/** Keeps Tab inside the dialog: from the last control to the first and back. */
+function trapTab(e: KeyboardEvent, dialog: HTMLDialogElement | null) {
+  if (e.key !== 'Tab' || !dialog) return
+  const items = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => el.getClientRects().length > 0)
+  if (!items.length) return
+  const first = items[0]
+  const last = items[items.length - 1]
+  const active = document.activeElement
+  if (e.shiftKey && (active === first || active === dialog)) {
+    e.preventDefault()
+    last.focus()
+  } else if (!e.shiftKey && active === last) {
+    e.preventDefault()
+    first.focus()
+  }
 }

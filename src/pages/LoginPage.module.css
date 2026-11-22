@@ -67,6 +67,19 @@
   text-align: center;
 }
 
+.footer {
+  margin-top: var(--s-6);
+  padding-top: var(--s-2);
+  border-top: var(--border-w) solid var(--border);
+  font-size: var(--text-sm);
+}
+
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+}
+
 .alert {
   margin-bottom: var(--s-4);
 }

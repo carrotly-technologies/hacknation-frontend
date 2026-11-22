@@ -66,6 +66,9 @@ supervisors and HR, built around the assessment file ("teczka oceny"):
   read only, the notice and the "zapoznałem(-łam) się" confirmation (`GET/POST /api/ack/:token`). The supervisor
   generates the link in part II of the sheet wizard ("Zapoznanie ocenianego z oceną"); the full address is built from
   this app's origin (`window.location.origin` + `ackLink` from the API);
+- `/deklaracja-dostepnosci` — public accessibility statement (no sign-in, outside the app shell), linked in the footer
+  of every screen and on `/logowanie`; sections of the statement template (ustawa o dostępności cyfrowej), demo entity
+  and contact data marked "(przykład)" in `src/lib/accessibilityStatement.ts`; the audit behind it: `docs/wcag.md`;
 - `/prezentacja` — public project presentation (no sign-in, outside the app shell, not linked from the navigation):
   at most 10 slides on a 16:9 canvas scaled to the window (upright phones get a 9:16 layout); ←/→, space,
   PageUp/PageDown, Home/End, swipe and the dots change the slide, `#N` in the URL opens slide N, `F` toggles full
@@ -109,8 +112,39 @@ MOCK_API=1 npm run dev   # serves v1 + v2 /api/* (dev-mock-api.ts, dev-mock-v2.t
 ```bash
 npm run lint      # oxlint
 npm run build     # type-check + production build to dist/
+npm run test:a11y # WCAG 2.1 AA: axe-core scans and the keyboard-only path (see "Accessibility tests")
 npm run preview   # serve the production build
 ```
+
+## Accessibility tests
+
+WCAG 2.1 AA status and the manual screen-reader script: [`docs/wcag.md`](docs/wcag.md). The automated part is
+Playwright with `@axe-core/playwright` (`e2e/`, `playwright.config.ts`):
+
+- `e2e/a11y.spec.ts`: axe-core (tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`) must find 0 violations on every main
+  screen (sign-in, statement, acknowledgement, team, profile, every case stage and form part, sheet, knowledge base,
+  settings, HR, admin) in the light, dark and high-contrast (light and dark) themes;
+- `e2e/keyboard.spec.ts`: the assessment path from sign-in to the link for the assessed person with the keyboard only
+  (skip link, visible focus on every stop, the sign dialog's focus trap, Esc and focus return, menus and the assistant).
+
+They run against the **real backend with in-memory storage** (the demo seed; the tests reset it with
+`POST /api/demo/reset`), simpler than keeping `dev-mock-api.ts` in step with the API. Playwright starts its own Vite
+server on port 5179 with the `/api` proxy pointed at the backend.
+
+```bash
+npx playwright install chromium          # once
+# backend: in hacknation-backend `npm run start:dev` (port 3000), then here:
+npm run test:a11y
+# or let Playwright start the backend from a clone, on another port:
+BACKEND_DIR=../hacknation-backend A11Y_API_URL=http://localhost:3100 npm run test:a11y
+```
+
+| Variable        | Default                 | Description                                                         |
+| --------------- | ----------------------- | ------------------------------------------------------------------- |
+| `A11Y_API_URL`  | `http://localhost:3000` | Backend for the tests                                               |
+| `BACKEND_DIR`   | empty                   | Path to a hacknation-backend clone: Playwright starts it (`npm run start`) |
+| `A11Y_APP_PORT` | `5179`                  | Port of the Vite server started for the tests                       |
+| `APP_URL`       | empty                   | Test an already running frontend instead (its `/api` must reach the same backend) |
 
 ## Presentation
 

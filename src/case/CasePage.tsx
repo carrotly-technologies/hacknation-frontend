@@ -12,6 +12,7 @@ import { caseCriteria, useModel, useSheets, type CaseCriteria } from '../lib/mod
 import { personUrl } from '../lib/people'
 import { scrollPageToTop } from '../lib/scrollPage'
 import { useMe } from '../lib/useAuth'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { canOpenStage, caseSteps, caseUrl, CASE_STATUS_LABEL, stageFromSlug, stepTarget, STAGE_SHORT, STAGE_SLUG, viewStage } from '../lib/stages'
 import s from './CasePage.module.css'
 import { AssessmentStage } from './stages/AssessmentStage'
@@ -56,6 +57,10 @@ export function CasePage() {
   useEffect(() => {
     scrollPageToTop()
   }, [slug])
+  const titleStage = stageFromSlug(slug)
+  useDocumentTitle(
+    q.data && titleStage ? `${STAGE_SHORT[titleStage]} — ${q.data.person.firstName} ${q.data.person.lastName}` : null,
+  )
 
   if (q.isPending || model.isPending || sheets.isPending) return <PageLayout><LoadingState /></PageLayout>
   if (q.isError) return <PageLayout><ErrorState error={q.error} what="teczka oceny" onRetry={() => q.refetch()} /></PageLayout>

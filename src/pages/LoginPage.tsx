@@ -1,6 +1,6 @@
 import { Landmark, LogIn } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { startLoginGov } from '../api/auth'
 import { ApiError, errorMessage } from '../api/client'
 import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
@@ -9,6 +9,7 @@ import { rememberLoginGovState, type LoginGovFailure } from '../lib/loginGov'
 import { HOME_BY_ROLE, LOGIN_PATH, ROLE_LABEL, useAuth } from '../lib/useAuth'
 import { ActivityNotice } from '../components/ActivityNotice'
 import { BrandMark } from '../components/BrandMark'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import s from './LoginPage.module.css'
 
 /**
@@ -17,6 +18,7 @@ import s from './LoginPage.module.css'
  * (both POC only, hidden with VITE_DEMO_ACCOUNTS=false, as the simulation signs in as a demo person).
  */
 export function LoginPage() {
+  useDocumentTitle('Logowanie')
   const { user, signIn } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -189,6 +191,9 @@ export function LoginPage() {
             </ul>
           </section>
         )}
+        <p className={s.footer}>
+          <Link to="/deklaracja-dostepnosci">Deklaracja dostępności</Link>
+        </p>
       </div>
       <ActivityNotice />
     </main>

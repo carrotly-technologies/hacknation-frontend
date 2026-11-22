@@ -59,9 +59,10 @@ export function SheetPage() {
           <Printer size={15} aria-hidden="true" /> Drukuj / zapisz PDF
         </button>
       </header>
-      <div className="sheet-scroll">
+      {/* the sheet scrolls inside: focusable so the keyboard can scroll it too (WCAG 2.1.1) */}
+      <main className="sheet-scroll" id="main" tabIndex={0} aria-label="Arkusz oceny">
         <SheetDocument detail={detail} model={model.data} criteria={caseCriteria(detail, sheets.data)} />
-      </div>
+      </main>
     </div>
   )
 }

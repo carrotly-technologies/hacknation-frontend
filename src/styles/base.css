@@ -78,6 +78,17 @@ a:hover {
   outline-offset: 2px;
 }
 
+/* Windows high contrast (forced colours) drops box-shadow, which draws most focus rings here: an outline instead */
+@media (forced-colors: active) {
+  :focus-visible,
+  .input:focus,
+  .select:focus,
+  .textarea:focus {
+    outline: 2px solid CanvasText !important;
+    outline-offset: 2px;
+  }
+}
+
 .num,
 .tabular {
   font-variant-numeric: tabular-nums;
