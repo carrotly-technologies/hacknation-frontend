@@ -1,6 +1,6 @@
 import { Landmark, LogIn } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router'
 import { startLoginGov } from '../api/auth'
 import { ApiError, errorMessage } from '../api/client'
 import { Button, Card, ErrorSummary, Field, InlineAlert, TextInput, type FormError } from '../components/ui'
@@ -191,9 +191,6 @@ export function LoginPage() {
             </ul>
           </section>
         )}
-        <p className={s.footer}>
-          <Link to="/deklaracja-dostepnosci">Deklaracja dostępności</Link>
-        </p>
       </div>
       <ActivityNotice />
     </main>

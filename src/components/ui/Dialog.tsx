@@ -37,10 +37,19 @@ export function Dialog({ open, onClose, title, children, actions }: Props) {
       className={s.dialog}
       aria-labelledby={titleId}
       onClose={() => {
+        // the close event is queued: when the dialog was opened again in the meantime, it is stale
+        if (ref.current?.open) return
         onClose()
         restoreFocus(returnTo)
       }}
-      onKeyDown={(e) => trapTab(e, ref.current)}
+      onKeyDown={(e) => {
+        // Esc: close through the state right away (the native close event comes later, and Chrome may skip it after
+        // keyboard-only use), so reopening at once works
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          onClose()
+        } else trapTab(e, ref.current)
+      }}
       onClick={(e) => {
         // click on the backdrop closes the dialog
         if (e.target === ref.current) onClose()

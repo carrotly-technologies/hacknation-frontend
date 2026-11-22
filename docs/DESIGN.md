@@ -79,7 +79,7 @@ import { Button, ErrorSummary, Field, TextInput } from '../components/ui'
 
 ## Layout
 
-`AppShell`: skip link "Przejdź do treści"; a footer at the end of the content with "Deklaracja dostępności"; after a
+`AppShell`: skip link "Przejdź do treści"; the footer (`ActivityNotice`, also on `/logowanie` and `/zapoznanie`) links "Deklaracja dostępności"; after a
 route change a focus left on `<body>` moves to `<main>`; every page sets the tab title through `useDocumentTitle`
 (`PageLayout` does it from a text `title`); top bar with the product name, the main links, the settings gear
 (`/ustawienia`) and `UserMenu`; below 1024px the links go under a "Menu" button, and below 768px the gear moves

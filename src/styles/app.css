@@ -291,28 +291,6 @@
   outline: none;
 }
 
-/* Footer at the end of every page in the shell (scrolls with the content), aligned with PageLayout */
-.app-footer {
-  max-width: calc(var(--content-max) + 2 * var(--page-pad-x));
-  margin-inline: auto;
-  padding: 0 var(--page-pad-x) var(--s-4);
-  font-size: var(--text-sm);
-}
-
-.app-footer__inner {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--s-2) var(--s-6);
-  padding-top: var(--s-2);
-  border-top: var(--border-w) solid var(--border);
-}
-
-.app-footer a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap);
-}
-
 /* Skip link: first focusable element, visible only on keyboard focus */
 .skip-link {
   position: absolute;
@@ -1857,10 +1835,22 @@
 
 /* One neutral sentence about the activity log (hacknation-backend#75): app shell, sign-in, the assessed person's page */
 .activity-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 var(--s-6);
   padding: var(--s-4) var(--page-pad-x, var(--s-4));
   color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;
+}
+
+/* 44px target (WCAG 2.5.5 practice, DESIGN.md) */
+.activity-notice__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
 }
 
 /* A page that fills the window (PageLayout `fill`, from 1024px) leaves room for the notice instead of overflowing */

@@ -164,9 +164,7 @@ test('pełna ścieżka oceny tylko z klawiatury', async ({ page }) => {
   await page.keyboard.press('Escape')
   await expect(dialog).toBeHidden()
   await expect(sign).toBeFocused()
-  // open again and sign
-  await settle(page)
-  await expect(sign).toBeFocused()
+  // open again at once and sign
   await page.keyboard.press('Enter')
   await expect(dialog).toBeVisible()
   await tabTo(page, dialog.getByRole('button', { name: 'Podpisz', exact: true }))

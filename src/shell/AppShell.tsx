@@ -175,11 +175,6 @@ export function AppShell() {
       <main className="main" id="main" tabIndex={-1}>
         <Outlet />
         <ActivityNotice />
-        <footer className="app-footer">
-          <div className="app-footer__inner">
-            <Link to="/deklaracja-dostepnosci">Deklaracja dostępności</Link>
-          </div>
-        </footer>
       </main>
       <AssistantLauncher />
     </div>
