@@ -1,0 +1,97 @@
+name: security
+
+# SBOM (CycloneDX) and vulnerability scan (Trivy) on every push to main,
+# on every pull request and once a week, so new CVEs in unchanged
+# dependencies are found too. Evidence for CRA (Annex I) and NIS2 (art. 21).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 5 * * 1' # Mondays 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sbom:
+    name: SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Generate SBOM
+        run: npm sbom --sbom-format cyclonedx --omit dev > sbom.cdx.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sbom.cdx.json
+          path: sbom.cdx.json
+          if-no-files-found: error
+
+  trivy:
+    name: Trivy (${{ matrix.scan }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # SARIF upload to code scanning
+    strategy:
+      fail-fast: false
+      matrix:
+        scan: [fs, image]
+    env:
+      IMAGE: ${{ github.event.repository.name }}:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build image
+        if: matrix.scan == 'image'
+        run: docker build -t "$IMAGE" .
+      # 1) Full report (all severities) for Security -> Code scanning.
+      - name: Trivy report (SARIF)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: ${{ matrix.scan }}
+          scan-ref: .
+          image-ref: ${{ matrix.scan == 'image' && env.IMAGE || '' }}
+          scanners: ${{ matrix.scan == 'fs' && 'vuln,secret,misconfig' || 'vuln,secret' }}
+          format: sarif
+          skip-dirs: .cache
+          output: trivy-${{ matrix.scan }}.sarif
+          exit-code: '0'
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+        # Fallback: without code scanning the report is still kept as an artifact.
+        continue-on-error: true
+        with:
+          sarif_file: trivy-${{ matrix.scan }}.sarif
+          category: trivy-${{ matrix.scan }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: trivy-${{ matrix.scan }}.sarif
+          path: trivy-${{ matrix.scan }}.sarif
+      # 2) Gate: fail on HIGH/CRITICAL that have a fix available
+      #    (Trivy binary installed by the step above).
+      - name: Trivy gate (HIGH/CRITICAL with a fix)
+        env:
+          SCAN: ${{ matrix.scan }}
+        run: |
+          if [ "$SCAN" = fs ]; then
+            trivy fs --cache-dir .cache/trivy --scanners vuln,secret,misconfig \
+              --skip-dirs .cache --skip-files trivy-fs.sarif \
+              --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 .
+          else
+            trivy image --cache-dir .cache/trivy --scanners vuln,secret \
+              --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 "$IMAGE"
+          fi
