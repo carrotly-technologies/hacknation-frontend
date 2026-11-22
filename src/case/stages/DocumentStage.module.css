@@ -55,3 +55,8 @@
     flex: 1 1 100%;
   }
 }
+
+.objectionText {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

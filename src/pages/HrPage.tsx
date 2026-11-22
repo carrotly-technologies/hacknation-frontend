@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { getHrOverview, sendReminders, type HrCase, type HrOverview, type ReminderResponse } from '../api/cases'
 import { DeadlineText } from '../components/Deadline'
 import { ErrorState, LoadingState } from '../components/QueryState'
-import { PageLayout } from '../components/ui'
+import { PageLayout, StatusBadge } from '../components/ui'
 import { StageDots } from '../components/StageDots'
 import { countLabel, DEMO_TODAY, fmtDate } from '../lib/format'
 import { CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
@@ -147,7 +147,14 @@ export function HrPage() {
                       </div>
                     </td>
                     <td>{c.nextDeadline ? <DeadlineText deadline={c.nextDeadline} /> : <span className="faint">—</span>}</td>
-                    <td><span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span></td>
+                    <td>
+                      <span title={CASE_STATUS_LABEL[c.status]} className={`tag ${c.status === 'OKRES_SPRZECIWU' || c.status === 'DO_ZAPOZNANIA' ? 'tag--accent' : ''}`}>{CASE_STATUS_LABEL[c.status]}</span>
+                      {c.objectionSubmittedOn && (
+                        <span className="cell-sub" title={`Oceniany wniósł sprzeciw ${fmtDate(c.objectionSubmittedOn)}`}>
+                          <StatusBadge tone="warning">Sprzeciw</StatusBadge>
+                        </span>
+                      )}
+                    </td>
                     <td className="cell-action">
                       <button type="button" className="btn btn--sm" disabled={sentToday || remind.isPending} onClick={() => remind.mutate([c.id])}>
                         {sentToday ? 'Wysłano dziś' : 'Wyślij przypomnienie'}
