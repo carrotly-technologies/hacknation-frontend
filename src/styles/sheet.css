@@ -1,5 +1,8 @@
 /* Official sheet (arkusz) — mirrors the Dz.U. 2016 poz. 470 / 2015 poz. 1144 templates.
-   Open Sans, thin black rules, A4 pages. Printing this page produces the PDF. */
+   Set like a Polish official letter, as the downloaded PDF and DOCX: Times New Roman
+   (Tinos, metric-compatible, where it is not installed), 12 pt text, 14 pt title,
+   10 pt notes; thin black rules, A4 pages. Printing this page produces the PDF.
+   Only the document uses the serif; the app around it stays in Open Sans. */
 .doc {
   --doc-ink: #111;
   --doc-rule: #222;
@@ -7,9 +10,13 @@
   width: 210mm;
   margin: 0 auto;
   color: var(--doc-ink);
-  font-family: var(--font-sans);
-  font-size: 10.5pt;
-  line-height: 1.35;
+  --doc-font: 'Times New Roman', 'Tinos', serif;
+  --doc-body: 12pt;
+  --doc-title: 14pt;
+  --doc-small: 10pt;
+  font-family: var(--doc-font);
+  font-size: var(--doc-body);
+  line-height: 1.15;
 }
 
 .doc-page {
@@ -28,8 +35,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  font-size: 9pt;
-  font-weight: 600;
+  font-size: var(--doc-small);
+  font-weight: 700;
 }
 
 .doc-annex__wzor {
@@ -44,8 +51,8 @@
   flex-direction: column;
   gap: 10px;
   margin: 10px 0 14px;
-  font-size: 11pt;
-  font-weight: 600;
+  font-size: var(--doc-title);
+  font-weight: 700;
   text-align: center;
 }
 
@@ -60,8 +67,8 @@
 
 .doc-part {
   margin: 4px 0 12px;
-  font-size: 11pt;
-  font-weight: 600;
+  font-size: var(--doc-title);
+  font-weight: 700;
   text-align: center;
 }
 
@@ -76,20 +83,20 @@
 .doc-table td {
   padding: 3px 6px;
   border: 1px solid var(--doc-rule);
-  font-size: 9.5pt;
+  font-size: var(--doc-body);
   text-align: left;
   vertical-align: middle;
 }
 
 .doc-th-label {
   width: 42%;
-  font-weight: 600;
-  font-size: 9pt !important;
+  font-weight: 700;
+  font-size: var(--doc-body) !important;
 }
 
 .doc-th-group {
-  font-weight: 600;
-  font-size: 9pt !important;
+  font-weight: 700;
+  font-size: var(--doc-body) !important;
   background: #fff;
 }
 
@@ -99,13 +106,13 @@
 }
 
 .doc-th-left {
-  font-weight: 600;
-  font-size: 9pt !important;
+  font-weight: 700;
+  font-size: var(--doc-body) !important;
   width: 40%;
 }
 
 .doc-th-small {
-  font-size: 8pt !important;
+  font-size: var(--doc-small) !important;
   font-weight: 400;
   text-align: center !important;
   line-height: 1.2;
@@ -126,8 +133,7 @@
 .doc-x {
   display: inline-block;
   min-width: 10px;
-  font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .doc-check {
@@ -140,13 +146,9 @@
   vertical-align: -3px;
 }
 
-.doc-val {
-  font-family: var(--font-sans);
-}
-
 .doc-blank {
   color: #777;
-  font-size: 8pt;
+  font-size: var(--doc-small);
   font-style: italic;
 }
 
@@ -161,14 +163,14 @@
 
 .doc-line {
   margin: 6px 0 12px;
-  font-size: 9.5pt;
+  font-size: var(--doc-body);
 }
 
 .doc-box {
   margin: 10px 0;
   padding: 8px 10px;
   border: 1px solid var(--doc-rule);
-  font-size: 9.5pt;
+  font-size: var(--doc-body);
 }
 
 .doc-box p + p {
@@ -176,21 +178,21 @@
 }
 
 .doc-box--note {
-  font-size: 9pt;
+  font-size: var(--doc-small);
 }
 
 .doc-h {
   margin: 12px 0 4px;
-  font-size: 9.5pt;
-  font-weight: 600;
+  font-size: var(--doc-body);
+  font-weight: 700;
 }
 
 .doc-text {
   min-height: 34mm;
   padding: 6px 8px;
   border: 1px solid var(--doc-rule);
-  font-size: 10pt;
-  line-height: 1.45;
+  font-size: var(--doc-body);
+  line-height: 1.15;
   white-space: pre-wrap;
 }
 
@@ -208,14 +210,14 @@
 
 .doc-sig__value {
   min-height: 16px;
-  font-size: 9pt;
+  font-size: var(--doc-body);
 }
 
 .doc-sig__line {
   width: 100%;
   padding-top: 2px;
   border-top: 1px dotted var(--doc-rule);
-  font-size: 8pt;
+  font-size: var(--doc-small);
   font-style: italic;
   text-align: center;
 }
@@ -264,6 +266,7 @@
 
   .doc {
     width: auto;
+    --doc-body: 12pt; /* text of an official letter */
   }
 
   .doc-page {
