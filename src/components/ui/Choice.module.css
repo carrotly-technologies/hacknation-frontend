@@ -2,7 +2,9 @@
    Box and switch sizes are in rem so they grow with the text size chosen in /ustawienia.
    The box sits on the first line of the label: the item is a grid aligned to the top, and the box gets
    a top margin of half the difference between the label's line height and the box size, so its centre
-   is on the centre of the first line however many lines the label or the hint below it has. */
+   is on the centre of the first line however many lines the label or the hint below it has.
+   The box size (--choice-box) is a token in tokens.css, so the input has its size outside an .item too
+   (RadioMatrix puts the bare radio in a table cell); the first-line offset applies only inside an .item. */
 .list {
   display: flex;
   flex-direction: column;
@@ -16,7 +18,6 @@
 }
 
 .item {
-  --choice-box: 1.5rem;
   display: grid;
   grid-template-columns: var(--choice-box) minmax(0, 1fr);
   column-gap: var(--s-3);
@@ -29,12 +30,8 @@
   position: relative;
   width: var(--choice-box);
   height: var(--choice-box);
+  flex: none;
   margin: 0;
-  /* Same font metrics as .label, so 1lh here is the label's line height. */
-  font-size: var(--text-body);
-  line-height: var(--leading);
-  margin-top: calc((var(--text-body) * var(--leading) - var(--choice-box)) / 2); /* browsers without lh */
-  margin-top: calc((1lh - var(--choice-box)) / 2);
   border: var(--border-w-strong) solid var(--border-input);
   border-radius: var(--radius-xs);
   background: var(--bg-surface);
@@ -43,6 +40,14 @@
   transition:
     border-color var(--duration),
     background-color var(--duration);
+}
+
+.item > .input {
+  /* Same font metrics as .label, so 1lh here is the label's line height. */
+  font-size: var(--text-body);
+  line-height: var(--leading);
+  margin-top: calc((var(--text-body) * var(--leading) - var(--choice-box)) / 2); /* browsers without lh */
+  margin-top: calc((1lh - var(--choice-box)) / 2);
 }
 
 .radio {
