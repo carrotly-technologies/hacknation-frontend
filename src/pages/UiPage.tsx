@@ -395,7 +395,7 @@ export function UiPage() {
       <Section
         id="etapy"
         title="Etapy procesu i nagłówek"
-        note="Poziomy stepper etapów: ukończone ciemne z ikoną ✓, bieżący podświetlony, przyszłe z obramowaniem; pokazywany krok ma aria-current=&quot;step&quot; i podkreślenie. Poniżej 768 px zamienia się w numerowane kropki z nazwą kroku."
+        note="Poziomy stepper etapów: ukończone ciemne z ikoną ✓, bieżący podświetlony, przyszłe z obramowaniem; pokazywany krok (w każdym stanie) ma obwódkę w kolorze akcentu, pogrubioną nazwę i aria-current=&quot;step&quot;. Poniżej 768 px zamienia się w numerowane kropki z nazwą kroku."
       >
         <div className={s.block}>
           <h3 className={s.h3}>Początek procesu</h3>

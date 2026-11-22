@@ -129,6 +129,20 @@
   background: var(--accent-subtle);
 }
 
+/* The step shown on the page, in every state (done / current / todo): an --accent outline that follows the chevron
+   (the step's own background is the outline colour, ::before is the fill inset by the outline width, both under the
+   same clip-path) + bold label below. Only the inset changes, so the step box and the line breaks stay the same.
+   The current step that is not shown keeps only its light blue fill. Contrast of --accent against the fills and the
+   surface is >= 3:1 in every theme (WCAG 1.4.11). */
+.active {
+  --stepper-outline: calc(var(--border-w-strong) + var(--border-w));
+  background: var(--accent);
+}
+
+.active::before {
+  inset: var(--stepper-outline);
+}
+
 /* The width of every word is the width of its bold version (hidden bold copy in ::after, height 0), and the spaces
    between words keep the step's weight. So the line breaks are the same whether the step is bold or not: selecting
    a step never moves a word to the next line or shifts its neighbours. The copy is generated content with
@@ -149,7 +163,7 @@
   user-select: none;
 }
 
-/* the step shown on the page: bolder label + aria-current (not colour alone), no underline */
+/* the step shown on the page: bolder label + outline + aria-current (not colour alone), no underline */
 .active .word {
   font-weight: var(--weight-bold);
 }
@@ -272,8 +286,9 @@ a.step:visited .label {
     border-color: var(--accent);
   }
 
+  /* the shown dot: thicker --accent ring outside its state border (drawn outside the box, no layout change) */
   .active::before {
-    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--accent);
+    box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 calc(2px + var(--stepper-outline)) var(--accent);
   }
 
   .label {
