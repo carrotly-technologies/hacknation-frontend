@@ -54,6 +54,31 @@
   width: 9.5rem;
 }
 
+.colStage {
+  width: 13rem;
+}
+
+.colDeadline {
+  width: 10rem;
+}
+
+.cellText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stageText {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.overdue {
+  color: var(--danger);
+  font-weight: var(--weight-semibold);
+}
+
 .colOpen {
   width: 6.5rem;
   text-align: right;
@@ -122,9 +147,20 @@
   border-radius: var(--radius-sm);
 }
 
+@media (max-width: 899px) {
+  .colStage {
+    width: 9rem;
+  }
+}
+
 @media (max-width: 599px) {
-  .colHired {
+  .colHired,
+  .colStage {
     display: none;
+  }
+
+  .colDeadline {
+    width: 7rem;
   }
 
   .subHired {
