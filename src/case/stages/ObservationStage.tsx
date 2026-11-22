@@ -23,7 +23,9 @@ export function ObservationStage({ detail, model, criteria, stage }: StageProps)
   const info = detail.stages.find((s) => s.id === stage)!
   const done = info.status === 'DONE'
   const add = useAddObservation(detail.id)
-  const act = useCaseAction(detail.id)
+  // One navigation, to step 4: with every partial rating drafted in part II the case is already at ASSESSMENT_TALK
+  // after START_ASSESSMENT, and following it would land on step 5 first (#137).
+  const act = useCaseAction(detail.id, { follow: false })
   const navigate = useNavigate()
   const [formOpen, setFormOpen] = useState(false)
   const [form, setForm] = useState(() => empty(criteria.all[0] ?? ''))
