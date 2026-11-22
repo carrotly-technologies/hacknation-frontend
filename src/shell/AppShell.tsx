@@ -126,10 +126,13 @@ export function AppShell() {
             </ul>
           </nav>
           <div className="topbar__tools">
-            <button type="button" className="topbar__tool" onClick={onReset} title="Przywróć dane demonstracyjne">
-              <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
-              <span>Reset</span>
-            </button>
+            {/* the API allows the demo reset only for ADMIN and HR */}
+            {(me.role === 'ADMIN' || me.role === 'HR') && (
+              <button type="button" className="topbar__tool" onClick={onReset} title="Przywróć dane demonstracyjne">
+                <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
+                <span>Reset</span>
+              </button>
+            )}
             <ApiStatus />
           </div>
         </div>
