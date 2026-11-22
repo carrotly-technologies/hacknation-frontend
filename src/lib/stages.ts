@@ -2,7 +2,7 @@ import type { CaseAction, CaseDetail, Path, StageId, StageInfo } from '../api/ca
 
 /** URL slugs for /teczka/:id/:stage. */
 export const STAGE_SLUG: Record<StageId, string> = {
-  OSP_ANALYSIS: 'analiza-osp',
+  OSP_ANALYSIS: 'analiza-stanowiska',
   SHEET_PROPOSAL: 'proponowany-formularz',
   OPENING_TALK: 'rozmowa-rozpoczynajaca',
   OBSERVATION: 'obserwacje',
@@ -17,8 +17,12 @@ export const STAGE_SLUG: Record<StageId, string> = {
   FIRST_DOCUMENT: 'dokument-pierwsza',
 }
 
-/** Old slugs still accepted in links; CasePage redirects them to the current slug. */
+/**
+ * Old slugs still accepted in links; CasePage redirects them to the current slug. Step 1 used to be two steps,
+ * „Analiza opisu stanowiska” and „Proponowany/Wstępny formularz” (hacknation-frontend#153): all lead to step 1.
+ */
 const LEGACY_SLUG: Record<string, StageId> = {
+  'analiza-osp': 'OSP_ANALYSIS',
   'wstepny-formularz': 'SHEET_PROPOSAL',
   ocena: 'ASSESSMENT',
   uzasadnienie: 'JUSTIFICATION',
@@ -34,10 +38,12 @@ export const caseUrl = (id: string, stage?: StageId) =>
   stage ? `/teczka/${id}/${STAGE_SLUG[stage]}` : `/teczka/${id}`
 
 /**
- * Stages with no screen of their own, shown in another stage's view. The assessment period runs inside step 3
+ * Stages with no screen of their own, shown in another stage's view. The assessment period runs inside step 2
  * ("Formularz oceny"), which shows only the official sheet: its template is set by law, so no observations there.
+ * The proposed sheet (SHEET_PROPOSAL) is the „Wynik analizy” section of step 1 („Analiza stanowiska”).
  */
 const SHOWN_AS: Partial<Record<StageId, StageId>> = {
+  SHEET_PROPOSAL: 'OSP_ANALYSIS',
   OBSERVATION: 'OPENING_TALK',
 }
 
@@ -49,8 +55,8 @@ export function viewStage(stages: Pick<StageInfo, 'id'>[], stage: StageId): Stag
 
 /** Short names used in compact places (team table, HR table, context chip). */
 export const STAGE_SHORT: Record<StageId, string> = {
-  OSP_ANALYSIS: 'Analiza OSP',
-  SHEET_PROPOSAL: 'Proponowany formularz',
+  OSP_ANALYSIS: 'Analiza stanowiska',
+  SHEET_PROPOSAL: 'Analiza stanowiska',
   OPENING_TALK: 'Rozmowa rozpoczynająca',
   OBSERVATION: 'Okres oceny',
   ASSESSMENT: 'Formularz oceny kompetencji',
@@ -66,7 +72,8 @@ export const STAGE_SHORT: Record<StageId, string> = {
 
 /** Stage headings the UI names differently than the API (the backend label is kept for the legal record). */
 const STAGE_TITLE: Partial<Record<StageId, string>> = {
-  SHEET_PROPOSAL: 'Proponowany formularz',
+  OSP_ANALYSIS: 'Analiza stanowiska',
+  SHEET_PROPOSAL: 'Analiza stanowiska',
   ASSESSMENT: 'Formularz oceny kompetencji',
 }
 
@@ -134,13 +141,13 @@ export interface CaseStep {
 }
 
 /**
- * The seven steps of the periodic assessment as the design names them, each grouping one or more backend
+ * The six steps of the periodic assessment as the design names them, each grouping one or more backend
  * stages (the process itself and its legal rules stay in the backend). Stages missing from the case are
  * skipped and stages not listed here get a step of their own, so the stepper follows whatever the API sends.
  */
 const PERIODIC_STEPS: { key: string; label: string; stages: StageId[] }[] = [
-  { key: 'analiza', label: 'Analiza opisu stanowiska', stages: ['OSP_ANALYSIS'] },
-  { key: 'proponowany', label: 'Proponowany formularz', stages: ['SHEET_PROPOSAL'] },
+  // One step, two backend stages: the analysis and the proposed sheet it gives (hacknation-frontend#153).
+  { key: 'analiza', label: 'Analiza stanowiska', stages: ['OSP_ANALYSIS', 'SHEET_PROPOSAL'] },
   { key: 'formularz', label: 'Formularz oceny', stages: ['OPENING_TALK', 'OBSERVATION'] },
   { key: 'kompetencje', label: 'Formularz oceny kompetencji', stages: ['ASSESSMENT'] },
   // Poradnik „Oceny okresowe w służbie cywilnej”, Tabela nr 1: etap III (rozmowa) and etap IV (ocena na piśmie).

@@ -40,7 +40,7 @@ const levelLabel = (model: CompetencyModel, p: number) => {
 }
 
 /**
- * "Formularz oceny kompetencji": one competency per page, in the order of the "Proponowany formularz"
+ * "Formularz oceny kompetencji": one competency per page, in the order of the "Analiza stanowiska" result
  * questions. Every indicator is a question with the behaviours of the competency model as answers; the
  * system suggests a partial score and the evaluator decides it. The current competency stays in `?k=`.
  */
@@ -79,7 +79,7 @@ export function AssessmentStage({ detail, model, criteria, stage }: StageProps) 
   if (!competency) {
     return (
       <StageLayout info={info}>
-        <p className={layout.muted}>Brak kompetencji do oceny. Najpierw ustal arkusz i kryteria w kroku „Proponowany formularz”.</p>
+        <p className={layout.muted}>Brak kompetencji do oceny. Najpierw ustal arkusz i kryteria w kroku „Analiza stanowiska”.</p>
       </StageLayout>
     )
   }

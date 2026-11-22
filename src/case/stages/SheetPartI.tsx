@@ -136,7 +136,7 @@ export function SheetPartI({ detail, model, criteria, onNext, notice }: StagePro
         </div>
       </PartSection>
 
-      <PartSection title="Kryteria oceny i termin sporządzenia oceny" hint="Kryteria ustalono w kroku „Proponowany formularz”.">
+      <PartSection title="Kryteria oceny i termin sporządzenia oceny" hint="Kryteria ustalono w kroku „Analiza stanowiska”.">
         <div className={s.criteria}>
           <div>
             <p className={s.listLabel}>Kryteria obowiązkowe</p>
