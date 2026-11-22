@@ -76,7 +76,7 @@ components in `src/components/ui/`; see `docs/DESIGN.md`.
 Without a backend you can use a dev-only mock (off by default, never bundled):
 
 ```bash
-MOCK_API=1 npm run dev   # serves v1 + v2 /api/* (dev-mock-api.ts, dev-mock-v2.ts); any password, login a.lis = HR, admin = ADMIN
+MOCK_API=1 npm run dev   # serves v1 + v2 /api/* (dev-mock-api.ts, dev-mock-v2.ts); any password, login a.cieslak-dyjecinska = HR, admin = ADMIN
 ```
 
 ## Quality
