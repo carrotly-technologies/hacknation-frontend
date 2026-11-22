@@ -30,6 +30,14 @@ function plural(n: number, one: string, few: string, many: string) {
 
 export const days = (n: number) => `${n} ${plural(n, 'dzień', 'dni', 'dni')}`
 
+/** 1 kryterium, 3 kryteria, 5 kryteriów. */
+export const criteriaCount = (n: number) => `${n} ${plural(n, 'kryterium', 'kryteria', 'kryteriów')}`
+
+/** Lower case without Polish diacritics, for search that ignores both ("Łączność" matches "lacznosc"). */
+export function foldText(text: string): string {
+  return text.toLocaleLowerCase('pl').normalize('NFD').replace(/\p{M}/gu, '').replace(/ł/g, 'l')
+}
+
 /** Relative deadline text: "za 21 dni", "dziś", "po terminie 3 dni". */
 export function fmtDaysLeft(daysLeft: number | null): string {
   if (daysLeft === null) return ''

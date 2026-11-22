@@ -48,13 +48,67 @@
   max-width: var(--form-max);
 }
 
-.checks {
-  display: grid;
-  gap: var(--s-3);
+/* Editor (#131): chosen additional criteria as a table (CompetencyScores .table) with a "×" per row */
+table.chosenTable th,
+table.chosenTable td {
+  vertical-align: middle;
 }
 
-.add {
-  margin-top: var(--s-4);
+.chosenTable tbody th {
+  font-weight: normal;
+}
+
+.chosenTable .removeCol {
+  width: 1%;
+  padding-top: 0;
+  padding-bottom: 0;
+  text-align: right;
+}
+
+.chosenTable .chosenEmpty {
+  color: var(--text-secondary);
+}
+
+/* 44px square target in rem so it grows with the text size from /ustawienia */
+.remove {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+}
+
+.search {
+  margin-bottom: var(--s-2);
+}
+
+.limit {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+  line-height: var(--leading);
+}
+
+.limit:not(:empty) {
+  margin-bottom: var(--s-2);
+}
+
+/* Whole model is long: scroll inside the box; tabIndex on it keeps it scrollable from the keyboard */
+.options {
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: var(--s-1) var(--s-3);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-xs);
+}
+
+.options:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+.noResults {
+  margin: 0;
+  padding: var(--s-3) 0;
+  color: var(--text-secondary);
 }
 
 .finalActions {
