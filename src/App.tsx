@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { AssistantProvider } from './assistant/AssistantProvider'
 import { CasePage } from './case/CasePage'
+import { usePageviews } from './lib/usePageviews'
 import { AckPage } from './pages/AckPage'
+import { ActivityPage } from './pages/ActivityPage'
 import { AdminAuditPage } from './pages/AdminAuditPage'
 import { AdminUsersPage } from './pages/AdminUsersPage'
 import { DemoFormPage } from './pages/DemoFormPage'
@@ -23,6 +25,7 @@ import { AppShell } from './shell/AppShell'
 import { HomeRedirect, RequireAuth, RequireRole } from './shell/RequireAuth'
 
 export default function App() {
+  usePageviews()
   return (
     <Routes>
       <Route path="/logowanie" element={<LoginPage />} />
@@ -33,6 +36,8 @@ export default function App() {
       <Route path="/zapoznanie/:token" element={<AckPage />} />
       {/* Public: the project presentation (hacknation-frontend#116), no sign-in. */}
       <Route path="/prezentacja" element={<PresentationPage />} />
+      {/* Public, not linked anywhere: the team's view of the activity log; opens only with MONITOR_TOKEN (hacknation-backend#75). */}
+      <Route path="/aktywnosc" element={<ActivityPage />} />
       {/* The assistant's conversation lives for the signed-in session (also across the sheet print view). */}
       <Route
         element={

@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import { resetDemo, type Role } from '../api/cases'
 import { AssistantLauncher } from '../assistant/AssistantLauncher'
+import { ActivityNotice } from '../components/ActivityNotice'
 import { BrandMark } from '../components/BrandMark'
 import { ApiStatus } from '../components/ApiStatus'
 import { UserMenu } from '../components/ui'
@@ -159,6 +160,7 @@ export function AppShell() {
 
       <main className="main" id="main" tabIndex={-1}>
         <Outlet />
+        <ActivityNotice />
       </main>
       <AssistantLauncher />
     </div>

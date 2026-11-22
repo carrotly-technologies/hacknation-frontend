@@ -1832,3 +1832,30 @@
 .hr-row:hover td {
   background: var(--bg-hover);
 }
+
+/* One neutral sentence about the activity log (hacknation-backend#75): app shell, sign-in, the assessed person's page */
+.activity-notice {
+  padding: var(--s-4) var(--page-pad-x, var(--s-4));
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* A page that fills the window (PageLayout `fill`, from 1024px) leaves room for the notice instead of overflowing */
+@media (min-width: 1024px) {
+  .shell .main:has(> [data-page-fill]) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shell .main:has(> [data-page-fill]) > [data-page-fill] {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+  }
+
+  .shell .main:has(> [data-page-fill]) > .activity-notice {
+    flex: none;
+    padding-block: var(--s-2);
+  }
+}

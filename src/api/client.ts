@@ -1,3 +1,4 @@
+import { getSessionId } from '../lib/activity'
 import { getToken, notifyUnauthorized, setToken } from '../lib/session'
 
 // Empty VITE_API_URL = same origin, so requests go through the Vite dev proxy.
@@ -27,6 +28,8 @@ async function send(path: string, init: RequestInit): Promise<Response> {
   const token = getToken()
   const headers = new Headers(init.headers)
   if (token) headers.set('Authorization', `Bearer ${token}`)
+  // The activity log groups the calls of this tab into one session (src/lib/activity.ts).
+  headers.set('X-Session-Id', getSessionId())
   let res: Response
   try {
     res = await fetch(`${API_URL}/api${path}`, { ...init, headers })
@@ -69,8 +72,8 @@ async function readErrorMessage(res: Response): Promise<string> {
   return `Serwer API odpowiedział błędem ${res.status} ${res.statusText}`.trim()
 }
 
-export function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
-  return request<T>(path, { signal })
+export function apiGet<T>(path: string, signal?: AbortSignal, headers?: HeadersInit): Promise<T> {
+  return request<T>(path, { signal, headers })
 }
 
 function withBody(method: string, body: unknown, signal?: AbortSignal): RequestInit {
@@ -88,6 +91,23 @@ export function apiPost<T>(path: string, body: unknown, signal?: AbortSignal): P
 
 export function apiPatch<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
   return request<T>(path, withBody('PATCH', body, signal))
+}
+
+/**
+ * Reports a screen of the app to the activity log. Fire and forget: never throws, never blocks the UI, no sign-in
+ * needed; `keepalive` lets it finish when the tab is closing.
+ */
+export function sendPageview(path: string): void {
+  try {
+    void fetch(`${API_URL}/api/telemetry/pageview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Session-Id': getSessionId() },
+      body: JSON.stringify({ path: path.slice(0, 500) }),
+      keepalive: true,
+    }).catch(() => undefined)
+  } catch {
+    // never visible to the user
+  }
 }
 
 /** A file from the API (e.g. the sheet as PDF) with the name the server gave it in `Content-Disposition`. */
