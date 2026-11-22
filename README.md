@@ -113,6 +113,9 @@ as the `hacknation-frontend` application, built from this repo's `Dockerfile`
   `VITE_API_URL` build arg (set as a build-time variable in Coolify). It is
   baked into the bundle, so changing it needs a redeploy.
 - Every push to `main` triggers a new deploy (GitHub App source, auto-deploy on).
+- TLS (1.2+) terminates at the Coolify proxy; `nginx.conf` adds
+  `Strict-Transport-Security: max-age=31536000; includeSubDomains` to every response (RODO, see
+  hacknation-backend `docs/rodo/dpia.md`).
 
 Build and run the image locally:
 
