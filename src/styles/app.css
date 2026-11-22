@@ -1823,3 +1823,12 @@
   padding-right: 10px;
   padding-left: 10px;
 }
+
+/* HR monitoring: a row opens the case read-only (HrPage). */
+.hr-row {
+  cursor: pointer;
+}
+
+.hr-row:hover td {
+  background: var(--bg-hover);
+}

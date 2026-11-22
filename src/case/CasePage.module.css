@@ -107,3 +107,11 @@
     font-size: var(--text-xl);
   }
 }
+
+/* Wrapper of the stage work area (disabled for HR's read-only view); no visual box of its own. */
+.workFieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

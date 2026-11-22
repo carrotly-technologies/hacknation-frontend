@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type MouseEvent } from 'react'
+import { Link, useNavigate } from 'react-router'
 import { getHrOverview, sendReminders, type HrCase, type HrOverview, type ReminderResponse } from '../api/cases'
 import { DeadlineText } from '../components/Deadline'
 import { ErrorState, LoadingState } from '../components/QueryState'
 import { PageLayout, StatusBadge } from '../components/ui'
 import { StageDots } from '../components/StageDots'
 import { countLabel, DEMO_TODAY, fmtDate } from '../lib/format'
-import { CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
+import { caseUrl, CASE_STATUS_LABEL, STAGE_SHORT } from '../lib/stages'
 import { MutationError } from '../case/stages/common'
 
 type CounterKey = keyof HrOverview['counters'] | 'all'
@@ -35,6 +36,12 @@ const deptOf = (unit: string) => unit.split(',')[0]
 
 export function HrPage() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
+  // A click anywhere in the row opens the case read-only, like the name link; not on the reminder button or when selecting text.
+  const openRow = (e: MouseEvent<HTMLTableRowElement>, id: string) => {
+    if ((e.target as HTMLElement).closest('a, button') || window.getSelection()?.toString()) return
+    navigate(caseUrl(id))
+  }
   const q = useQuery({ queryKey: ['hr'], queryFn: ({ signal }) => getHrOverview(signal) })
   const [counter, setCounter] = useState<CounterKey>('all')
   const [search, setSearch] = useState('')
@@ -130,10 +137,12 @@ export function HrPage() {
               {rows.map((c) => {
                 const sentToday = c.lastReminderOn === DEMO_TODAY
                 return (
-                  <tr key={c.id}>
+                  <tr key={c.id} className="hr-row" onClick={(e) => openRow(e, c.id)}>
                     <td>
                       <div className="person">
-                        <span className="person__name" title={`${c.person.firstName} ${c.person.lastName}`}>{c.person.firstName} {c.person.lastName}</span>
+                        <Link to={caseUrl(c.id)} className="person__name" title={`Otwórz teczkę (podgląd): ${c.person.firstName} ${c.person.lastName}`}>
+                          {c.person.firstName} {c.person.lastName}
+                        </Link>
                         <span className="person__meta" title={c.person.position}>{c.person.position}</span>
                       </div>
                     </td>
